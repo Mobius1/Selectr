@@ -8,4 +8,4 @@ Features:
 * Searchable options
 * Ajax options
 
-[Demos](http://codepen.io/Mobius1/pen/JKLLVW/)
+[Demos](http://codepen.io/Mobius1/full/JKLLVW/)
