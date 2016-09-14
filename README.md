@@ -7,3 +7,5 @@ Features:
 * Tagging support
 * Searchable options
 * Ajax options
+
+[Demos](http://codepen.io/Mobius1/pen/JKLLVW/)
