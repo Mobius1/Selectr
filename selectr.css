@@ -30,7 +30,7 @@
 .selectr-selected {
 	background-color: #fff;
 	border: 1px solid #999;
-	border-radius: 5px;
+	border-radius: 3px;
 	box-sizing: border-box;
 	cursor: pointer;
 	min-height: 36px;
@@ -68,7 +68,7 @@
 .selectr-tags {
 	white-space: normal;
 	padding: 0;
-	margin: 0 0 -5px;
+	margin: 0 0 -2px;
 }
 
 .selectr-tag {
@@ -78,9 +78,8 @@
 	color: #fff;
 	cursor: default;
 	display: inline-block;
-	font-weight: 600;
 	min-height: 20px;
-	margin: 0 5px 5px 0;
+	margin: 0 2px 2px 0;
 	padding: 2px 25px 2px 8px;
 	position: relative;
 }
@@ -88,7 +87,7 @@
 .selectr-options-container {
 	background-color: #fff;
 	border-color: transparent #999 #999;
-	border-radius: 0 0 5px 5px;
+	border-radius: 0 0 3px 3px;
 	border-style: solid;
 	border-width: 0 1px 1px;
 	box-sizing: border-box;
@@ -160,7 +159,7 @@
 
 .selectr-input {
 	border: 1px solid #999;
-	border-radius: 5px;
+	border-radius: 3px;
 	box-sizing: border-box;
 	left: 5px;
 	margin: 10px 15px;
@@ -171,7 +170,7 @@
 
 .selectr-options {
 	margin: 0;
-	padding: 5px;
+	padding: 0;
 	top: calc(100% + 2px);
 	overflow: auto;
 	max-height: 200px;
@@ -181,7 +180,7 @@
 	cursor: pointer;
 	display: block;
 	list-style: outside none none;
-	padding: 5px 25px 5px 10px;
+	padding: 5px 20px;
 	position: relative;
 }
 
@@ -190,7 +189,7 @@
 }
 
 .selectr-options > li.selectr-optgroup {
-    font-weight: bold;
+	font-weight: bold;
 }
 
 .selectr-options > li > span {
@@ -222,7 +221,7 @@
 }
 
 .selectr-container.open .selectr-selected {
-	border-radius: 5px 5px 0 0;
+	border-radius: 3px 3px 0 0;
 	border-color: #999 #999 transparent #999;
 }
 
@@ -270,13 +269,13 @@
 
 .selectr-container.open.inverted .selectr-selected {
 	border-color: transparent #999 #999;
-	border-radius: 0 0 5px 5px;
+	border-radius: 0 0 3px 3px;
 }
 
 .selectr-container.inverted .selectr-options-container {
 	background-color: #fff;
 	border-color: #999 #999 transparent;
-	border-radius: 5px 5px 0 0;
+	border-radius: 3px 3px 0 0;
 	border-width: 1px 1px 0;
 }
 

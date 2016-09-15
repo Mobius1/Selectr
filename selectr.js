@@ -1,3 +1,9 @@
+/*!
+ * Selectr 1.0.1
+ * http://mobiuswebdesign.co.uk/plugins/selectr
+ *
+ * Released under the MIT license
+ */
 (function (root, factory) {
 	var plugin = 'Selectr';
 
@@ -11,26 +17,15 @@
 }(this, function (plugin) {
 	'use strict';
 
-	/**
-	 * Merge defaults with user options
-	 * @param {Object} source Default settings
-	 * @param {Object} props User options
-	 */
+	/* HELPERS */
 	var extend = function (src, props) {
 		var p;
 		for (p in props)
-			if (props.hasOwnProperty(p))
-				src[p] = props[p];
+			if (props.hasOwnProperty(p)) src[p] = props[p];
 		return src;
 	};
 
-	/**
-	 * Create element helper. Create an element and assign given attributes.
-	 * @param  {NodeType} type 	Type of element to create.
-	 * @param  {Object} attrs 	The attributes to assign to the element.
-	 * @return {HTMLElement}
-	 */
-	var createElement = function(a, b) {
+	var _newElem = function(a, b) {
 		var c, d = document.createElement(a);
 		if (b && "object" == typeof b)
 			for (c in b)
@@ -44,9 +39,6 @@
 		return d
 	};
 
-	/**
-	 * forEach helper
-	 */
 	var forEach = function(a, b, c) {
 		if ("[object Object]" === Object.prototype.toString.call(a)) {
 			var d;
@@ -65,12 +57,11 @@
 
 	var _addClass = function(e, c) { e.classList.add(c); }
 	var _removeClass = function(e, c) { e.classList.remove(c); }
+	var _append = function(p, c) { p.appendChild(c) }
+	var _addListener = function(e, type, callback, capture) { e.addEventListener(type, callback, capture || false); }
 
 	/**
-	 * Plugin Object
-	 * @param nodes The html nodes to initialize
-	 * @param {Object} options User options
-	 * @constructor
+	 * PLUGIN
 	 */
 	function Plugin(elem, opts) {
 
@@ -79,9 +70,6 @@
 			return;
 		}
 
-		/**
-		 * Default settings
-		 */
 		var defaults = {
 			minChars: 1,
 			width: 'auto',
@@ -132,11 +120,11 @@
 
 			if ( _this.options.ajax && typeof _this.options.ajax === 'object' ) {
 				_this.setAjaxUrl();
+			} else {
+				this.setSelections();
 			}
 
-			this.setSelections();
-
-			this.build(this.inputType);
+			this.build();
 
 			this.initialised = true;
 
@@ -158,7 +146,7 @@
 
 			if ( !this.elem.multiple ) {
 				if ( this.options.emptyOption ) {
-					this.emptyOpt = createElement('option', { value: '', selected: true });
+					this.emptyOpt = _newElem('option', { value: '', selected: true });
 
 					if ( this.hasOptGroups ) {
 						this.elem.insertBefore(this.emptyOpt, this.elem.options[0].parentNode);
@@ -173,6 +161,7 @@
 					this.elem.value = this.elem.options[this.options.selectedIndex].value;
 				} else if ( this.options.selectedValue !== null ) {
 					this.elem.value = this.options.selectedValue;
+					this.selectedVal = this.options.selectedValue;
 				}
 			} else {
 				this.options.emptyOption = false;
@@ -197,13 +186,11 @@
 
 			if ( ajax.queryParam ) {
 				_this.ajax_url += '?';
-
 				if ( ajax.params ) {
 					forEach(ajax.params, function(p, v) {
 						_this.ajax_url += p + '=' + v + '&';
 					});
 				}
-
 				_this.ajax_url += ajax.queryParam + '=';
 			}
 
@@ -225,11 +212,11 @@
 
 			_addClass(this.elem, 'hidden-input');
 
-			this.container = createElement('div', { id: 'selectr-' + _this.elem.id, class: 'selectr-container ' + this.options.containerClass });
-			this.selected = createElement('div', { class: 'selectr-selected' });
-			this.spn = createElement(this.elem.multiple ? 'ul' : 'span', { class: 'selectr-text' });
-			this.optsContainer = createElement('div', { class: 'selectr-options-container' });
-			this.optsOptions = createElement('ul', { class: 'selectr-options' });
+			this.container = _newElem('div', { id: 'selectr-' + _this.elem.id, class: 'selectr-container ' + this.options.containerClass });
+			this.selected = _newElem('div', { class: 'selectr-selected' });
+			this.spn = _newElem(this.elem.multiple ? 'ul' : 'span', { class: 'selectr-text' });
+			this.optsContainer = _newElem('div', { class: 'selectr-options-container' });
+			this.optsOptions = _newElem('ul', { class: 'selectr-options' });
 
 			// Create the elems for tagging
 			if ( !!this.elem.multiple ) {
@@ -239,47 +226,49 @@
 
 			// Create the elems needed for the search option
 			if ( this.options.enableSearch ) {
-				this.input = createElement('input', { class: 'selectr-input' });
-				this.clear = createElement('button', { class: 'selectr-clear', type: 'button' });
-				this.inputContainer = createElement('div', { class: 'selectr-input-container' });
+				this.input = _newElem('input', { class: 'selectr-input' });
+				this.clear = _newElem('button', { class: 'selectr-clear', type: 'button' });
+				this.inputContainer = _newElem('div', { class: 'selectr-input-container' });
 			}
 
-			// Check we have optgroups
-			if ( this.hasOptGroups ) {
-				_addClass(this.optsOptions, 'optgroups');
-				forEach(this.elem.children, function(idx, opt) {
-					if ( opt.nodeName === 'OPTGROUP' ) {
-						let group = createElement('li', { class: 'selectr-optgroup', innerHTML: opt.label });
-						_this.optsFrag.appendChild(group);
+			if ( !_this.options.ajax ) {
 
-						forEach(opt.children, function(i, option) {
-							_this.buildOption(i, option);
-						});
-					}
-				});
-			} else {
-				forEach(this.elem.options, function(i, option) {
-					_this.buildOption(i, option);
-				});
+				// Check we have optgroups
+				if ( this.hasOptGroups ) {
+					_addClass(this.optsOptions, 'optgroups');
+					forEach(this.elem.children, function(idx, opt) {
+						if ( opt.nodeName === 'OPTGROUP' ) {
+							let group = _newElem('li', { class: 'selectr-optgroup', innerHTML: opt.label });
+							_append(_this.optsFrag, group);
+
+							forEach(opt.children, function(i, option) {
+								_this.buildOption(i, option);
+							});
+						}
+					});
+				} else {
+					forEach(this.elem.options, function(i, option) {
+						_this.buildOption(i, option);
+					});
+				}
 			}
 
-			this.optsOptions.appendChild(this.optsFrag);
-
-			this.selected.appendChild(this.spn);
-			this.container.appendChild(this.selected);
+			_append(this.optsOptions, this.optsFrag);
+			_append(this.selected, this.spn);
+			_append(this.container, this.selected);
 
 			if ( this.options.enableSearch ) {
-				this.inputContainer.appendChild(this.input);
-				this.inputContainer.appendChild(this.clear);
-				this.optsContainer.appendChild(this.inputContainer);
+				_append(this.inputContainer, this.input);
+				_append(this.inputContainer, this.clear);
+				_append(this.optsContainer, this.inputContainer);
 			}
 
-			this.optsContainer.appendChild(this.optsOptions);
-			this.container.appendChild(this.optsContainer);
+			_append(this.optsContainer, this.optsOptions);
+			_append(this.container, this.optsContainer);
 
 			// Set the placeholder
 			var placeholder = this.options.placeholder || this.elem.getAttribute('placeholder') || 'Choose...';
-			this.selected.appendChild(createElement('div', { class: 'selectr-placeholder', innerHTML:  placeholder}));
+			_append(this.selected, _newElem('div', { class: 'selectr-placeholder', innerHTML:  placeholder}));
 
 			if ( (!this.elem.multiple && !!this.elem.value.length) || (this.elem.multiple && !!this.spn.children.length) ) {
 				_addClass(this.container, 'has-selected');
@@ -292,7 +281,7 @@
 			this.elem.parentNode.insertBefore(this.container, this.elem);
 
 			// Append the elem to it's new container
-			this.container.appendChild(this.elem);
+			_append(this.container, this.elem);
 
 			this.setDimensions();
 
@@ -304,13 +293,13 @@
 			if ( option === this.emptyOpt || option.nodeName !== 'OPTION' ) return;
 
 			var content = this.hasTemplate ? this.options.render(option) : option.textContent.trim();
-			var opt = createElement('li', { class: 'selectr-option', innerHTML: content });
+			var opt = _newElem('li', { class: 'selectr-option', innerHTML: content });
 
 			if ( option.hasAttribute('selected') ) {
 				option.selected = true;
 			}
 
-			this.optsFrag.appendChild(opt);
+			_append(this.optsFrag, opt);
 
 			if ( option.selected ) {
 
@@ -341,32 +330,31 @@
 			var _this = this;
 
 			// Prevent text selection
-			_this.selected.addEventListener('mousedown', function(e){ e.preventDefault(); });
-			_this.optsOptions.addEventListener('mousedown', function(e){ e.preventDefault(); });
+			_addListener(_this.selected, 'mousedown', function(e){ e.preventDefault(); });
+			_addListener(_this.optsOptions, 'mousedown', function(e){ e.preventDefault(); });
 
-			_this.selected.addEventListener('click', _this.toggleOptions.bind(_this));
-			_this.optsOptions.addEventListener('click', function(event) {
+			_addListener(_this.selected, 'click', _this.toggleOptions.bind(_this));
+			_addListener(_this.optsOptions, 'click', function(event) {
 				_this.selectOption(event);
 			});
 
 			if ( _this.elem.multiple ) {
-				_this.spn.addEventListener('click', _this.removeTags.bind(_this));
+				_addListener(_this.spn, 'click', _this.removeTags.bind(_this));
 			}
 
 			if ( _this.options.enableSearch ) {
-				_this.input.addEventListener('keyup', _this.search.bind(_this));
-				_this.clear.addEventListener('click', _this.clearOptions.bind(_this));
+				_addListener(_this.input, 'keyup', _this.search.bind(_this));
+				_addListener(_this.clear, 'click', _this.clearOptions.bind(_this));
 			}
 
-			document.addEventListener('click', _this.dismiss.bind(_this));
+			_addListener(document, 'click', _this.dismiss.bind(_this));
+			_addListener(document, 'keydown', _this.navigate.bind(_this));
 
 			_this.resize = debounce(function() {
 				_this.setDimensions();
 			}, 100);
 
-			window.addEventListener('resize', _this.resize);
-
-			document.addEventListener('keydown', _this.navigate.bind(_this));
+			_addListener(window, 'resize', _this.resize);
 		},
 
 		navigate: function(event)
@@ -378,27 +366,59 @@
 			// Filter out the keys we don't want
 			if ( !_this.opened || (keyCode !== 13 && keyCode !== 38 && keyCode !== 40) ) return;
 
+			event.preventDefault();
+
+			var currentIdx = _this.activeIdx, dir;
+
 			switch (keyCode) {
 				case 13: // select option
 					_this.selectOption(event);
 					return;
 					break;
 				case 38: // Scroll up options
+					dir = 'up';
 					if ( _this.activeIdx > 0 ) {
 						_this.activeIdx--;
 					}
 					break;
 				case 40: // scroll down options
+					dir = 'down';
 					if ( _this.activeIdx < _this.list.length - 1 ) {
 						_this.activeIdx++;
 					};
 					break;
 			}
 
+			var scrollTop = _this.optsOptions.scrollTop;
+			var scrollHeight = _this.optsOptions.scrollHeight;
+			var offsetTop = _this.optsOptions.offsetTop;
+			var offsetHeight = _this.optsOptions.offsetHeight;
+
+			var nextElem = _this.list[_this.activeIdx];
+
+			var style = window.getComputedStyle(nextElem);
+			var marginTop = parseInt(style.marginTop.replace('px', ''), 10);
+			var paddingTop = parseInt(style.paddingTop.replace('px', ''), 10);
+
+			var nextTop = nextElem.offsetTop;
+			var nextHeight = nextElem.offsetHeight;
+			var nextOffset = nextTop - nextHeight + (paddingTop + marginTop);
+
+
 			// Set the class for highlighting
 			forEach(_this.list, function(i, opt) {
 				if ( i === _this.activeIdx ) {
 					_addClass(opt, 'active');
+
+					if ( dir == 'down' ) {
+						if (nextOffset > offsetHeight + scrollTop ) {
+							_this.optsOptions.scrollTop += nextHeight;
+						}
+					} else {
+						if (nextOffset - scrollTop < nextHeight ) {
+							_this.optsOptions.scrollTop -= nextHeight;
+						}
+					}
 				} else {
 					_removeClass(opt, 'active');
 				}
@@ -411,9 +431,7 @@
 			var value = _this.input.value;
 			var len = value.length;
 
-			if ( len < this.options.minChars && len >= this.lastLen ) {
-				return;
-			}
+			if ( len < this.options.minChars && len >= this.lastLen ) return;
 
 			if ( this.ajaxOpts ) {
 				this.ajaxSearch();
@@ -426,10 +444,10 @@
 				_removeClass(this.inputContainer, 'active');
 			}
 
-			forEach(_this._this.list, function(i, option) {
+			forEach(_this.opts, function(i, option) {
 				let opt = _this.list[i];
-				let val = option.toLowerCase();
-				let val2 = value.toLowerCase();
+				let val = option.textContent.toLowerCase().trim();
+				let val2 = value.toLowerCase().trim();
 				if ( !val.includes(val2) ) {
 					_addClass(opt, 'excluded');
 					_removeClass(opt, 'match');
@@ -438,7 +456,8 @@
 					if ( _this.hasTemplate ) {
 						_addClass(opt, 'match');
 					} else {
-						let result = new RegExp(val2, 'i').exec(option);
+						let result = new RegExp(val2, 'i').exec(val);
+						console.log(result)
 						opt.innerHTML = opt.textContent.replace(result[0], '<span>'+result[0]+'</span>');
 					}
 					_removeClass(opt, 'excluded');
@@ -493,9 +512,7 @@
 				selected = _this.list[_this.activeIdx];
 			}
 
-			if ( selected.nodeName !== 'LI' ) {
-				return;
-			}
+			if ( selected.nodeName !== 'LI' ) return;
 
 			if ( _this.ajaxOpts ) {
 				_this.selectRemoteOption(selected);
@@ -534,6 +551,7 @@
 					hasValue = true;
 				}
 			} else {
+				// Deselect
 				if ( _this.selectedIndex === index ) {
 					_this.spn.innerHTML = '';
 
@@ -541,6 +559,7 @@
 					_removeClass(selected, 'selected');
 					_this.selectedVal = null;
 					_this.selectedIndex = null;
+					_this.elem.value = null;
 					_this.emit("selectr.deselect");
 				} else {
 
@@ -630,12 +649,12 @@
 				content = this.hasTemplate ? this.options.render(option) : option.textContent
 			}
 
-			let tag = createElement('li', { class: 'selectr-tag', innerHTML: content });
-			let btn = createElement('button', { class: 'selectr-tag-remove', type: 'button' });
+			let tag = _newElem('li', { class: 'selectr-tag', innerHTML: content });
+			let btn = _newElem('button', { class: 'selectr-tag-remove', type: 'button' });
 
-			tag.appendChild(btn);
-			docFrag.appendChild(tag);
-			this.spn.appendChild(docFrag);
+			_append(tag, btn);
+			_append(docFrag, tag);
+			_append(this.spn, docFrag);
 			this.tags.push(tag);
 
 			if ( !!this.spn.children.length ) {
@@ -661,9 +680,7 @@
 			var target = event.target;
 			var nodeName = target.nodeName;
 
-			if ( nodeName != 'BUTTON' ) {
-				return false;
-			}
+			if ( nodeName !== 'BUTTON' ) return;
 
 			event.preventDefault();
 			event.stopPropagation();
@@ -711,9 +728,7 @@
 		{
 			var _this = this, open = this.container.classList.contains('open');
 
-			if ( this.disabled ) {
-				return false;
-			}
+			if ( this.disabled ) return;
 
 			if ( open ) {
 				this.close()
@@ -800,9 +815,7 @@
 		{
 			var _this = this, index = [].slice.call(_this.values).indexOf(value);
 
-			if ( index < 0 ) {
-				return false;
-			}
+			if ( index < 0 ) return;
 
 			if ( _this.elem.multiple ) {
 				if ( _this.selectedVals.indexOf(value) < 0 ) {
@@ -872,8 +885,10 @@
 		{
 			var w = this.options.width || this.elemRect.width;
 
-			if ( this.options.width == 'auto' ) {
+			if ( this.options.width === 'auto' ) {
 				w = '100%';
+			} else {
+				w += 'px';
 			}
 
 			this.container.style.cssText += 'width: '+w+'; ';
@@ -910,9 +925,7 @@
 
 		destroy: function()
 		{
-			if ( !this.initialised ) {
-				return;
-			}
+			if ( !this.initialised ) return;
 
 			var _this = this;
 
