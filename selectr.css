@@ -169,6 +169,7 @@
 }
 
 .selectr-options {
+	position: relative;
 	margin: 0;
 	padding: 0;
 	top: calc(100% + 2px);

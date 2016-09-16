@@ -94,6 +94,7 @@
 		this.lastLen = 0;
 		this.disabled = false;
 		this.opened = false;
+		this.activeIdx = 0;
 
 		this.options = extend(defaults, opts);
 
@@ -233,7 +234,7 @@
 
 			if ( !_this.options.ajax ) {
 
-				// Check we have optgroups
+				// Check for optgroups
 				if ( this.hasOptGroups ) {
 					_addClass(this.optsOptions, 'optgroups');
 					forEach(this.elem.children, function(idx, opt) {
@@ -241,9 +242,11 @@
 							let group = _newElem('li', { class: 'selectr-optgroup', innerHTML: opt.label });
 							_append(_this.optsFrag, group);
 
-							forEach(opt.children, function(i, option) {
-								_this.buildOption(i, option);
-							});
+							if ( opt.children ) {
+								forEach(opt.children, function(i, option) {
+									_this.buildOption(i, option);
+								});
+							}
 						}
 					});
 				} else {
@@ -252,6 +255,8 @@
 					});
 				}
 			}
+
+			_addClass(this.list[this.activeIdx], 'active');
 
 			_append(this.optsOptions, this.optsFrag);
 			_append(this.selected, this.spn);
@@ -313,11 +318,6 @@
 				}
 
 				this.selectedVals.push(option.value);
-			}
-
-			if ( ( this.options.emptyOption && index === 1 ) || ( !this.options.emptyOption && index === 0 ) ) {
-				_addClass(opt, 'active');
-				this.activeIdx = 0;
 			}
 
 			this.opts.push(option);
@@ -389,36 +389,38 @@
 					break;
 			}
 
-			var scrollTop = _this.optsOptions.scrollTop;
-			var scrollHeight = _this.optsOptions.scrollHeight;
-			var offsetTop = _this.optsOptions.offsetTop;
-			var offsetHeight = _this.optsOptions.offsetHeight;
-
+			var parentRect = _this.optsOptions.getBoundingClientRect();
 			var nextElem = _this.list[_this.activeIdx];
+			var nextRect = nextElem.getBoundingClientRect();
 
-			var style = window.getComputedStyle(nextElem);
-			var marginTop = parseInt(style.marginTop.replace('px', ''), 10);
-			var paddingTop = parseInt(style.paddingTop.replace('px', ''), 10);
+			if ( dir === 'up' ) {
+				var currentOffset = parentRect.top;
+				var nextTop = nextRect.top;
+				var nextOffset = _this.optsOptions.scrollTop + (nextTop - currentOffset);
 
-			var nextTop = nextElem.offsetTop;
-			var nextHeight = nextElem.offsetHeight;
-			var nextOffset = nextTop - nextHeight + (paddingTop + marginTop);
+				if (_this.activeIdx === 0) {
+					_this.optsOptions.scrollTop = 0;
+				} else if (nextTop - currentOffset < 0) {
+					_this.optsOptions.scrollTop = nextOffset;
+				}
+			} else {
+				var currentOffset = parentRect.top +
+					_this.optsOptions.offsetHeight;
+				var nextBottom = nextRect.top + nextElem.offsetHeight;
+				var nextOffset = _this.optsOptions.scrollTop + nextBottom - currentOffset;
+
+				if (_this.activeIdx === 0) {
+					_this.optsOptions.scrollTop = 0;
+				} else if (nextBottom > currentOffset) {
+					_this.optsOptions.scrollTop = nextOffset;
+				}
+			}
 
 
 			// Set the class for highlighting
 			forEach(_this.list, function(i, opt) {
 				if ( i === _this.activeIdx ) {
 					_addClass(opt, 'active');
-
-					if ( dir == 'down' ) {
-						if (nextOffset > offsetHeight + scrollTop ) {
-							_this.optsOptions.scrollTop += nextHeight;
-						}
-					} else {
-						if (nextOffset - scrollTop < nextHeight ) {
-							_this.optsOptions.scrollTop -= nextHeight;
-						}
-					}
 				} else {
 					_removeClass(opt, 'active');
 				}
@@ -791,12 +793,6 @@
 			}
 
 			_removeClass(this.container, 'open');
-
-			var containers = document.getElementsByClassName('selectr-container');
-
-			forEach(containers, function(i, container) {
-				_removeClass(container, 'open');
-			});
 
 			this.opened = false;
 
