@@ -4,12 +4,6 @@
  *
  * Released under the MIT license
  */
-/*!
- * Selectr 1.0.1
- * http://mobiuswebdesign.co.uk/plugins/selectr
- *
- * Released under the MIT license
- */
 (function (root, factory) {
 	var plugin = 'Selectr';
 
@@ -395,11 +389,12 @@
 					break;
 			}
 
+			var parentRect = _this.optsOptions.getBoundingClientRect();
 			var nextElem = _this.list[_this.activeIdx];
 			var nextRect = nextElem.getBoundingClientRect();
 
 			if ( dir === 'up' ) {
-				var currentOffset = _this.optsRect.top;
+				var currentOffset = parentRect.top;
 				var nextTop = nextRect.top;
 				var nextOffset = _this.optsOptions.scrollTop + (nextTop - currentOffset);
 
@@ -409,7 +404,7 @@
 					_this.optsOptions.scrollTop = nextOffset;
 				}
 			} else {
-				var currentOffset = _this.optsRect.top +
+				var currentOffset = parentRect.top +
 					_this.optsOptions.offsetHeight;
 				var nextBottom = nextRect.top + nextElem.offsetHeight;
 				var nextOffset = _this.optsOptions.scrollTop + nextBottom - currentOffset;
@@ -453,8 +448,8 @@
 
 			forEach(_this.opts, function(i, option) {
 				let opt = _this.list[i];
-				let val = option.textContent.trim();
-				let val2 = value.trim();
+				let val = option.textContent.toLowerCase().trim();
+				let val2 = value.toLowerCase().trim();
 				if ( !val.includes(val2) ) {
 					_addClass(opt, 'excluded');
 					_removeClass(opt, 'match');
@@ -464,7 +459,8 @@
 						_addClass(opt, 'match');
 					} else {
 						let result = new RegExp(val2, 'i').exec(val);
-						opt.innerHTML = option.textContent.replace(result[0], '<span>'+result[0]+'</span>');
+						console.log(result)
+						opt.innerHTML = opt.textContent.replace(result[0], '<span>'+result[0]+'</span>');
 					}
 					_removeClass(opt, 'excluded');
 				}
@@ -784,8 +780,6 @@
 					_this.input.focus();
 				}, 10);
 			}
-
-			this.optsRect = this.optsOptions.getBoundingClientRect();
 
 			this.opened = true;
 
