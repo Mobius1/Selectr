@@ -370,7 +370,7 @@
 
 			event.preventDefault();
 
-			var currentIdx = _this.activeIdx, dir;
+			var list = this.searching ? this.searchList : this.list, dir;
 
 			switch (keyCode) {
 				case 13: // select option
@@ -385,13 +385,13 @@
 					break;
 				case 40: // scroll down options
 					dir = 'down';
-					if ( _this.activeIdx < _this.list.length - 1 ) {
+					if ( _this.activeIdx < list.length - 1 ) {
 						_this.activeIdx++;
 					};
 					break;
 			}
 
-			var nextElem = _this.list[_this.activeIdx];
+			var nextElem = list[_this.activeIdx];
 			var nextRect = nextElem.getBoundingClientRect();
 
 			if ( dir === 'up' ) {
@@ -419,7 +419,7 @@
 
 
 			// Set the class for highlighting
-			forEach(_this.list, function(i, opt) {
+			forEach(list, function(i, opt) {
 				if ( i === _this.activeIdx ) {
 					_addClass(opt, 'active');
 				} else {
@@ -433,8 +433,9 @@
 			var _this = this;
 			var value = _this.input.value;
 			var len = value.length;
+			var navigating = event.keyCode === 38 || event.keyCode === 40;
 
-			if ( len < this.options.minChars && len >= this.lastLen ) return;
+			if ( ( len < this.options.minChars && len >= this.lastLen ) || navigating ) return;
 
 			if ( this.ajaxOpts ) {
 				this.ajaxSearch();
@@ -469,7 +470,7 @@
 					}
 					_removeClass(opt, 'excluded');
 
-					console.log(_this.searchList);
+					console.log(_this.searchList)
 				}
 			});
 
@@ -516,9 +517,10 @@
 
 			var _this = this;
 			var selected = event.target;
+			var list = this.searching ? this.searchList : this.list;
 
 			if ( event.type === 'keydown' ) {
-				selected = _this.list[_this.activeIdx];
+				selected = list[_this.activeIdx];
 			}
 
 			if ( selected.nodeName !== 'LI' ) return;
@@ -751,7 +753,6 @@
 			if ( this.options.enableSearch ) {
 				this.input.value = null;
 				this.searching = false;
-				this.searchList = [];
 				_removeClass(this.inputContainer, 'active');
 			}
 
@@ -801,6 +802,7 @@
 		{
 			if ( this.options.enableSearch ) {
 				this.input.blur();
+				this.searching = false;
 			}
 
 			_removeClass(this.container, 'open');
