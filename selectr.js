@@ -94,6 +94,8 @@
 		this.lastLen = 0;
 		this.disabled = false;
 		this.opened = false;
+		this.searching = false;
+		this.searchList = [];
 		this.activeIdx = 0;
 
 		this.options = extend(defaults, opts);
@@ -389,12 +391,11 @@
 					break;
 			}
 
-			var parentRect = _this.optsOptions.getBoundingClientRect();
 			var nextElem = _this.list[_this.activeIdx];
 			var nextRect = nextElem.getBoundingClientRect();
 
 			if ( dir === 'up' ) {
-				var currentOffset = parentRect.top;
+				var currentOffset = _this.optsRect.top;
 				var nextTop = nextRect.top;
 				var nextOffset = _this.optsOptions.scrollTop + (nextTop - currentOffset);
 
@@ -404,7 +405,7 @@
 					_this.optsOptions.scrollTop = nextOffset;
 				}
 			} else {
-				var currentOffset = parentRect.top +
+				var currentOffset = _this.optsRect.top +
 					_this.optsOptions.offsetHeight;
 				var nextBottom = nextRect.top + nextElem.offsetHeight;
 				var nextOffset = _this.optsOptions.scrollTop + nextBottom - currentOffset;
@@ -446,23 +447,29 @@
 				_removeClass(this.inputContainer, 'active');
 			}
 
+			this.searching = true;
+			this.searchList = [];
+
 			forEach(_this.opts, function(i, option) {
 				let opt = _this.list[i];
-				let val = option.textContent.toLowerCase().trim();
-				let val2 = value.toLowerCase().trim();
-				if ( !val.includes(val2) ) {
+				let val = option.textContent.trim();
+				let val2 = value.trim();
+				if ( !val.toLowerCase().includes(val2.toLowerCase()) ) {
 					_addClass(opt, 'excluded');
 					_removeClass(opt, 'match');
 				} else {
+
+					_this.searchList.push(opt);
 
 					if ( _this.hasTemplate ) {
 						_addClass(opt, 'match');
 					} else {
 						let result = new RegExp(val2, 'i').exec(val);
-						console.log(result)
-						opt.innerHTML = opt.textContent.replace(result[0], '<span>'+result[0]+'</span>');
+						opt.innerHTML = option.textContent.replace(result[0], '<span>'+result[0]+'</span>');
 					}
 					_removeClass(opt, 'excluded');
+
+					console.log(_this.searchList);
 				}
 			});
 
@@ -743,6 +750,8 @@
 		{
 			if ( this.options.enableSearch ) {
 				this.input.value = null;
+				this.searching = false;
+				this.searchList = [];
 				_removeClass(this.inputContainer, 'active');
 			}
 
@@ -780,6 +789,8 @@
 					_this.input.focus();
 				}, 10);
 			}
+
+			this.optsRect = this.optsOptions.getBoundingClientRect();
 
 			this.opened = true;
 
