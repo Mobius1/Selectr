@@ -74,7 +74,7 @@
 			minChars: 1,
 			width: 'auto',
 			emptyOption: true,
-			enableSearch: true,
+			searchable: true,
 			selectedIndex: null,
 			selectedValue: null,
 			selectedIndexes: [],
@@ -228,7 +228,7 @@
 			}
 
 			// Create the elems needed for the search option
-			if ( this.options.enableSearch ) {
+			if ( this.options.searchable ) {
 				this.input = _newElem('input', { class: 'selectr-input' });
 				this.clear = _newElem('button', { class: 'selectr-clear', type: 'button' });
 				this.inputContainer = _newElem('div', { class: 'selectr-input-container' });
@@ -264,7 +264,7 @@
 			_append(this.selected, this.spn);
 			_append(this.container, this.selected);
 
-			if ( this.options.enableSearch ) {
+			if ( this.options.searchable ) {
 				_append(this.inputContainer, this.input);
 				_append(this.inputContainer, this.clear);
 				_append(this.optsContainer, this.inputContainer);
@@ -344,7 +344,7 @@
 				_addListener(_this.spn, 'click', _this.removeTags.bind(_this));
 			}
 
-			if ( _this.options.enableSearch ) {
+			if ( _this.options.searchable ) {
 				_addListener(_this.input, 'keyup', _this.search.bind(_this));
 				_addListener(_this.clear, 'click', _this.clearOptions.bind(_this));
 			}
@@ -750,7 +750,7 @@
 
 		clearOptions: function()
 		{
-			if ( this.options.enableSearch ) {
+			if ( this.options.searchable ) {
 				this.input.value = null;
 				this.searching = false;
 				_removeClass(this.inputContainer, 'active');
@@ -785,7 +785,7 @@
 
 			_addClass(this.container, 'open');
 
-			if ( this.options.enableSearch ) {
+			if ( this.options.searchable ) {
 				setTimeout(function() {
 					_this.input.focus();
 				}, 10);
@@ -800,7 +800,7 @@
 
 		close: function()
 		{
-			if ( this.options.enableSearch ) {
+			if ( this.options.searchable ) {
 				this.input.blur();
 				this.searching = false;
 			}
