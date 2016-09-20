@@ -191,21 +191,25 @@
 
 .selectr-options > li.selectr-optgroup {
 	font-weight: bold;
+	padding: 5px 15px;
 }
 
 .selectr-options > li > span {
 	color: #00a8ff;
 }
 
-.selectr-options > li.selectr-option:hover,
-.selectr-options > li.selectr-option.active,
-.selectr-options > li.selectr-option.selected.active {
-	color: #fff;
-	background-color: #5897fb;
-}
-
 .selectr-options > li.selectr-option.selected {
 	background-color: #ddd;
+}
+
+.selectr-options > li.selectr-option:hover,
+.selectr-options > li.selectr-option.active,
+.selectr-options > li.selectr-option.active:hover,
+.selectr-options > li.selectr-option.selected:hover,
+.selectr-options > li.selectr-option.selected.active,
+.selectr-options > li.selectr-option.selected.active:hover {
+	color: #fff;
+	background-color: #5897fb;
 }
 
 .selectr-options > li.selectr-option.excluded {
