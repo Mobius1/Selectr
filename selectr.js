@@ -1,5 +1,5 @@
 /*!
- * Selectr 1.0.2
+ * Selectr 1.0.1
  * http://mobiuswebdesign.co.uk/plugins/selectr
  *
  * Released under the MIT license
@@ -55,8 +55,8 @@
 		}
 	};
 
-	var _addClass=function(e,c){e&&e.classList.add(c)};
-	var _removeClass = function(e, c){e&&e.classList.remove(c)};
+	var _addClass = function(e, c) { e.classList.add(c); }
+	var _removeClass = function(e, c) { e.classList.remove(c); }
 	var _append = function(p, c) { p.appendChild(c) }
 	var _addListener = function(e, type, callback, capture) { e.addEventListener(type, callback, capture || false); }
 
@@ -74,7 +74,7 @@
 			minChars: 1,
 			width: 'auto',
 			emptyOption: true,
-			enableSearch: true,
+			searchable: true,
 			selectedIndex: null,
 			selectedValue: null,
 			selectedIndexes: [],
@@ -120,11 +120,6 @@
 					callback.call(_this, event, this);
 				});
 			};
-
-			if ( _this.options.multiple ) {
-				_this.elem.setAttribute('multiple', true);
-				_this.elem.multiple = true;
-			}
 
 			if ( _this.options.ajax && typeof _this.options.ajax === 'object' ) {
 				_this.setAjaxUrl();
@@ -222,18 +217,18 @@
 
 			this.container = _newElem('div', { id: 'selectr-' + _this.elem.id, class: 'selectr-container ' + this.options.containerClass });
 			this.selected = _newElem('div', { class: 'selectr-selected' });
-			this.txt = _newElem(this.elem.multiple ? 'ul' : 'span', { class: 'selectr-text' });
+			this.spn = _newElem(this.elem.multiple ? 'ul' : 'span', { class: 'selectr-text' });
 			this.optsContainer = _newElem('div', { class: 'selectr-options-container' });
 			this.optsOptions = _newElem('ul', { class: 'selectr-options' });
 
 			// Create the elems for tagging
 			if ( !!this.elem.multiple ) {
-				_addClass(this.txt, 'selectr-tags');
+				_addClass(this.spn, 'selectr-tags');
 				_addClass(this.container, 'multiple');
 			}
 
 			// Create the elems needed for the search option
-			if ( this.options.enableSearch ) {
+			if ( this.options.searchable ) {
 				this.input = _newElem('input', { class: 'selectr-input' });
 				this.clear = _newElem('button', { class: 'selectr-clear', type: 'button' });
 				this.inputContainer = _newElem('div', { class: 'selectr-input-container' });
@@ -261,16 +256,15 @@
 						_this.buildOption(i, option);
 					});
 				}
-
-				_addClass(this.list[this.activeIdx], 'active');
 			}
 
+			_addClass(this.list[this.activeIdx], 'active');
 
 			_append(this.optsOptions, this.optsFrag);
-			_append(this.selected, this.txt);
+			_append(this.selected, this.spn);
 			_append(this.container, this.selected);
 
-			if ( this.options.enableSearch ) {
+			if ( this.options.searchable ) {
 				_append(this.inputContainer, this.input);
 				_append(this.inputContainer, this.clear);
 				_append(this.optsContainer, this.inputContainer);
@@ -283,7 +277,7 @@
 			var placeholder = this.options.placeholder || this.elem.getAttribute('placeholder') || 'Choose...';
 			_append(this.selected, _newElem('div', { class: 'selectr-placeholder', innerHTML:  placeholder}));
 
-			if ( (!this.elem.multiple && !!this.elem.value.length) || (this.elem.multiple && !!this.txt.children.length) ) {
+			if ( (!this.elem.multiple && !!this.elem.value.length) || (this.elem.multiple && !!this.spn.children.length) ) {
 				_addClass(this.container, 'has-selected');
 				if ( !this.elem.multiple && this.emptyOpt ) {
 					this.emptyOpt.selected = false;
@@ -321,7 +315,7 @@
 				if ( this.elem.multiple ) {
 					this.createTag(option);
 				} else {
-					this.txt.innerHTML = content;
+					this.spn.innerHTML = content;
 					this.selectedIndex = index;
 				}
 
@@ -347,10 +341,10 @@
 			});
 
 			if ( _this.elem.multiple ) {
-				_addListener(_this.txt, 'click', _this.removeTags.bind(_this));
+				_addListener(_this.spn, 'click', _this.removeTags.bind(_this));
 			}
 
-			if ( _this.options.enableSearch ) {
+			if ( _this.options.searchable ) {
 				_addListener(_this.input, 'keyup', _this.search.bind(_this));
 				_addListener(_this.clear, 'click', _this.clearOptions.bind(_this));
 			}
@@ -483,6 +477,40 @@
 			this.lastLen = this.input.value.length;
 		},
 
+		ajaxSearch: function()
+		{
+			_addClass(this.inputContainer, 'loading');
+
+			var ajax = this.options.ajax;
+
+			var that = this;
+			var xhr = new XMLHttpRequest();
+			xhr.onload = function() {
+				if (xhr.readyState === 4 && xhr.status === 200){
+					var data = JSON.parse(xhr.responseText);
+					var items = ajax.parseResults(data) || data;
+					var html = parseRenderItems(items);
+
+					that.optsOptions.innerHTML = html;
+					_removeClass(that.inputContainer, 'loading');
+
+					that.remoteItems = items;
+				}
+			}
+			xhr.open("GET", that.ajax_url + that.input.value, true);
+			xhr.send();
+
+			function parseRenderItems(parsedItems) {
+				var html = '';
+				var template = '<li class="selectr-options" data-value="{value}" data-text="{text}">{template}</li>';
+				forEach(parsedItems, function(i, item) {
+					let result = ajax.formatResults(item) || text;
+					html += template.replace('{value}', item.value).replace('{text}', item.text || '').replace('{template}', result);
+				});
+				return html;
+			}
+		},
+
 		selectOption: function(event)
 		{
 			event = event || window.event;
@@ -530,13 +558,13 @@
 					_this.input.value = '';
 				}
 
-				if ( !!_this.txt.children.length ) {
+				if ( !!_this.spn.children.length ) {
 					hasValue = true;
 				}
 			} else {
 				// Deselect
 				if ( _this.selectedIndex === index ) {
-					_this.txt.innerHTML = '';
+					_this.spn.innerHTML = '';
 
 					option.selected = false;
 					_removeClass(selected, 'selected');
@@ -551,7 +579,7 @@
 						_removeClass(old, 'selected');
 					}
 
-					_this.txt.innerHTML = _this.hasTemplate ? _this.options.render(option) : option.textContent;
+					_this.spn.innerHTML = _this.hasTemplate ? _this.options.render(option) : option.textContent;
 
 					option.selected = true;
 					_addClass(selected, 'selected');
@@ -579,131 +607,34 @@
 			_this.emit("selectr.change");
 		},
 
-
-		ajaxSearch: function()
-		{
-			_addClass(this.inputContainer, 'loading');
-
-			var ajax = this.options.ajax;
-
-			var that = this;
-			var xhr = new XMLHttpRequest();
-			xhr.onload = function() {
-				if (xhr.readyState === 4 && xhr.status === 200){
-					let data = JSON.parse(xhr.responseText);
-					let items = ajax.parseResults(data) || data;
-
-					parseRenderItems(items);
-
-					_removeClass(that.inputContainer, 'loading');
-
-					that.remoteItems = items;
-				}
-			}
-			xhr.open("GET", that.ajax_url + that.input.value, true);
-			xhr.send();
-
-
-			function parseRenderItems(parsedItems) {
-				var itmFrag = document.createDocumentFragment();
-				var optFrag = document.createDocumentFragment();
-
-				that.list = [];
-				that.opts = [];
-
-				forEach(parsedItems, function(i, item) {
-					let result = ajax.formatResults(item) || item.text;
-
-					// Create the item
-					let li = _newElem('li', {
-						class: 'selectr-option',
-						'data-value': item.value,
-						'data-text': item.text || '',
-						innerHTML: result
-					});
-
-					// Create the option
-					let opt = _newElem('option', {
-						value: item.value
-					});
-
-					opt.textContent = item.text;
-
-					that.list.push(li);
-					that.opts.push(opt);
-
-					_append(itmFrag, li);
-					_append(optFrag, opt);
-				});
-
-
-				that.optsOptions.innerHTML = '';
-				_append(that.optsOptions, itmFrag);
-
-				that.elem.innerHTML = '';
-				_append(that.elem, optFrag);
-			}
-		},
-
 		selectRemoteOption: function(selected)
 		{
-			var _this = this, option, selectItem, selectIdx,
-				value = selected.getAttribute('data-value');
+			var value = selected.getAttribute('data-value');
 
-			forEach(_this.remoteItems, function(idx, item) {
+			var selectItem = false;
+
+			forEach(this.remoteItems, function(i, item) {
 				if ( item.value == value ) {
 					selectItem = item;
-					selectIdx = idx;
-					option = _this.opts[idx];
 				}
 			});
 
 			if ( this.elem.multiple ) {
-				if ( selected.classList.contains('selected') && _this.selectedVals.indexOf(value) > -1 ) {
-					var _selectedTag;
-					forEach(_this.tags, function(i, tag) {
-						if ( tag.getAttribute('data-value') === value ) {
-							_selectedTag = tag;
-						}
-					});
+				this.createTag(selected, true);
+				this.selectedVals.push(value);
+			} else {
+				this.spn.innerHTML = selectItem ? this.options.ajax.formatSelected(selectItem) : selected.getAttribute('data-text') || selected.textContent;
+				this.selectedVal = value;
+			}
 
-					if ( _selectedTag ) {
-						_this.removeTag(_selectedTag);
-					}
+			if ( this.elem.multiple ) {
+				if ( this.elem.value.length > 0 ) {
+					this.elem.value += ',' + value;
 				} else {
-					_this.createTag(selected, selectItem);
-					_this.selectedVals.push(value);
-					_this.opts[selectIdx].selected = true;
-					_this.emit("selectr.select");
-
-					_addClass(selected, 'selected');
+					this.elem.value = value;
 				}
 			} else {
-				// Deselect
-				if ( _this.selectedIndex === selectIdx ) {
-					_this.txt.innerHTML = '';
-
-					option.selected = false;
-					_removeClass(selected, 'selected');
-					_this.selectedVal = null;
-					_this.selectedIndex = null;
-					_this.elem.value = null;
-					_this.emit("selectr.deselect");
-				} else {
-
-					let old = _this.optsOptions.getElementsByClassName('selected')[0];
-					if ( old ) {
-						_removeClass(old, 'selected');
-					}
-
-					_this.txt.innerHTML = this.options.ajax.formatSelected(selectItem) || option.getAttribute('data-text') || option.textContent;
-
-					option.selected = true;
-					_addClass(selected, 'selected');
-					_this.selectedVal = option.value;
-					_this.selectedIndex = selectIdx;
-					_this.emit("selectr.select");
-				}
+				this.elem.value = value;
 			}
 
 			if ( !!this.elem.value ) {
@@ -717,14 +648,14 @@
 			this.close();
 		},
 
-		createTag: function(option, selectItem)
+		createTag: function(option, remote)
 		{
 			var _this = this, docFrag = document.createDocumentFragment();
 
 			var content;
 
-			if ( selectItem ) {
-				content = this.options.ajax.formatSelected(selectItem) || option.getAttribute('data-text') || option.textContent;
+			if ( remote ) {
+				content = option.getAttribute('data-text') || option.textContent;
 			} else {
 				content = this.hasTemplate ? this.options.render(option) : option.textContent
 			}
@@ -734,16 +665,16 @@
 
 			_append(tag, btn);
 			_append(docFrag, tag);
-			_append(this.txt, docFrag);
+			_append(this.spn, docFrag);
 			this.tags.push(tag);
 
-			if ( !!this.txt.children.length ) {
+			if ( !!this.spn.children.length ) {
 				_addClass(this.container, 'has-selected');
 			} else {
 				_removeClass(this.container, 'has-selected');
 			}
 
-			if ( selectItem ) {
+			if ( remote ) {
 				tag.setAttribute('data-value', option.getAttribute('data-value'));
 			} else {
 				tag.setAttribute('data-value', option.value);
@@ -768,25 +699,34 @@
 			this.removeTag(target.parentNode);
 		},
 
-		removeTag: function(tag)
+		removeTag: function(tag, index)
 		{
-			var _this = this, value = tag.getAttribute('data-value');
-			var option, index;
+			var value = tag.getAttribute('data-value');
+			var valToRemove;
 
-			forEach(this.opts, function(idx, opt) {
-				if ( opt.value == value ) {
-					index = idx;
-					option = _this.opts[index]
-				}
-			});
+			if ( !this.ajaxOpts ) {
+				index = index || this.values.indexOf(value);
 
-			option.selected = false;
-			_removeClass(this.list[index], 'selected');
+				var option = this.opts[index];
+				valToRemove = this.selectedVals.indexOf(option.value);
 
-			this.selectedVals.splice(this.selectedVals.indexOf(option.value), 1);
+				option.selected = false;
+				_removeClass(this.list[index], 'selected');
+			} else {
+				valToRemove = this.selectedVals.indexOf(value);
+
+				// Update the comma-separated values
+				var values = this.elem.value.split(',');
+				var toRemove = values.indexOf(value);
+				values.splice(toRemove, 1);
+
+				this.elem.value = values.join(',');
+			}
+
+			this.selectedVals.splice(valToRemove, 1);
 			this.tags.splice(this.tags.indexOf(tag) ,1);
 
-			this.txt.removeChild(tag);
+			this.spn.removeChild(tag);
 
 			if ( !this.tags.length ) {
 				_removeClass(this.container, 'has-selected');
@@ -810,7 +750,7 @@
 
 		clearOptions: function()
 		{
-			if ( this.options.enableSearch ) {
+			if ( this.options.searchable ) {
 				this.input.value = null;
 				this.searching = false;
 				_removeClass(this.inputContainer, 'active');
@@ -845,7 +785,7 @@
 
 			_addClass(this.container, 'open');
 
-			if ( this.options.enableSearch ) {
+			if ( this.options.searchable ) {
 				setTimeout(function() {
 					_this.input.focus();
 				}, 10);
@@ -860,7 +800,7 @@
 
 		close: function()
 		{
-			if ( this.options.enableSearch ) {
+			if ( this.options.searchable ) {
 				this.input.blur();
 				this.searching = false;
 			}
@@ -891,7 +831,7 @@
 					_this.createTag(_this.opts[index]);
 				}
 			} else {
-				_this.txt.innerHTML = _this.hasTemplate ? _this.options.render(_this.opts[index]) : _this.opts[index].textContent;
+				_this.spn.innerHTML = _this.hasTemplate ? _this.options.render(_this.opts[index]) : _this.opts[index].textContent;
 
 				let old = _this.optsOptions.getElementsByClassName('selected')[0];
 				if ( old ) {
@@ -937,7 +877,7 @@
 					_this.removeTag(selectedTag);
 				}
 			} else {
-				this.txt.innerHTML = this.hasTemplate ? this.options.render(option) : option.textContent;
+				this.spn.innerHTML = this.hasTemplate ? this.options.render(option) : option.textContent;
 				if ( this.elem.selectedIndex !== null ) {
 					_removeClass(this.list[this.elem.selectedIndex], 'selected');
 				}
@@ -1011,7 +951,7 @@
 
 			_this.container = null;
 			_this.selected = null;
-			_this.txt = null;
+			_this.spn = null;
 			_this.optsContainer = null;
 			_this.optsOptions = null;
 			_this.input = null;
