@@ -74,7 +74,7 @@
 			minChars: 1,
 			width: 'auto',
 			emptyOption: true,
-			searchable: true,
+			enableSearch: true,
 			selectedIndex: null,
 			selectedValue: null,
 			selectedIndexes: [],
@@ -234,7 +234,7 @@
 			}
 
 			// Create the elems needed for the search option
-			if ( this.options.searchable ) {
+			if ( this.options.enableSearch ) {
 				this.input = _newElem('input', { class: 'selectr-input' });
 				this.clear = _newElem('button', { class: 'selectr-clear', type: 'button' });
 				this.inputContainer = _newElem('div', { class: 'selectr-input-container' });
@@ -271,7 +271,7 @@
 			_append(this.selected, this.txt);
 			_append(this.container, this.selected);
 
-			if ( this.options.searchable ) {
+			if ( this.options.enableSearch ) {
 				_append(this.inputContainer, this.input);
 				_append(this.inputContainer, this.clear);
 				_append(this.optsContainer, this.inputContainer);
@@ -351,7 +351,7 @@
 				_addListener(_this.txt, 'click', _this.removeTags.bind(_this));
 			}
 
-			if ( _this.options.searchable ) {
+			if ( _this.options.enableSearch ) {
 				_addListener(_this.input, 'keyup', _this.search.bind(_this));
 				_addListener(_this.clear, 'click', _this.clearOptions.bind(_this));
 			}
@@ -583,6 +583,8 @@
 
 		ajaxSearch: function()
 		{
+			this.searching = true;
+
 			_addClass(this.inputContainer, 'loading');
 
 			var ajax = this.options.ajax;
@@ -591,8 +593,14 @@
 			var xhr = new XMLHttpRequest();
 			xhr.onload = function() {
 				if (xhr.readyState === 4 && xhr.status === 200){
-					let data = JSON.parse(xhr.responseText);
-					let items = ajax.parseResults(data) || data;
+					var data = JSON.parse(xhr.responseText);
+
+					if ( typeof ajax.parseResults !== 'function' ) {
+						return;
+					}
+
+					var items = ajax.parseResults(data);
+
 
 					parseRenderItems(items);
 
@@ -609,7 +617,7 @@
 				var itmFrag = document.createDocumentFragment();
 				var optFrag = document.createDocumentFragment();
 
-				that.list = [];
+				that.searchList = [];
 				that.opts = [];
 
 				forEach(parsedItems, function(i, item) {
@@ -630,7 +638,7 @@
 
 					opt.textContent = item.text;
 
-					that.list.push(li);
+					that.searchList.push(li);
 					that.opts.push(opt);
 
 					_append(itmFrag, li);
@@ -811,7 +819,7 @@
 
 		clearOptions: function()
 		{
-			if ( this.options.searchable ) {
+			if ( this.options.enableSearch ) {
 				this.input.value = null;
 				this.searching = false;
 				_removeClass(this.inputContainer, 'active');
@@ -846,7 +854,7 @@
 
 			_addClass(this.container, 'open');
 
-			if ( this.options.searchable ) {
+			if ( this.options.enableSearch ) {
 				setTimeout(function() {
 					_this.input.focus();
 				}, 10);
@@ -856,12 +864,16 @@
 
 			this.opened = true;
 
+			if ( this.ajaxOpts ) {
+				this.searching = true;
+			}
+
 			this.emit("selectr.open");
 		},
 
 		close: function()
 		{
-			if ( this.options.searchable ) {
+			if ( this.options.enableSearch ) {
 				this.input.blur();
 				this.searching = false;
 			}
