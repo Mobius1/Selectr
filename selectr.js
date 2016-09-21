@@ -127,6 +127,16 @@
 				_this.elem.multiple = true;
 			}
 
+			if ( this.options.data ) {
+				var docFrag = document.createDocumentFragment();
+				_forEach(this.options.data, function(idx, itm) {
+					let opt = _newElem('option', { value: itm.value });
+					opt.textContent = itm.text;
+					docFrag.appendChild(opt);
+				});
+				this.elem.appendChild(docFrag);
+			}
+
 			if ( _this.options.ajax && typeof _this.options.ajax === 'object' ) {
 				_this.setAjaxUrl();
 			} else {
