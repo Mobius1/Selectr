@@ -8,4 +8,4 @@ Features:
 * Searchable options
 * Ajax options
 
-[Demos](http://codepen.io/Mobius1/full/JKLLVW/)
+[Demos & Documentation](https://mobius1.github.io/Selectr/)
