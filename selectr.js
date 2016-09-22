@@ -79,7 +79,8 @@
 			selectedValue: null,
 			selectedIndexes: [],
 			selectedValues: [],
-			containerClass: ''
+			containerClass: '',
+			maxSelections: null,
 		};
 
 		this.elem = elem;
@@ -236,6 +237,7 @@
 			this.txt = _newElem(this.elem.multiple ? 'ul' : 'span', { class: 'selectr-text' });
 			this.optsContainer = _newElem('div', { class: 'selectr-options-container' });
 			this.optsOptions = _newElem('ul', { class: 'selectr-options' });
+			this.notice = _newElem('div', { class: 'selectr-notice' });
 
 			// Create the elems for tagging
 			if ( !!this.elem.multiple ) {
@@ -280,6 +282,7 @@
 			_append(this.optsOptions, this.optsFrag);
 			_append(this.selected, this.txt);
 			_append(this.container, this.selected);
+			_append(this.container, this.notice);
 
 			if ( this.options.searchable ) {
 				_append(this.inputContainer, this.input);
@@ -535,6 +538,13 @@
 						_this.removeTag(_selectedTag);
 					}
 				} else {
+
+					if ( _this.options.maxSelections !== null && _this.selectedVals.length >= _this.options.maxSelections ) {
+						_this.close();
+						_this.notify('A maximum of ' + _this.options.maxSelections + ' items can be selected.');
+						return;
+					}
+
 					_this.selectedVals.push(option.value);
 					_this.createTag(option);
 
@@ -562,9 +572,7 @@
 				} else {
 
 					let old = _this.optsOptions.getElementsByClassName('selected')[0];
-					if ( old ) {
-						_removeClass(old, 'selected');
-					}
+					if ( old ) _removeClass(old, 'selected');
 
 					_this.txt.innerHTML = _this.hasTemplate ? _this.options.render(option) : option.textContent;
 
@@ -715,9 +723,7 @@
 				} else {
 
 					let old = _this.optsOptions.getElementsByClassName('selected')[0];
-					if ( old ) {
-						_removeClass(old, 'selected');
-					}
+					if ( old ) _removeClass(old, 'selected');
 
 					_this.txt.innerHTML = this.options.ajax.formatSelected(selectItem) || option.getAttribute('data-text') || option.textContent;
 
@@ -892,6 +898,11 @@
 				this.searching = false;
 			}
 
+			if ( this.container.classList.contains('notice') ) {
+				this.container.classList.remove('notice');
+				this.notice.textContent = '';
+			}
+
 			_removeClass(this.container, 'open');
 
 			this.opened = false;
@@ -902,9 +913,15 @@
 		dismiss: function(event)
 		{
 			var target = event.target;
-			if ( !this.container.contains(target) && this.opened ) {
+			if ( !this.container.contains(target) && (this.opened || this.container.classList.contains('notice')) ) {
 				this.close();
 			}
+		},
+
+		notify: function(notice)
+		{
+			this.container.classList.add('notice');
+			this.notice.textContent = notice;
 		},
 
 		setValue: function(value)

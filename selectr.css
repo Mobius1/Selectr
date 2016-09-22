@@ -247,6 +247,28 @@
 	display: block;
 }
 
+.selectr-notice {
+	background-color: #fff;
+	border-color: transparent #999 #999;
+	border-radius: 0 0 3px 3px;
+	border-style: solid;
+	border-width: 1px;
+	box-sizing: border-box;
+	padding: 8px 14px;
+	position: absolute;
+	top: calc(100% - 1px);
+	width: 100%;
+	display: none;
+}
+
+.selectr-container.notice .selectr-notice {
+	display: block;
+}
+
+.selectr-container.notice .selectr-selected {
+	border-radius: 3px 3px 0 0;
+}
+
 .selectr-input-container.loading::after {
 	border-color: #aaa #ddd #ddd;
 	border-radius: 50%;
