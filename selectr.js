@@ -282,7 +282,6 @@
 			_append(this.optsOptions, this.optsFrag);
 			_append(this.selected, this.txt);
 			_append(this.container, this.selected);
-			_append(this.container, this.notice);
 
 			if ( this.options.searchable ) {
 				_append(this.inputContainer, this.input);
@@ -291,6 +290,7 @@
 			}
 
 			_append(this.optsContainer, this.optsOptions);
+			_append(this.optsContainer, this.notice);
 			_append(this.container, this.optsContainer);
 
 			// Set the placeholder
@@ -317,7 +317,7 @@
 
 		buildOption: function(index, option)
 		{
-			if ( option === this.emptyOpt || option.nodeName !== 'OPTION' ) return;
+			if ( option === this.emptyOpt || option.nodeName !== 'OPTION' || !option.value ) return;
 
 			var content = this.hasTemplate ? this.options.render(option) : option.textContent.trim();
 			var opt = _newElem('li', { class: 'selectr-option', innerHTML: content });
@@ -340,6 +340,11 @@
 				}
 
 				this.selectedVals.push(option.value);
+			}
+
+			if ( option.disabled )  {
+				_addClass(opt, 'disabled');
+				return;
 			}
 
 			this.opts.push(option);
@@ -466,14 +471,16 @@
 				return;
 			}
 
-			if ( value.length > 0 ) {
-				_addClass(this.inputContainer, 'active');
-			} else {
-				_removeClass(this.inputContainer, 'active');
+			if ( !this.container.classList.contains('notice') ) {
+				if ( value.length > 0 ) {
+					_addClass(this.inputContainer, 'active');
+				} else {
+					_removeClass(this.inputContainer, 'active');
+				}
 			}
 
-			this.searching = true;
-			this.searchList = [];
+			_this.searching = true;
+			_this.searchList = [];
 
 			forEach(_this.opts, function(i, option) {
 				let opt = _this.list[i];
@@ -493,10 +500,15 @@
 						opt.innerHTML = option.textContent.replace(result[0], '<span>'+result[0]+'</span>');
 					}
 					_removeClass(opt, 'excluded');
-
-					console.log(_this.searchList)
 				}
 			});
+
+			if ( !_this.searchList.length ) {
+				_this.notify('No results.');
+				this.input.focus();
+			} else {
+				this.open();
+			}
 
 			this.lastLen = this.input.value.length;
 		},
@@ -513,7 +525,7 @@
 				selected = list[_this.activeIdx];
 			}
 
-			if ( selected.nodeName !== 'LI' ) return;
+			if ( selected.nodeName !== 'LI' || selected.classList.contains('disabled') ) return;
 
 			if ( _this.ajaxOpts ) {
 				_this.selectRemoteOption(selected);
@@ -540,7 +552,6 @@
 				} else {
 
 					if ( _this.options.maxSelections !== null && _this.selectedVals.length >= _this.options.maxSelections ) {
-						_this.close();
 						_this.notify('A maximum of ' + _this.options.maxSelections + ' items can be selected.');
 						return;
 					}
@@ -843,6 +854,9 @@
 				this.input.value = null;
 				this.searching = false;
 				_removeClass(this.inputContainer, 'active');
+				_removeClass(this.container, 'notice');
+				_addClass(this.container, 'open');
+				this.input.focus();
 			}
 
 			this.reset();
@@ -873,6 +887,7 @@
 			}
 
 			_addClass(this.container, 'open');
+			_removeClass(this.container, 'notice');
 
 			if ( this.options.searchable ) {
 				setTimeout(function() {
@@ -893,12 +908,14 @@
 
 		close: function()
 		{
-			if ( this.options.searchable ) {
+			var notice = this.container.classList.contains('notice');
+
+			if ( this.options.searchable && !notice ) {
 				this.input.blur();
 				this.searching = false;
 			}
 
-			if ( this.container.classList.contains('notice') ) {
+			if ( notice ) {
 				this.container.classList.remove('notice');
 				this.notice.textContent = '';
 			}
@@ -920,6 +937,7 @@
 
 		notify: function(notice)
 		{
+			this.close();
 			this.container.classList.add('notice');
 			this.notice.textContent = notice;
 		},
@@ -1043,9 +1061,9 @@
 			var _this = this;
 
 			// Cull all created elems.
-			var parentNode = _this.container.parentNode;
-			parentNode.insertBefore(_this.elem, _this.container);
-			parentNode.removeChild(_this.container);
+			var p = _this.container.parentNode;
+			p.insertBefore(_this.elem, _this.container);
+			p.removeChild(_this.container);
 
 			_removeClass(_this.elem, 'hidden-input');
 
