@@ -4,6 +4,7 @@
  *
  * Released under the MIT license
  */
+
 (function (root, factory) {
 	var plugin = 'Selectr';
 
@@ -55,21 +56,32 @@
 		}
 	};
 
-	/**
-	 * Detect crappy IE browsers
-	 * @return {Boolean}
-	 */
-	var isIE = function(browser) {
-		var agent = window.navigator.userAgent, ie = agent.indexOf('MSIE '), tri = agent.indexOf('Trident/');
-		return (ie > 0 || tri > 0);
-	}
-
 	var _hasClass = function(e,c) {
-		return !!e.className.match(new RegExp('(\\s|^)'+c+'(\\s|$)'));
+		if (e.classList) {
+			return e.classList.contains(c);
+		} else {
+			return !!e.className.match(new RegExp('(\\s|^)'+c+'(\\s|$)'))
+		}
 	}
 
-	var _addClass=function(a,b){a&&(isIE()?_hasClass(a,b)||(a.className=a.className.trim()+" "+b):a.classList.add(b))}
-	var _removeClass=function(a,b){if(a)if(isIE()){if(_hasClass(a,b)){var c=new RegExp("(\\s|^)"+b+"(\\s|$)");a.className=a.className.replace(c," "),a.className=a.className.trim()}}else a.classList.remove(b)};
+	var _addClass=function(e,c){
+		if (e.classList) {
+			e.classList.add(c);
+		} else {
+			e.className = e.className.trim()+" "+c;
+		}
+	}
+
+	var _removeClass=function(e,c){
+		if (e.classList) {
+			e.classList.remove(c);
+		} else {
+			e.c = e.c.replace(new RegExp('(^|\\b)' +
+							c.split(' ').join('|') +
+							'(\\b|$)', 'gi'), ' ');
+		}
+	}
+
 	var _append = function(p, c) { p.appendChild(c) }
 	var _addListener = function(e, type, callback, capture) { e.addEventListener(type, callback, capture || false); }
 
