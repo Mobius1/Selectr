@@ -68,7 +68,7 @@
 		return !!e.className.match(new RegExp('(\\s|^)'+c+'(\\s|$)'));
 	}
 
-	var _addClass=function(a,b){a&&(isIE()?hasClass(a,b)||(a.className=a.className.trim()+" "+b):a.classList.add(b))}
+	var _addClass=function(a,b){a&&(isIE()?_hasClass(a,b)||(a.className=a.className.trim()+" "+b):a.classList.add(b))}
 	var _removeClass=function(a,b){if(a)if(isIE()){if(_hasClass(a,b)){var c=new RegExp("(\\s|^)"+b+"(\\s|$)");a.className=a.className.replace(c," "),a.className=a.className.trim()}}else a.classList.remove(b)};
 	var _append = function(p, c) { p.appendChild(c) }
 	var _addListener = function(e, type, callback, capture) { e.addEventListener(type, callback, capture || false); }
