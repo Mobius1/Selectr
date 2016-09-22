@@ -117,8 +117,8 @@
 			var _this = this;
 
 			this.on = function(event, callback) {
-				this.elem.addEventListener(event, function(event) {
-					callback.call(_this, event, this);
+				this.elem.addEventListener(event, function(e) {
+					callback.call(this, e, _this);
 				});
 			};
 
@@ -365,6 +365,7 @@
 				_addListener(_this.input, 'keyup', _this.search.bind(_this));
 				_addListener(_this.clear, 'click', _this.clearOptions.bind(_this));
 			}
+
 
 			_this.handleDismiss = _this.dismiss.bind(_this);
 			_this.handleNavigate = _this.navigate.bind(_this);
