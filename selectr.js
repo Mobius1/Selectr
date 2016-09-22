@@ -366,8 +366,11 @@
 				_addListener(_this.clear, 'click', _this.clearOptions.bind(_this));
 			}
 
-			_addListener(document, 'click', _this.dismiss.bind(_this));
-			_addListener(document, 'keydown', _this.navigate.bind(_this));
+			_this.handleDismiss = _this.dismiss.bind(_this);
+			_this.handleNavigate = _this.navigate.bind(_this);
+
+			_addListener(document, 'click', _this.handleDismiss);
+			_addListener(document, 'keydown', _this.handleNavigate);
 
 			_this.resize = debounce(function() {
 				_this.setDimensions();
@@ -1042,8 +1045,8 @@
 			_this.inputContainer = null;
 
 			window.removeEventListener('resize', _this.resize);
-			document.removeEventListener('click', _this.dismiss.bind(_this));
-			document.removeEventListener('keydown', _this.navigate.bind(_this));
+			document.removeEventListener('click', _this.handleDismiss);
+			document.removeEventListener('keydown', _this.handleNavigate);
 
 			_this.initialised = false;
 		}
