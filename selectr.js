@@ -5,6 +5,9 @@
  * Released under the MIT license
  */
 
+/* Polyfill for String.prototype.includes() */
+String.prototype.includes||(String.prototype.includes=function(a,b){"use strict";return"number"!=typeof b&&(b=0),!(b+a.length>this.length)&&this.indexOf(a,b)!==-1});
+
 (function (root, factory) {
 	var plugin = 'Selectr';
 
