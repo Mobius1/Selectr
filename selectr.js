@@ -403,6 +403,8 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			}, 100);
 
 			_addListener(window, 'resize', _this.resize);
+
+			_addListener(window, 'scroll', _this.resize);
 		},
 
 		navigate: function(event)
