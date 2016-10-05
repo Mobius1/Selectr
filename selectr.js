@@ -29,7 +29,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		return src;
 	};
 
-	var _newElem = function(a, b) {
+	var _newElement = function(a, b) {
 		var c, d = document.createElement(a);
 		if (b && "object" == typeof b)
 			for (c in b)
@@ -51,7 +51,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			for (var e = 0, f = a.length; e < f; e++) b.call(c, e, a[e], a)
 	};
 
-	var debounce = function(a, b, c) {
+	var _debounce = function(a, b, c) {
 		var d;
 		return function() {
 			var e = this, f = arguments, g = function() { d = null, c || a.apply(e, f) }, h = c && !d;
@@ -60,30 +60,16 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 	};
 
 	var _hasClass = function(e,c) {
-		if (e.classList) {
-			return e.classList.contains(c);
-		} else {
-			return !!e.className.match(new RegExp('(\\s|^)'+c+'(\\s|$)'))
-		}
+		return e.classList ? e.classList.contains(c) : !!e.className.match(new RegExp('(\\s|^)'+c+'(\\s|$)'));
 	}
 
-	var _addClass=function(e,c){
-		if (e.classList) {
-			e.classList.add(c);
-		} else {
-			e.className = e.className.trim()+" "+c;
-		}
-	}
+	var _addClass = function(a, b) {
+		a.classList ? a.classList.add(b) : _hasClass(b) || (a.className = a.className.trim() + " " + b)
+	};
 
-	var _removeClass=function(e,c){
-		if (e.classList) {
-			e.classList.remove(c);
-		} else {
-			e.c = e.c.replace(new RegExp('(^|\\b)' +
-							c.split(' ').join('|') +
-							'(\\b|$)', 'gi'), ' ');
-		}
-	}
+	var _removeClass = function(a, b) {
+		a.classList ? a.classList.remove(b) : _hasClass(b) && (a.className = a.className.replace(new RegExp("(^|\\b)" + b.split(" ").join("|") + "(\\b|$)", "gi"), " "))
+	};
 
 	var _append = function(p, c) { p.appendChild(c) }
 	var _addListener = function(e, type, callback, capture) { e.addEventListener(type, callback, capture || false); }
@@ -128,6 +114,9 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		this.activeIdx = 0;
 		this.remote = false;
 
+		this.scrollX = window.scrollX || window.pageXOffset;
+		this.scrollY = window.scrollY || window.pageYOffset;
+
 		this.options = extend(defaults, opts);
 
 		this.hasTemplate = this.options.hasOwnProperty('render') && typeof this.options.render === 'function';
@@ -159,7 +148,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			if ( this.options.data ) {
 				var docFrag = document.createDocumentFragment();
 				_forEach(this.options.data, function(idx, itm) {
-					let opt = _newElem('option', { value: itm.value });
+					let opt = _newElement('option', { value: itm.value });
 					opt.textContent = itm.text;
 					docFrag.appendChild(opt);
 				});
@@ -194,7 +183,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			if ( !this.elem.multiple ) {
 				if ( this.options.emptyOption ) {
-					this.emptyOpt = _newElem('option', { value: '', selected: true });
+					this.emptyOpt = _newElement('option', { value: '', selected: true });
 
 					if ( this.hasOptGroups ) {
 						this.elem.insertBefore(this.emptyOpt, this.elem.options[0].parentNode);
@@ -260,12 +249,12 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			_addClass(this.elem, 'hidden-input');
 
-			this.container = _newElem('div', { id: 'selectr-' + _this.elem.id, class: 'selectr-container ' + this.options.containerClass });
-			this.selected = _newElem('div', { class: 'selectr-selected' });
-			this.txt = _newElem(this.elem.multiple ? 'ul' : 'span', { class: 'selectr-text' });
-			this.optsContainer = _newElem('div', { class: 'selectr-options-container' });
-			this.optsOptions = _newElem('ul', { class: 'selectr-options' });
-			this.notice = _newElem('div', { class: 'selectr-notice' });
+			this.container = _newElement('div', { id: 'selectr-' + _this.elem.id, class: 'selectr-container ' + this.options.containerClass });
+			this.selected = _newElement('div', { class: 'selectr-selected' });
+			this.txt = _newElement(this.elem.multiple ? 'ul' : 'span', { class: 'selectr-text' });
+			this.optsContainer = _newElement('div', { class: 'selectr-options-container' });
+			this.optsOptions = _newElement('ul', { class: 'selectr-options' });
+			this.notice = _newElement('div', { class: 'selectr-notice' });
 
 			// Create the elems for tagging
 			if ( !!this.elem.multiple ) {
@@ -275,9 +264,9 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			// Create the elems needed for the search option
 			if ( this.options.searchable ) {
-				this.input = _newElem('input', { class: 'selectr-input' });
-				this.clear = _newElem('button', { class: 'selectr-clear', type: 'button' });
-				this.inputContainer = _newElem('div', { class: 'selectr-input-container' });
+				this.input = _newElement('input', { class: 'selectr-input' });
+				this.clear = _newElement('button', { class: 'selectr-clear', type: 'button' });
+				this.inputContainer = _newElement('div', { class: 'selectr-input-container' });
 			}
 
 			if ( !_this.options.ajax ) {
@@ -287,7 +276,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					_addClass(this.optsOptions, 'optgroups');
 					forEach(this.elem.children, function(idx, opt) {
 						if ( opt.nodeName === 'OPTGROUP' ) {
-							let group = _newElem('li', { class: 'selectr-optgroup', innerHTML: opt.label });
+							let group = _newElement('li', { class: 'selectr-optgroup', innerHTML: opt.label });
 							_append(_this.optsFrag, group);
 
 							if ( opt.children ) {
@@ -323,7 +312,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			// Set the placeholder
 			var placeholder = this.options.placeholder || this.elem.getAttribute('placeholder') || 'Choose...';
-			_append(this.selected, _newElem('div', { class: 'selectr-placeholder', innerHTML:  placeholder}));
+			_append(this.selected, _newElement('div', { class: 'selectr-placeholder', innerHTML:  placeholder}));
 
 			if ( (!this.elem.multiple && !!this.elem.value.length) || (this.elem.multiple && !!this.txt.children.length) ) {
 				_addClass(this.container, 'has-selected');
@@ -348,7 +337,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			if ( option === this.emptyOpt || option.nodeName !== 'OPTION' || !option.value ) return;
 
 			var content = this.hasTemplate ? this.options.render(option) : option.textContent.trim();
-			var opt = _newElem('li', { class: 'selectr-option', innerHTML: content });
+			var opt = _newElement('li', { class: 'selectr-option', innerHTML: content });
 
 			if ( option.hasAttribute('selected') ) {
 				option.selected = true;
@@ -409,7 +398,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			_addListener(document, 'click', _this.handleDismiss);
 			_addListener(document, 'keydown', _this.handleNavigate);
 
-			_this.resize = debounce(function() {
+			_this.resize = _debounce(function() {
 				_this.setDimensions();
 			}, 100);
 
@@ -453,7 +442,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			if ( dir === 'up' ) {
 				var currentOffset = _this.optsRect.top;
-				var nextTop = nextRect.top;
+				var nextTop = nextRect.top + _this.scrollY;
 				var nextOffset = _this.optsOptions.scrollTop + (nextTop - currentOffset);
 
 				if (_this.activeIdx === 0) {
@@ -464,7 +453,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			} else {
 				var currentOffset = _this.optsRect.top +
 					_this.optsOptions.offsetHeight;
-				var nextBottom = nextRect.top + nextElem.offsetHeight;
+				var nextBottom = nextRect.top + _this.scrollY + nextElem.offsetHeight;
 				var nextOffset = _this.optsOptions.scrollTop + nextBottom - currentOffset;
 
 				if (_this.activeIdx === 0) {
@@ -685,7 +674,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					let result = ajax.formatResults(item) || item.text;
 
 					// Create the item
-					let li = _newElem('li', {
+					let li = _newElement('li', {
 						class: 'selectr-option',
 						'data-value': item.value,
 						'data-text': item.text || '',
@@ -693,7 +682,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					});
 
 					// Create the option
-					let opt = _newElem('option', {
+					let opt = _newElement('option', {
 						value: item.value
 					});
 
@@ -797,8 +786,8 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				content = this.hasTemplate ? this.options.render(option) : option.textContent
 			}
 
-			let tag = _newElem('li', { class: 'selectr-tag', innerHTML: content });
-			let btn = _newElem('button', { class: 'selectr-tag-remove', type: 'button' });
+			let tag = _newElement('li', { class: 'selectr-tag', innerHTML: content });
+			let btn = _newElement('button', { class: 'selectr-tag-remove', type: 'button' });
 
 			_append(tag, btn);
 			_append(docFrag, tag);
@@ -1051,6 +1040,9 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			}
 
 			this.container.style.cssText += 'width: '+w+'; ';
+
+			this.scrollX = window.scrollX || window.pageXOffset;
+			this.scrollY = window.scrollY || window.pageYOffset;
 
 			if ( this.opened ) {
 				this.elemRect = this.elem.getBoundingClientRect();
