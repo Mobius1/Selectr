@@ -1,0 +1,24 @@
+{
+  "name": "mobius1-selectr",
+  "version": "1.0.2",
+  "description": "A lightweight dependency-free javascript select box replacement.",
+  "main": "selectr.min.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mobius1/Selectr.git"
+  },
+  "keywords": [
+    "select",
+    "selectbox",
+    "forms"
+  ],
+  "author": "Karl Saunders",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Mobius1/Selectr/issues"
+  },
+  "homepage": "https://github.com/Mobius1/Selectr#readme"
+}
