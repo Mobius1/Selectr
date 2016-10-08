@@ -30,16 +30,17 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 	};
 
 	var _newElement = function(a, b) {
-		var c, d = document.createElement(a);
-		if (b && "object" == typeof b)
-			for (c in b)
-				if (c in d) "innerHTML" === c ? d.innerHTML = b[c] : d[c] = b[c];
-				else if ("class" === c)
-			for (var e = b[c].split(" "), f = e.length - 1; f >= 0; f--) {
-				if ( e[f].length )
-					d.classList.add(e[f]);
-			}
-		else d.setAttribute(c, b[c]);
+		var c = document,
+			d = c.createElement(a);
+		if (b && "object" == typeof b) {
+			var e;
+			for (e in b)
+				if ("html" === e) d.innerHTML = b[e];
+				else if ("text" === e) {
+				var f = c.createTextNode(b[e]);
+				d.appendChild(f)
+			} else d.setAttribute(e, b[e])
+		}
 		return d
 	};
 
@@ -276,7 +277,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					_addClass(this.optsOptions, 'optgroups');
 					forEach(this.elem.children, function(idx, opt) {
 						if ( opt.nodeName === 'OPTGROUP' ) {
-							let group = _newElement('li', { class: 'selectr-optgroup', innerHTML: opt.label });
+							let group = _newElement('li', { class: 'selectr-optgroup', html: opt.label });
 							_append(_this.optsFrag, group);
 
 							if ( opt.children ) {
@@ -312,7 +313,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			// Set the placeholder
 			var placeholder = this.options.placeholder || this.elem.getAttribute('placeholder') || 'Choose...';
-			_append(this.selected, _newElement('div', { class: 'selectr-placeholder', innerHTML:  placeholder}));
+			_append(this.selected, _newElement('div', { class: 'selectr-placeholder', html:  placeholder}));
 
 			if ( (!this.elem.multiple && !!this.elem.value.length) || (this.elem.multiple && !!this.txt.children.length) ) {
 				_addClass(this.container, 'has-selected');
@@ -337,7 +338,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			if ( option === this.emptyOpt || option.nodeName !== 'OPTION' || !option.value ) return;
 
 			var content = this.hasTemplate ? this.options.render(option) : option.textContent.trim();
-			var opt = _newElement('li', { class: 'selectr-option', innerHTML: content });
+			var opt = _newElement('li', { class: 'selectr-option', html: content });
 
 			if ( option.hasAttribute('selected') ) {
 				option.selected = true;
@@ -680,7 +681,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 						class: 'selectr-option',
 						'data-value': item.value,
 						'data-text': item.text || '',
-						innerHTML: result
+						html: result
 					});
 
 					// Create the option
@@ -788,7 +789,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				content = this.hasTemplate ? this.options.render(option) : option.textContent
 			}
 
-			let tag = _newElement('li', { class: 'selectr-tag', innerHTML: content });
+			let tag = _newElement('li', { class: 'selectr-tag', html: content });
 			let btn = _newElement('button', { class: 'selectr-tag-remove', type: 'button' });
 
 			_append(tag, btn);
