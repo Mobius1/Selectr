@@ -1,5 +1,5 @@
 /*!
- * Selectr 1.0.2
+ * Selectr 1.0.3
  * http://mobiuswebdesign.co.uk/plugins/selectr
  *
  * Released under the MIT license
@@ -114,9 +114,6 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		this.searchList = [];
 		this.activeIdx = 0;
 		this.remote = false;
-
-		this.scrollX = window.scrollX || window.pageXOffset;
-		this.scrollY = window.scrollY || window.pageYOffset;
 
 		this.options = extend(defaults, opts);
 
@@ -313,7 +310,8 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			// Set the placeholder
 			var placeholder = this.options.placeholder || this.elem.getAttribute('placeholder') || 'Choose...';
-			_append(this.selected, _newElement('div', { class: 'selectr-placeholder', html:  placeholder}));
+			this.placeElem = _newElement('div', { class: 'selectr-placeholder', html:  placeholder});
+			_append(this.selected, this.placeElem);
 
 			if ( (!this.elem.multiple && !!this.elem.value.length) || (this.elem.multiple && !!this.txt.children.length) ) {
 				_addClass(this.container, 'has-selected');
@@ -374,79 +372,97 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		{
 			var _this = this;
 
+			this.handleClickEvents = this.handleEvents.bind(this);
+			this.handleDismiss = this.dismiss.bind(this);
+			this.handleNavigate = this.navigate.bind(this);
+
+			// Global listener
+			_addListener(this.container, 'click', this.handleClickEvents);
+
 			// Prevent text selection
-			_addListener(_this.selected, 'mousedown', function(e){ e.preventDefault(); });
-			_addListener(_this.optsOptions, 'mousedown', function(e){ e.preventDefault(); });
+			_addListener(this.selected, 'mousedown', function(e){ e.preventDefault(); });
+			_addListener(this.optsOptions, 'mousedown', function(e){ e.preventDefault(); });
 
-			_addListener(_this.selected, 'click', _this.toggleOptions.bind(_this));
-			_addListener(_this.optsOptions, 'click', function(event) {
-				_this.selectOption(event);
-			});
-
-			if ( _this.elem.multiple ) {
-				_addListener(_this.txt, 'click', _this.removeTags.bind(_this));
+			if ( this.options.searchable ) {
+				_addListener(this.input, 'keyup', this.search.bind(this));
+				_addListener(this.clear, 'click', this.clearOptions.bind(this));
 			}
 
-			if ( _this.options.searchable ) {
-				_addListener(_this.input, 'keyup', _this.search.bind(_this));
-				_addListener(_this.clear, 'click', _this.clearOptions.bind(_this));
-			}
+			_addListener(document, 'click', this.handleDismiss);
+			_addListener(document, 'keydown', this.handleNavigate);
 
-
-			_this.handleDismiss = _this.dismiss.bind(_this);
-			_this.handleNavigate = _this.navigate.bind(_this);
-
-			_addListener(document, 'click', _this.handleDismiss);
-			_addListener(document, 'keydown', _this.handleNavigate);
-
-			_this.resize = _debounce(function() {
+			this.update = _debounce(function() {
 				_this.setDimensions();
-			}, 100);
+			}, 50);
 
-			_addListener(window, 'resize', _this.resize);
-
-			_addListener(window, 'scroll', _this.resize);
+			_addListener(window, 'resize', this.update);
+			_addListener(window, 'scroll', this.update);
 		},
 
-		navigate: function(event)
+		handleEvents: function(e)
 		{
-			event = event || window.event;
+			e = e || window.event;
 
-			var _this = this, keyCode = event.keyCode;
+			var target = e.target;
+
+			// Click on placeholder or selected text
+			if ( target === this.txt || target === this.placeElem  ) {
+				target = this.placeElem.parentNode;
+			}
+
+			// Open / close dropdown
+			if ( target === this.selected ) {
+				if ( !this.disabled ) {
+					this.toggleOptions();
+				}
+			}
+
+			// Select option
+			if ( _hasClass(target, 'selectr-option') ) {
+				this.selectOption(e);
+			}
+
+			// Remove tag button
+			if ( _hasClass(target, 'selectr-tag-remove') ) {
+				this.removeTags(e);
+			}
+
+			e.preventDefault();
+		},
+
+		navigate: function(e)
+		{
+			e = e || window.e;
+
+			var _this = this, keyCode = e.keyCode;
 
 			// Filter out the keys we don't want
 			if ( !_this.opened || (keyCode !== 13 && keyCode !== 38 && keyCode !== 40) ) return;
 
-			event.preventDefault();
+			e.preventDefault();
 
 			var list = this.searching ? this.searchList : this.list, dir;
 
 			switch (keyCode) {
-				case 13: // select option
-					_this.selectOption(event);
-					return;
+				case 13:
+					return void _this.selectOption(e);
+				case 38:
+					dir = "up", _this.activeIdx > 0 && _this.activeIdx--;
 					break;
-				case 38: // Scroll up options
-					dir = 'up';
-					if ( _this.activeIdx > 0 ) {
-						_this.activeIdx--;
-					}
-					break;
-				case 40: // scroll down options
-					dir = 'down';
-					if ( _this.activeIdx < list.length - 1 ) {
-						_this.activeIdx++;
-					};
-					break;
+				case 40:
+					dir = "down", _this.activeIdx < list.length - 1 && _this.activeIdx++
 			}
 
 			var nextElem = list[_this.activeIdx];
 			var nextRect = nextElem.getBoundingClientRect();
+			var optsTop = _this.optsOptions.scrollTop;
+			var scrollY = window.scrollY || window.pageYOffset;
+			var offset = _this.optsRect.top + scrollY;
 
 			if ( dir === 'up' ) {
-				var currentOffset = _this.optsRect.top;
-				var nextTop = nextRect.top + _this.scrollY;
-				var nextOffset = _this.optsOptions.scrollTop + (nextTop - currentOffset);
+				var currentOffset = offset;
+				var nextTop = nextRect.top + scrollY;
+				var nextOffset = optsTop + (nextTop - currentOffset);
 
 				if (_this.activeIdx === 0) {
 					_this.optsOptions.scrollTop = 0;
@@ -454,10 +470,9 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					_this.optsOptions.scrollTop = nextOffset;
 				}
 			} else {
-				var currentOffset = _this.optsRect.top +
-					_this.optsOptions.offsetHeight;
-				var nextBottom = nextRect.top + _this.scrollY + nextElem.offsetHeight;
-				var nextOffset = _this.optsOptions.scrollTop + nextBottom - currentOffset;
+				var currentOffset = offset + _this.optsRect.height;
+				var nextBottom = nextRect.top + scrollY + nextRect.height;
+				var nextOffset = optsTop + nextBottom - currentOffset;
 
 				if (_this.activeIdx === 0) {
 					_this.optsOptions.scrollTop = 0;
@@ -466,23 +481,16 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				}
 			}
 
-
-			// Set the class for highlighting
-			forEach(list, function(i, opt) {
-				if ( i === _this.activeIdx ) {
-					_addClass(opt, 'active');
-				} else {
-					_removeClass(opt, 'active');
-				}
-			});
+			_removeClass(_this.optsOptions.getElementsByClassName('active')[0], 'active');
+			_addClass(list[_this.activeIdx], 'active');
 		},
 
-		search: function(event)
+		search: function(e)
 		{
 			var _this = this;
 			var value = _this.input.value;
 			var len = value.length;
-			var navigating = event.keyCode === 38 || event.keyCode === 40;
+			var navigating = e.keyCode === 38 || e.keyCode === 40;
 
 			if ( ( len < this.options.minChars && len >= this.lastLen ) || navigating ) return;
 
@@ -533,15 +541,13 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			this.lastLen = this.input.value.length;
 		},
 
-		selectOption: function(event)
+		selectOption: function(e)
 		{
-			event = event || window.event;
-
 			var _this = this;
-			var selected = event.target;
+			var selected = e.target;
 			var list = this.searching ? this.searchList : this.list;
 
-			if ( event.type === 'keydown' ) {
+			if ( e.type === 'keydown' ) {
 				selected = list[_this.activeIdx];
 			}
 
@@ -811,21 +817,14 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 		},
 
-		removeTags: function(event)
+		removeTags: function(e)
 		{
 			if ( this.disabled ) return;
 
-			event = event || window.event;
+			e.preventDefault();
+			e.stopPropagation();
 
-			var target = event.target;
-			var nodeName = target.nodeName;
-
-			if ( nodeName !== 'BUTTON' ) return;
-
-			event.preventDefault();
-			event.stopPropagation();
-
-			this.removeTag(target.parentNode);
+			this.removeTag(e.target.parentNode);
 		},
 
 		removeTag: function(tag)
@@ -858,8 +857,6 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		toggleOptions: function()
 		{
 			var _this = this, open = this.container.classList.contains('open');
-
-			if ( this.disabled ) return;
 
 			if ( open ) {
 				this.close()
@@ -1042,15 +1039,12 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				w += 'px';
 			}
 
-			this.container.style.cssText += 'width: '+w+'; ';
-
-			this.scrollX = window.scrollX || window.pageXOffset;
-			this.scrollY = window.scrollY || window.pageYOffset;
-
 			if ( this.opened ) {
 				this.elemRect = this.elem.getBoundingClientRect();
 				var bottom = this.elemRect.top + this.elemRect.height + 230;
 				var wh = window.innerHeight;
+
+				this.close();
 
 				if ( bottom > wh ) {
 					_addClass(this.container, 'inverted');
@@ -1058,6 +1052,8 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					_removeClass(this.container, 'inverted');
 				}
 			}
+
+			this.container.style.cssText += 'width: '+w+'; ';
 		},
 
 		emit: function(event)
