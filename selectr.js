@@ -1,5 +1,5 @@
 /*!
- * Selectr 1.0.3
+ * Selectr 1.0.4
  * http://mobiuswebdesign.co.uk/plugins/selectr
  *
  * Released under the MIT license
@@ -117,7 +117,8 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 		this.options = extend(defaults, opts);
 
-		this.hasTemplate = this.options.hasOwnProperty('render') && typeof this.options.render === 'function';
+		this.customOption = this.options.hasOwnProperty('renderOption') && typeof this.options.renderOption === 'function';
+		this.customSelected = this.options.hasOwnProperty('renderSelection') && typeof this.options.renderSelection === 'function';
 
 		this.initialise();
 	}
@@ -335,7 +336,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		{
 			if ( option === this.emptyOpt || option.nodeName !== 'OPTION' || !option.value ) return;
 
-			var content = this.hasTemplate ? this.options.render(option) : option.textContent.trim();
+			var content = this.customOption ? this.options.renderOption(option) : option.textContent.trim();
 			var opt = _newElement('li', { class: 'selectr-option', html: content });
 
 			if ( option.hasAttribute('selected') ) {
@@ -521,7 +522,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 					_this.searchList.push(opt);
 
-					if ( _this.hasTemplate ) {
+					if ( _this.customOption ) {
 						_addClass(opt, 'match');
 					} else {
 						let result = new RegExp(val2, 'i').exec(val);
@@ -611,7 +612,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					let old = _this.optsOptions.getElementsByClassName('selected')[0];
 					if ( old ) _removeClass(old, 'selected');
 
-					_this.txt.innerHTML = _this.hasTemplate ? _this.options.render(option) : option.textContent;
+					_this.txt.innerHTML = _this.customSelected ? _this.options.renderSelection(option) : option.textContent;
 
 					option.selected = true;
 					_addClass(selected, 'selected');
@@ -792,7 +793,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			if ( selectItem ) {
 				content = this.options.ajax.formatSelected(selectItem) || option.getAttribute('data-text') || option.textContent;
 			} else {
-				content = this.hasTemplate ? this.options.render(option) : option.textContent
+				content = this.customSelected ? this.options.renderSelection(option) : option.textContent
 			}
 
 			let tag = _newElement('li', { class: 'selectr-tag', html: content });
@@ -884,7 +885,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			var _this = this;
 			forEach(this.list, function(i, elem) {
 				let option = _this.opts[i];
-				elem.innerHTML = _this.hasTemplate ? _this.options.render(option) : option.textContent;
+				elem.innerHTML = _this.customOption ? _this.options.renderOption(option) : option.textContent;
 				_removeClass(elem, 'match');
 				_removeClass(elem, 'excluded');
 			});
@@ -970,7 +971,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					_this.createTag(_this.opts[index]);
 				}
 			} else {
-				_this.txt.innerHTML = _this.hasTemplate ? _this.options.render(_this.opts[index]) : _this.opts[index].textContent;
+				_this.txt.innerHTML = _this.customOption ? _this.options.renderOption(_this.opts[index]) : _this.opts[index].textContent;
 
 				let old = _this.optsOptions.getElementsByClassName('selected')[0];
 				if ( old ) {
@@ -1016,7 +1017,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					_this.removeTag(selectedTag);
 				}
 			} else {
-				this.txt.innerHTML = this.hasTemplate ? this.options.render(option) : option.textContent;
+				this.txt.innerHTML = this.customOption ? this.options.renderOption(option) : option.textContent;
 				if ( this.elem.selectedIndex !== null ) {
 					_removeClass(this.list[this.elem.selectedIndex], 'selected');
 				}
