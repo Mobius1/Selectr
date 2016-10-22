@@ -1,6 +1,6 @@
 {
   "name": "mobius1-selectr",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A lightweight dependency-free javascript select box replacement.",
   "main": "selectr.min.js",
   "scripts": {
