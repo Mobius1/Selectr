@@ -1,5 +1,5 @@
 /*!
- * Selectr 1.0.4
+ * Selectr 1.0.5
  * http://mobiuswebdesign.co.uk/plugins/selectr
  *
  * Released under the MIT license
@@ -96,6 +96,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			selectedValues: [],
 			containerClass: '',
 			maxSelections: null,
+			pagination: 0,
 		};
 
 		this.elem = elem;
@@ -123,7 +124,6 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		this.initialise();
 	}
 
-
 	// Plugin prototype
 	Plugin.prototype = {
 
@@ -146,18 +146,20 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			if ( this.options.data ) {
 				var docFrag = document.createDocumentFragment();
-				_forEach(this.options.data, function(idx, itm) {
+				this.pageIndex = this.options.pagination;
+				var data = this.options.pagination ? this.options.data.slice(0, this.options.pagination) : this.options.data;
+				_forEach(data, function(idx, itm) {
 					let opt = _newElement('option', { value: itm.value });
 					opt.textContent = itm.text;
 					docFrag.appendChild(opt);
 				});
 				this.elem.appendChild(docFrag);
-			}
-
-			if ( _this.options.ajax && typeof _this.options.ajax === 'object' ) {
-				_this.setAjaxUrl();
 			} else {
-				this.setSelections();
+				if ( _this.options.ajax && typeof _this.options.ajax === 'object' ) {
+					_this.setAjaxUrl();
+				} else {
+					this.setSelections();
+				}
 			}
 
 			this.build();
@@ -181,19 +183,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			}
 
 			if ( !this.elem.multiple ) {
-				if ( this.options.emptyOption ) {
-					this.emptyOpt = _newElement('option', { value: '', selected: true });
-
-					if ( this.hasOptGroups ) {
-						this.elem.insertBefore(this.emptyOpt, this.elem.options[0].parentNode);
-					} else {
-						this.elem.insertBefore(this.emptyOpt, this.elem.options[0]);
-					}
-				}
 				if ( this.options.selectedIndex !== null ) {
-					if ( this.options.emptyOption ) {
-						this.options.selectedIndex++;
-					}
 					this.elem.value = this.elem.options[this.options.selectedIndex].value;
 				} else if ( this.options.selectedValue !== null ) {
 					this.elem.value = this.options.selectedValue;
@@ -287,6 +277,8 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					});
 				} else {
 					forEach(this.elem.options, function(i, option) {
+						if ( _this.options.pagination && i >= _this.options.pagination ) return;
+
 						_this.buildOption(i, option);
 					});
 				}
@@ -314,11 +306,17 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			this.placeElem = _newElement('div', { class: 'selectr-placeholder', html:  placeholder});
 			_append(this.selected, this.placeElem);
 
-			if ( (!this.elem.multiple && !!this.elem.value.length) || (this.elem.multiple && !!this.txt.children.length) ) {
+			if ( (!this.elem.multiple && this.elem.value.length) || (this.elem.multiple && this.txt.children.length) ) {
 				_addClass(this.container, 'has-selected');
-				if ( !this.elem.multiple && this.emptyOpt ) {
-					this.emptyOpt.selected = false;
-				}
+			}
+
+			if ( this.options.emptyOption && !this.elem.multiple && !this.selectedVal ) {
+				this.emptyOpt = true;
+				this.txt.innerHTML = null;
+				this.elem.value = '';
+				this.elem.options[0].selected = false;
+				_removeClass(this.list[0], 'selected');
+				_removeClass(this.container, 'has-selected');
 			}
 
 			// Append the new container
@@ -332,9 +330,9 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			this.attachEventListeners();
 		},
 
-		buildOption: function(index, option)
+		buildOption: function(index, option, frag)
 		{
-			if ( option === this.emptyOpt || option.nodeName !== 'OPTION' || !option.value ) return;
+			if ( option.nodeName !== 'OPTION' || !option.value ) return;
 
 			var content = this.customOption ? this.options.renderOption(option) : option.textContent.trim();
 			var opt = _newElement('li', { class: 'selectr-option', html: content });
@@ -343,7 +341,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				option.selected = true;
 			}
 
-			_append(this.optsFrag, opt);
+			_append(frag ? frag : this.optsFrag, opt);
 
 			if ( option.selected ) {
 
@@ -351,12 +349,11 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 				if ( this.elem.multiple ) {
 					this.createTag(option);
+					this.selectedVals.push(option.value);
 				} else {
 					this.txt.innerHTML = content;
 					this.selectedIndex = index;
 				}
-
-				this.selectedVals.push(option.value);
 			}
 
 			if ( option.disabled )  {
@@ -373,6 +370,8 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		{
 			var _this = this;
 
+			this.requiresPagination = this.options.data && this.options.data.length > this.options.pagination;
+
 			this.handleClickEvents = this.handleEvents.bind(this);
 			this.handleDismiss = this.dismiss.bind(this);
 			this.handleNavigate = this.navigate.bind(this);
@@ -383,6 +382,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			// Prevent text selection
 			_addListener(this.selected, 'mousedown', function(e){ e.preventDefault(); });
 			_addListener(this.optsOptions, 'mousedown', function(e){ e.preventDefault(); });
+
 
 			if ( this.options.searchable ) {
 				_addListener(this.input, 'keyup', this.search.bind(this));
@@ -398,6 +398,14 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			_addListener(window, 'resize', this.update);
 			_addListener(window, 'scroll', this.update);
+
+			if ( this.requiresPagination ) {
+				this.paginateItems = _debounce(function() {
+					_this.paginate();
+				}, 50);
+
+				_addListener(this.optsOptions, 'scroll', this.paginateItems);
+			}
 		},
 
 		handleEvents: function(e)
@@ -413,9 +421,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			// Open / close dropdown
 			if ( target === this.selected ) {
-				if ( !this.disabled ) {
-					this.toggleOptions();
-				}
+				this.toggleOptions();
 			}
 
 			// Select option
@@ -431,22 +437,22 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			e.preventDefault();
 		},
 
-		navigate: function(e)
+		navigate: function(event)
 		{
-			e = e || window.e;
+			event = event || window.event;
 
-			var _this = this, keyCode = e.keyCode;
+			var _this = this, keyCode = event.keyCode, keyCodes = [13, 38, 40];
 
 			// Filter out the keys we don't want
-			if ( !_this.opened || (keyCode !== 13 && keyCode !== 38 && keyCode !== 40) ) return;
+			if ( !_this.opened || keyCodes.indexOf(keyCode) < 0 ) return;
 
-			e.preventDefault();
+			event.preventDefault();
 
 			var list = this.searching ? this.searchList : this.list, dir;
 
 			switch (keyCode) {
 				case 13:
-					return void _this.selectOption(e);
+					return void _this.selectOption(event);
 				case 38:
 					dir = "up", _this.activeIdx > 0 && _this.activeIdx--;
 					break;
@@ -480,18 +486,53 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				} else if (nextBottom > currentOffset) {
 					_this.optsOptions.scrollTop = nextOffset;
 				}
+
+				console.log(_this.activeIdx);
+
+				if ( _this.requiresPagination ) {
+					_this.paginate();
+				}
 			}
 
 			_removeClass(_this.optsOptions.getElementsByClassName('active')[0], 'active');
 			_addClass(list[_this.activeIdx], 'active');
 		},
 
-		search: function(e)
+		paginate: function()
+		{
+			let _this = this;
+			let opts = this.optsOptions;
+			let scrollTop = opts.scrollTop;
+			let scrollHeight = opts.scrollHeight;
+			let offsetHeight = opts.offsetHeight;
+			let atBottom = scrollTop >= (scrollHeight - offsetHeight);
+
+			if ( atBottom && _this.pageIndex < _this.options.data.length ) {
+				var selectFrag = document.createDocumentFragment();
+				var optsFrag = document.createDocumentFragment();
+				var data = _this.options.data.slice(_this.pageIndex, _this.options.pagination + _this.pageIndex);
+
+				_forEach(data, function(i, item) {
+					let option = _newElement('option', { value: item.value, text: item.text });
+					selectFrag.appendChild(option);
+					_this.buildOption(i, option, optsFrag);
+				});
+
+				_this.elem.appendChild(selectFrag);
+				opts.appendChild(optsFrag);
+
+				_this.pageIndex += _this.options.pagination;
+
+				_this.emit('selectr.paginate');
+			}
+		},
+
+		search: function(event)
 		{
 			var _this = this;
 			var value = _this.input.value;
 			var len = value.length;
-			var navigating = e.keyCode === 38 || e.keyCode === 40;
+			var navigating = event.keyCode === 38 || event.keyCode === 40;
 
 			if ( ( len < this.options.minChars && len >= this.lastLen ) || navigating ) return;
 
@@ -545,27 +586,26 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		selectOption: function(e)
 		{
 			var _this = this;
-			var selected = e.target;
+			var opt = e.target;
 			var list = this.searching ? this.searchList : this.list;
 
 			if ( e.type === 'keydown' ) {
-				selected = list[_this.activeIdx];
+				opt = list[_this.activeIdx];
 			}
 
-			if ( selected.nodeName !== 'LI' || selected.classList.contains('disabled') ) return;
+			if ( opt.nodeName !== 'LI' || opt.classList.contains('disabled') ) return;
 
 			if ( _this.ajaxOpts ) {
-				_this.selectRemoteOption(selected);
+				_this.selectRemoteOption(opt);
 				return;
 			}
 
-			var index = _this.list.indexOf(selected);
+			var index = _this.list.indexOf(opt);
 			var option = _this.opts[index];
 			var hasValue = false;
 
-
 			if ( _this.elem.multiple ) {
-				if ( selected.classList.contains('selected') ) {
+				if ( opt.classList.contains('selected') ) {
 					var _selectedTag;
 					forEach(_this.tags, function(i, tag) {
 						if ( tag.getAttribute('data-value') === option.value ) {
@@ -587,7 +627,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					_this.createTag(option);
 
 					option.selected = true;
-					_addClass(selected, 'selected');
+					_addClass(opt, 'selected');
 					_this.emit("selectr.select");
 
 					_this.input.value = '';
@@ -598,16 +638,17 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				}
 			} else {
 				// Deselect
-				if ( _this.selectedIndex === index ) {
+				if ( _this.selectedIndex === index && !this.emptyOpt ) {
 					_this.txt.innerHTML = '';
 
 					option.selected = false;
-					_removeClass(selected, 'selected');
+					_removeClass(opt, 'selected');
 					_this.selectedVal = null;
 					_this.selectedIndex = null;
 					_this.elem.value = null;
 					_this.emit("selectr.deselect");
 				} else {
+					this.emptyOpt = false;
 
 					let old = _this.optsOptions.getElementsByClassName('selected')[0];
 					if ( old ) _removeClass(old, 'selected');
@@ -615,10 +656,12 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					_this.txt.innerHTML = _this.customSelected ? _this.options.renderSelection(option) : option.textContent;
 
 					option.selected = true;
-					_addClass(selected, 'selected');
+					_addClass(opt, 'selected');
 					_this.selectedVal = option.value;
 					_this.selectedIndex = index;
 					_this.emit("selectr.select");
+
+					_this.activeIdx = index;
 
 					hasValue = true;
 				}
@@ -859,6 +902,8 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		{
 			var _this = this, open = this.container.classList.contains('open');
 
+			if ( this.disabled ) return;
+
 			if ( open ) {
 				this.close()
 			} else {
@@ -964,20 +1009,21 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		{
 			var _this = this, index;
 
-			// User has passed an array of values
-			if ( Array.isArray(value) && _this.elem.multiple ) {
-				_forEach(value, function(i,val) {
-					val = val.toString();
-					index = [].slice.call(_this.values).indexOf(val);
-					if ( index > -1 && !_this.hasSelectedValue(val) ) {
-						_this.createTag(_this.opts[index]);
-						_this.updateValues(index, val, true);
-					}
-				});
+			if ( Array.isArray(value) ) {
+				if ( _this.elem.multiple ) {
+					_forEach(value, function(i,val) {
+						val = val.toString();
+						index = [].slice.call(_this.values).indexOf(val);
+						if ( index > -1 && !_this.hasSelectedValue(val) ) {
+							_this.createTag(_this.opts[index]);
+							_this.updateValues(index, val, true);
+						}
+					});
+				}
+
 				return;
 			}
 
-			// User has passed a string / integer
 			value = value.toString();
 			index = [].slice.call(_this.values).indexOf(value);
 
@@ -1117,10 +1163,6 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			p.removeChild(_this.container);
 
 			_removeClass(_this.elem, 'hidden-input');
-
-			if ( !_this.elem.multiple && _this.options.emptyOption ) {
-				_this.elem.removeChild(_this.elem.options[0]);
-			}
 
 			_this.container = null;
 			_this.selected = null;
