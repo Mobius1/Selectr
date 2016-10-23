@@ -967,6 +967,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			// User has passed an array of values
 			if ( Array.isArray(value) && _this.elem.multiple ) {
 				_forEach(value, function(i,val) {
+					val = val.toString();
 					index = [].slice.call(_this.values).indexOf(val);
 					if ( index > -1 && !_this.hasSelectedValue(val) ) {
 						_this.createTag(_this.opts[index]);
