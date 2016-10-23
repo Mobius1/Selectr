@@ -353,6 +353,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				} else {
 					this.txt.innerHTML = content;
 					this.selectedIndex = index;
+					this.selectedVal = option.value;
 				}
 			}
 
