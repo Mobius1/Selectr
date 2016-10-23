@@ -16,6 +16,14 @@ Selectr is so feature-packed that it needs it's own documentation site so why no
 
 ### Changelog
 
+
+### v1.0.5
+* Pagination option added for large datasets when using options.data
+* Fixed bug that caused a problem with deselecting programmatically set value (needed to be clicked twice to deselect)
+* Various bug fixes
+
+
+
 ### v1.0.4
 
 * `render` option deprecated and replaced with `renderOption` (see [docs](https://mobius1.github.io/Selectr/docs/options/renderOption.html))
