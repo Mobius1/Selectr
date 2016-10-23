@@ -962,13 +962,29 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 		setValue: function(value)
 		{
-			var _this = this, index = [].slice.call(_this.values).indexOf(value);
+			var _this = this, index;
+
+			// User has passed an array of values
+			if ( Array.isArray(value) && _this.elem.multiple ) {
+				_forEach(value, function(i,val) {
+					index = [].slice.call(_this.values).indexOf(val);
+					if ( index > -1 && !_this.hasSelectedValue(val) ) {
+						_this.createTag(_this.opts[index]);
+						_this.updateValues(index, val, true);
+					}
+				});
+				return;
+			}
+
+			// User has passed a string / integer
+			index = [].slice.call(_this.values).indexOf(value);
 
 			if ( index < 0 ) return;
 
 			if ( _this.elem.multiple ) {
-				if ( _this.selectedVals.indexOf(value) < 0 ) {
+				if ( !_this.hasSelectedValue(value) ) {
 					_this.createTag(_this.opts[index]);
+					_this.updateValues(index, value, true);
 				}
 			} else {
 				_this.txt.innerHTML = _this.customOption ? _this.options.renderOption(_this.opts[index]) : _this.opts[index].textContent;
@@ -977,14 +993,27 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				if ( old ) {
 					_removeClass(old, 'selected');
 				}
+
+				_this.updateValues(index, value);
+			}
+		},
+
+		updateValues: function(i, v, m)
+		{
+			if ( m ) {
+				this.selectedVals.push(v);
+			} else {
+				this.selectedVal = v;
 			}
 
-			_this.selectedVals.push(value);
-			_addClass(_this.list[index], 'selected');
-			_addClass(_this.container, 'has-selected');
-			_this.opts[index].selected = true;
+			_addClass(this.list[i], 'selected');
+			_addClass(this.container, 'has-selected');
+			this.opts[i].selected = true;
+		},
 
-			_this.emit('selectr.select');
+		hasSelectedValue: function(value)
+		{
+			return this.selectedVals.indexOf(value) > -1;
 		},
 
 		getValue: function()
