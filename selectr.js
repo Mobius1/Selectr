@@ -979,6 +979,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			// User has passed a string / integer
 			index = [].slice.call(_this.values).indexOf(value);
+			value = value.toString();
 
 			if ( index < 0 ) return;
 
