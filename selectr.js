@@ -303,7 +303,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			// Set the placeholder
 			var placeholder = this.options.placeholder || this.elem.getAttribute('placeholder') || 'Choose...';
-			this.placeElem = _newElement('div', { class: 'selectr-placeholder', html:  placeholder});
+			this.placeElem = _newElement('div', { class: 'selectr-placeholder', html:  placeholder });
 			_append(this.selected, this.placeElem);
 
 			if ( (!this.elem.multiple && this.elem.value.length) || (this.elem.multiple && this.txt.children.length) ) {
@@ -311,12 +311,14 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			}
 
 			if ( this.options.emptyOption && !this.elem.multiple ) {
-				this.emptyOpt = true;
-				this.txt.innerHTML = null;
-				this.elem.value = '';
-				this.elem.options[0].selected = false;
-				_removeClass(this.list[0], 'selected');
-				_removeClass(this.container, 'has-selected');
+				if ( this.selectedVal === this.elem.options[0].value  && this.options.selectedValue != this.elem.options[0].value && this.options.selectedIndex != 0 ) {
+					this.emptyOpt = true;
+					this.txt.innerHTML = null;
+					this.elem.value = '';
+					this.elem.options[0].selected = false;
+					_removeClass(this.list[0], 'selected');
+					_removeClass(this.container, 'has-selected');
+				}
 			}
 
 			// Append the new container
