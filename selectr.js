@@ -310,7 +310,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				_addClass(this.container, 'has-selected');
 			}
 
-			if ( this.options.emptyOption && !this.elem.multiple && !this.selectedVal ) {
+			if ( this.options.emptyOption && !this.elem.multiple ) {
 				this.emptyOpt = true;
 				this.txt.innerHTML = null;
 				this.elem.value = '';
@@ -1072,41 +1072,6 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			}
 			return this.selectedVal;
 		},
-
-		removeValue: function(value)
-		{
-			if ( !this.tags.length ) return;
-
-			var _this = this, index = [].slice.call(this.values).indexOf(value);
-
-			if ( index < 0 ) return;
-
-			var selected = this.list[index], option = this.opts[index];
-
-			if ( this.elem.multiple ) {
-				var selectedTag;
-				forEach(this.tags, function(i, tag) {
-					if ( tag.getAttribute('data-value') === value ) {
-						selectedTag = tag;
-					}
-				});
-
-				if ( selectedTag ) {
-					_this.removeTag(selectedTag);
-				}
-			} else {
-				this.txt.innerHTML = this.customOption ? this.options.renderOption(option) : option.textContent;
-				if ( this.elem.selectedIndex !== null ) {
-					_removeClass(this.list[this.elem.selectedIndex], 'selected');
-				}
-			}
-
-			option.selected = false;
-			_removeClass(selected, 'selected');
-
-			this.emit('selectr.select');
-		},
-
 
 		setDimensions: function()
 		{
