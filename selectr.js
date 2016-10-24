@@ -310,7 +310,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				_addClass(this.container, 'has-selected');
 			}
 
-			if ( this.options.emptyOption && !this.elem.multiple ) {
+			if ( !this.ajaxOpts && this.options.emptyOption && !this.elem.multiple ) {
 				if ( this.selectedVal === this.elem.options[0].value  && this.options.selectedValue != this.elem.options[0].value && this.options.selectedIndex != 0 ) {
 					this.emptyOpt = true;
 					this.txt.innerHTML = null;
