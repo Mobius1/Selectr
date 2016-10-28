@@ -1081,6 +1081,8 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			if ( this.options.width === 'auto' ) {
 				w = '100%';
+			} else if ( this.options.width.includes('%') ) {
+				w = this.options.width;
 			} else {
 				w += 'px';
 			}
