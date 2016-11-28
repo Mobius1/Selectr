@@ -1,5 +1,5 @@
 /*!
- * Selectr 1.0.5
+ * Selectr 1.0.6
  * http://mobiuswebdesign.co.uk/plugins/selectr
  *
  * Released under the MIT license
@@ -311,7 +311,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			}
 
 			if ( !this.ajaxOpts && this.options.emptyOption && !this.elem.multiple ) {
-				if ( this.selectedVal === this.elem.options[0].value  && this.options.selectedValue != this.elem.options[0].value && this.options.selectedIndex != 0 ) {
+				if ( !this.elem.options[0].hasAttribute('selected') && this.selectedVal === this.elem.options[0].value  && this.options.selectedValue != this.elem.options[0].value && this.options.selectedIndex != 0 ) {
 					this.emptyOpt = true;
 					this.txt.innerHTML = null;
 					this.elem.value = '';
