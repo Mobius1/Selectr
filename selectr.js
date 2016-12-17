@@ -1,5 +1,5 @@
 /*!
- * Selectr 1.0.6
+ * Selectr 1.0.7
  * http://mobiuswebdesign.co.uk/plugins/selectr
  *
  * Released under the MIT license
@@ -44,7 +44,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		return d
 	};
 
-	var forEach = function(a, b, c) {
+	var _each = function(a, b, c) {
 		if ("[object Object]" === Object.prototype.toString.call(a)) {
 			var d;
 			for (d in a) Object.prototype.hasOwnProperty.call(a, d) && b.call(c, d, a[d], a)
@@ -148,7 +148,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				var docFrag = document.createDocumentFragment();
 				this.pageIndex = this.options.pagination;
 				var data = this.options.pagination ? this.options.data.slice(0, this.options.pagination) : this.options.data;
-				_forEach(data, function(idx, itm) {
+				_each(data, function(idx, itm) {
 					let opt = _newElement('option', { value: itm.value });
 					opt.textContent = itm.text;
 					docFrag.appendChild(opt);
@@ -192,7 +192,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			} else {
 				this.options.emptyOption = false;
 				if ( this.options.selectedIndexes.length || this.options.selectedValues.length ) {
-					forEach(this.elem.options, function(i, option) {
+					_each(this.elem.options, function(i, option) {
 						option.selected = false;
 						if ( _this.options.selectedIndexes.indexOf(i) > -1 || _this.options.selectedValues.indexOf(option.value) > -1 ) {
 							option.selected = true;
@@ -213,7 +213,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			if ( ajax.queryParam ) {
 				_this.ajax_url += '?';
 				if ( ajax.params ) {
-					forEach(ajax.params, function(p, v) {
+					_each(ajax.params, function(p, v) {
 						_this.ajax_url += p + '=' + v + '&';
 					});
 				}
@@ -263,20 +263,20 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				// Check for optgroups
 				if ( this.hasOptGroups ) {
 					_addClass(this.optsOptions, 'optgroups');
-					forEach(this.elem.children, function(idx, opt) {
+					_each(this.elem.children, function(idx, opt) {
 						if ( opt.nodeName === 'OPTGROUP' ) {
 							let group = _newElement('li', { class: 'selectr-optgroup', html: opt.label });
 							_append(_this.optsFrag, group);
 
 							if ( opt.children ) {
-								forEach(opt.children, function(i, option) {
+								_each(opt.children, function(i, option) {
 									_this.buildOption(i, option);
 								});
 							}
 						}
 					});
 				} else {
-					forEach(this.elem.options, function(i, option) {
+					_each(this.elem.options, function(i, option) {
 						if ( _this.options.pagination && i >= _this.options.pagination ) return;
 
 						_this.buildOption(i, option);
@@ -515,7 +515,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				var optsFrag = document.createDocumentFragment();
 				var data = _this.options.data.slice(_this.pageIndex, _this.options.pagination + _this.pageIndex);
 
-				_forEach(data, function(i, item) {
+				_each(data, function(i, item) {
 					let option = _newElement('option', { value: item.value, text: item.text });
 					selectFrag.appendChild(option);
 					_this.buildOption(i, option, optsFrag);
@@ -555,7 +555,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			_this.searching = true;
 			_this.searchList = [];
 
-			forEach(_this.opts, function(i, option) {
+			_each(_this.opts, function(i, option) {
 				let opt = _this.list[i];
 				let val = option.textContent.trim();
 				let val2 = value.trim();
@@ -610,7 +610,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			if ( _this.elem.multiple ) {
 				if ( opt.classList.contains('selected') ) {
 					var _selectedTag;
-					forEach(_this.tags, function(i, tag) {
+					_each(_this.tags, function(i, tag) {
 						if ( tag.getAttribute('data-value') === option.value ) {
 							_selectedTag = tag;
 						}
@@ -726,7 +726,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				that.searchList = [];
 				that.opts = [];
 
-				forEach(parsedItems, function(i, item) {
+				_each(parsedItems, function(i, item) {
 					let result = ajax.formatResults(item) || item.text;
 
 					// Create the item
@@ -765,7 +765,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			var _this = this, option, selectItem, selectIdx,
 				value = selected.getAttribute('data-value');
 
-			forEach(_this.remoteItems, function(idx, item) {
+			_each(_this.remoteItems, function(idx, item) {
 				if ( item.value == value ) {
 					selectItem = item;
 					selectIdx = idx;
@@ -776,7 +776,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			if ( this.elem.multiple ) {
 				if ( selected.classList.contains('selected') && _this.selectedVals.indexOf(value) > -1 ) {
 					var _selectedTag;
-					forEach(_this.tags, function(i, tag) {
+					_each(_this.tags, function(i, tag) {
 						if ( tag.getAttribute('data-value') === value ) {
 							_selectedTag = tag;
 						}
@@ -879,7 +879,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			var _this = this, value = tag.getAttribute('data-value');
 			var option, index;
 
-			forEach(this.opts, function(idx, opt) {
+			_each(this.opts, function(idx, opt) {
 				if ( opt.value == value ) {
 					index = idx;
 					option = _this.opts[index]
@@ -931,7 +931,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		reset: function()
 		{
 			var _this = this;
-			forEach(this.list, function(i, elem) {
+			_each(this.list, function(i, elem) {
 				let option = _this.opts[i];
 				elem.innerHTML = _this.customOption ? _this.options.renderOption(option) : option.textContent;
 				_removeClass(elem, 'match');
@@ -1014,7 +1014,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			if ( Array.isArray(value) ) {
 				if ( _this.elem.multiple ) {
-					_forEach(value, function(i,val) {
+					_each(value, function(i,val) {
 						val = val.toString();
 						index = [].slice.call(_this.values).indexOf(val);
 						if ( index > -1 && !_this.hasSelectedValue(val) ) {
