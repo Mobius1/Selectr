@@ -1,5 +1,5 @@
 /*!
- * Selectr 1.0.8
+ * Selectr 1.0.7
  * http://mobiuswebdesign.co.uk/plugins/selectr
  *
  * Released under the MIT license
@@ -149,7 +149,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				this.pageIndex = this.options.pagination;
 				var data = this.options.pagination ? this.options.data.slice(0, this.options.pagination) : this.options.data;
 				_each(data, function(idx, itm) {
-					var opt = _newElement('option', { value: itm.value });
+					let opt = _newElement('option', { value: itm.value });
 					opt.textContent = itm.text;
 					docFrag.appendChild(opt);
 				});
@@ -265,7 +265,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					_addClass(this.optsOptions, 'optgroups');
 					_each(this.elem.children, function(idx, opt) {
 						if ( opt.nodeName === 'OPTGROUP' ) {
-							var group = _newElement('li', { class: 'selectr-optgroup', html: opt.label });
+							let group = _newElement('li', { class: 'selectr-optgroup', html: opt.label });
 							_append(_this.optsFrag, group);
 
 							if ( opt.children ) {
@@ -503,12 +503,12 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 		paginate: function()
 		{
-			var _this = this;
-			var opts = this.optsOptions;
-			var scrollTop = opts.scrollTop;
-			var scrollHeight = opts.scrollHeight;
-			var offsetHeight = opts.offsetHeight;
-			var atBottom = scrollTop >= (scrollHeight - offsetHeight);
+			let _this = this;
+			let opts = this.optsOptions;
+			let scrollTop = opts.scrollTop;
+			let scrollHeight = opts.scrollHeight;
+			let offsetHeight = opts.offsetHeight;
+			let atBottom = scrollTop >= (scrollHeight - offsetHeight);
 
 			if ( atBottom && _this.pageIndex < _this.options.data.length ) {
 				var selectFrag = document.createDocumentFragment();
@@ -516,7 +516,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				var data = _this.options.data.slice(_this.pageIndex, _this.options.pagination + _this.pageIndex);
 
 				_each(data, function(i, item) {
-					var option = _newElement('option', { value: item.value, text: item.text });
+					let option = _newElement('option', { value: item.value, text: item.text });
 					selectFrag.appendChild(option);
 					_this.buildOption(i, option, optsFrag);
 				});
@@ -556,9 +556,9 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			_this.searchList = [];
 
 			_each(_this.opts, function(i, option) {
-				var opt = _this.list[i];
-				var val = option.textContent.trim();
-				var val2 = value.trim();
+				let opt = _this.list[i];
+				let val = option.textContent.trim();
+				let val2 = value.trim();
 				if ( !val.toLowerCase().includes(val2.toLowerCase()) ) {
 					_addClass(opt, 'excluded');
 					_removeClass(opt, 'match');
@@ -569,7 +569,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					if ( _this.customOption ) {
 						_addClass(opt, 'match');
 					} else {
-						var result = new RegExp(val2, 'i').exec(val);
+						let result = new RegExp(val2, 'i').exec(val);
 						opt.innerHTML = option.textContent.replace(result[0], '<span>'+result[0]+'</span>');
 					}
 					_removeClass(opt, 'excluded');
@@ -653,7 +653,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				} else {
 					this.emptyOpt = false;
 
-					var old = _this.optsOptions.getElementsByClassName('selected')[0];
+					let old = _this.optsOptions.getElementsByClassName('selected')[0];
 					if ( old ) _removeClass(old, 'selected');
 
 					_this.txt.innerHTML = _this.customSelected ? _this.options.renderSelection(option) : option.textContent;
@@ -727,10 +727,10 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				that.opts = [];
 
 				_each(parsedItems, function(i, item) {
-					var result = ajax.formatResults(item) || item.text;
+					let result = ajax.formatResults(item) || item.text;
 
 					// Create the item
-					var li = _newElement('li', {
+					let li = _newElement('li', {
 						class: 'selectr-option',
 						'data-value': item.value,
 						'data-text': item.text || '',
@@ -738,7 +738,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					});
 
 					// Create the option
-					var opt = _newElement('option', {
+					let opt = _newElement('option', {
 						value: item.value
 					});
 
@@ -806,7 +806,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					_this.emit("selectr.deselect");
 				} else {
 
-					var old = _this.optsOptions.getElementsByClassName('selected')[0];
+					let old = _this.optsOptions.getElementsByClassName('selected')[0];
 					if ( old ) _removeClass(old, 'selected');
 
 					_this.txt.innerHTML = this.options.ajax.formatSelected(selectItem) || option.getAttribute('data-text') || option.textContent;
@@ -842,8 +842,8 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 				content = this.customSelected ? this.options.renderSelection(option) : option.textContent
 			}
 
-			var tag = _newElement('li', { class: 'selectr-tag', html: content });
-			var btn = _newElement('button', { class: 'selectr-tag-remove', type: 'button' });
+			let tag = _newElement('li', { class: 'selectr-tag', html: content });
+			let btn = _newElement('button', { class: 'selectr-tag-remove', type: 'button' });
 
 			_append(tag, btn);
 			_append(docFrag, tag);
@@ -932,7 +932,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 		{
 			var _this = this;
 			_each(this.list, function(i, elem) {
-				var option = _this.opts[i];
+				let option = _this.opts[i];
 				elem.innerHTML = _this.customOption ? _this.options.renderOption(option) : option.textContent;
 				_removeClass(elem, 'match');
 				_removeClass(elem, 'excluded');
@@ -1040,7 +1040,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			} else {
 				_this.txt.innerHTML = _this.customOption ? _this.options.renderOption(_this.opts[index]) : _this.opts[index].textContent;
 
-				var old = _this.optsOptions.getElementsByClassName('selected')[0];
+				let old = _this.optsOptions.getElementsByClassName('selected')[0];
 				if ( old ) {
 					_removeClass(old, 'selected');
 				}
@@ -1081,7 +1081,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 
 			if ( this.options.width === 'auto' ) {
 				w = '100%';
-			} else if ( this.options.width.indexOf('%') > -1 ) {
+			} else if ( this.options.width.includes('%') ) {
 				w = this.options.width;
 			} else {
 				w += 'px';
