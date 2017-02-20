@@ -1,5 +1,5 @@
 /*!
- * Selectr 1.0.8
+ * Selectr 1.0.9
  * http://mobiuswebdesign.co.uk/plugins/selectr
  *
  * Released under the MIT license
@@ -357,7 +357,7 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 					this.createTag(option);
 					this.selectedVals.push(option.value);
 				} else {
-					this.txt.innerHTML = content;
+					this.txt.innerHTML = this.customSelected ? this.options.renderSelection(option) : option.textContent
 					this.selectedIndex = index;
 					this.selectedVal = option.value;
 				}
@@ -389,7 +389,6 @@ String.prototype.includes||(String.prototype.includes=function(a,b){"use strict"
 			// Prevent text selection
 			_addListener(this.selected, 'mousedown', function(e){ e.preventDefault(); });
 			_addListener(this.optsOptions, 'mousedown', function(e){ e.preventDefault(); });
-
 
 			if ( this.options.searchable ) {
 				_addListener(this.input, 'keyup', this.search.bind(this));
