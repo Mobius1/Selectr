@@ -12,7 +12,7 @@ Features:
 * Custom styling
 * Much more...
 
-Selectr is so feature-packed that it needs it's own documentation site so why not head over there now - [Demos & Documentation](http://mobius.ovh/docs/selectr)
+[Demos & Documentation](http://mobius.ovh/docs/selectr) (under-construction)
 
 ## NOTICE
 
