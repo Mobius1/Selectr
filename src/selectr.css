@@ -1,48 +1,25 @@
-.selectr-overlay {
-	position: fixed;
-	z-index: 9998;
-	top: 0;
-	left: 0;
-
-	display: none;
-
-	width: 100%;
-	height: 100%;
-}
-
-.selectr-overlay.active {
-	display: block;
-}
-
 .selectr-container {
 	position: relative;
 }
 
 .selectr-container .hidden-input {
 	position: absolute !important;
-
 	overflow: hidden !important;
 	clip: rect(0px, 0px, 0px, 0px) !important;
-
 	width: 1px !important;
 	height: 1px !important;
 	margin: -1px !important;
 	padding: 0 !important;
-
 	border: 0 none !important;
 }
 
 .selectr-selected {
 	position: relative;
-	z-index: 9999;
-
+	z-index: 1;
 	box-sizing: border-box;
 	width: 100%;
-	min-height: 36px;
 	padding: 7px 28px 7px 14px;
-
 	cursor: pointer;
-
 	border: 1px solid #999;
 	border-radius: 3px;
 	background-color: #fff;
@@ -52,25 +29,20 @@
 	position: absolute;
 	top: 50%;
 	right: 10px;
-
 	width: 0;
 	height: 0;
-
 	content: '';
 	-webkit-transform: rotate(0deg) translate3d(0px, -50%, 0px);
-	        transform: rotate(0deg) translate3d(0px, -50%, 0px);
-
-	border-width: 5px 5px 0;
+	transform: rotate(0deg) translate3d(0px, -50%, 0px);
+	border-width: 4px 4px 0;
 	border-style: solid;
 	border-color: #6c7a86 transparent transparent;
 }
 
-.selectr-text {
+.selectr-label {
 	display: none;
 	overflow: hidden;
-
 	width: 100%;
-
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
@@ -80,39 +52,42 @@
 }
 
 .selectr-tags {
-	margin: 0 0 -2px;
+	-webkit-box-align: center;
+			-ms-flex-align: center;
+					align-items: center;
+	-ms-flex-wrap: wrap;
+			flex-wrap: wrap;
+	-webkit-box-pack: start;
+			-ms-flex-pack: start;
+					justify-content: start;
+	margin: 0;
 	padding: 0;
-
 	white-space: normal;
 }
 
 .selectr-tag {
+	list-style: none;
 	position: relative;
-
-	display: inline-block;
-
-	min-height: 20px;
-	margin: 0 2px 2px 0;
+	padding: 2px 8px;
 	padding: 2px 25px 2px 8px;
-
 	cursor: default;
-
 	color: #fff;
 	border: medium none;
 	border-radius: 3px;
 	background: #acb7bf none repeat scroll 0 0;
 }
 
+.selectr-container.multiple.has-selected .selectr-selected {
+	padding: 5px 28px 3px 6px;
+}
+
 .selectr-options-container {
 	position: absolute;
 	z-index: 10000;
 	top: calc(100% - 1px);
-
 	display: none;
-
 	box-sizing: border-box;
 	width: 100%;
-
 	border-width: 0 1px 1px;
 	border-style: solid;
 	border-color: transparent #999 #999;
@@ -126,7 +101,6 @@
 
 .selectr-input-container {
 	position: relative;
-
 	display: none;
 }
 
@@ -135,24 +109,26 @@
 	position: absolute;
 	top: 50%;
 	right: 22px;
-
 	width: 20px;
 	height: 20px;
 	padding: 0;
-
 	cursor: pointer;
 	-webkit-transform: translate3d(0px, -50%, 0px);
-	        transform: translate3d(0px, -50%, 0px);
-
+	transform: translate3d(0px, -50%, 0px);
 	border: medium none;
 	background-color: transparent;
 }
 
-.selectr-clear {
+.selectr-clear,
+.selectr-selected .selectr-clear {
 	display: none;
 }
 
-.selectr-tag-remove {
+.has-selected .selectr-selected .selectr-clear {
+	display: block;
+}
+
+.selectr-selected .selectr-tag-remove {
 	right: 2px;
 }
 
@@ -161,37 +137,32 @@
 .selectr-tag-remove::before,
 .selectr-tag-remove::after {
 	position: absolute;
-	top: 6px;
+	top: 5px;
 	left: 9px;
-
 	width: 2px;
 	height: 10px;
-
 	content: ' ';
-
 	background-color: #6c7a86;
 }
 
 .selectr-tag-remove::before,
 .selectr-tag-remove::after {
 	top: 4px;
-
 	width: 3px;
 	height: 12px;
-
 	background-color: #fff;
 }
 
 .selectr-clear:before,
 .selectr-tag-remove::before {
 	-webkit-transform: rotate(45deg);
-	        transform: rotate(45deg);
+	transform: rotate(45deg);
 }
 
 .selectr-clear:after,
 .selectr-tag-remove::after {
 	-webkit-transform: rotate(-45deg);
-	        transform: rotate(-45deg);
+	transform: rotate(-45deg);
 }
 
 .selectr-input-container.active,
@@ -202,23 +173,19 @@
 .selectr-input {
 	top: 5px;
 	left: 5px;
-
 	box-sizing: border-box;
 	width: calc(100% - 30px);
 	margin: 10px 15px;
-	padding: 8px 30px 8px 16px;
-
+	padding: 7px 30px 7px 9px;
 	border: 1px solid #999;
 	border-radius: 3px;
 }
 
 .selectr-notice {
 	display: none;
-
 	box-sizing: border-box;
 	width: 100%;
 	padding: 8px 16px;
-
 	border-top: 1px solid #999;
 	border-radius: 0 0 3px 3px;
 	background-color: #fff;
@@ -235,10 +202,8 @@
 .selectr-options {
 	position: relative;
 	top: calc(100% + 2px);
-
 	display: none;
 	overflow: auto;
-
 	max-height: 200px;
 	margin: 0;
 	padding: 0;
@@ -250,16 +215,13 @@
 	display: block;
 }
 
-.selectr-options > li {
+.selectr-options li {
 	position: relative;
-
 	display: block;
-
 	padding: 5px 20px;
-
 	list-style: outside none none;
-
 	cursor: pointer;
+	font-weight: normal;
 }
 
 .selectr-options.optgroups > li.selectr-option {
@@ -268,12 +230,17 @@
 
 .selectr-optgroup {
 	font-weight: bold;
+	padding: 0;
+}
 
+.selectr-options li.selectr-optgroup--label {
+	font-weight: bold;
+	margin-top: 10px;
 	padding: 5px 15px;
 }
 
-.selectr-options > li > span {
-	color: #00a8ff;
+.selectr-options li.match span {
+	text-decoration: underline;
 }
 
 .selectr-option.selected {
@@ -291,16 +258,11 @@
 }
 
 .selectr-option.disabled {
-    opacity: 0.4;
+	opacity: 0.4;
 }
 
 .selectr-option.excluded {
 	display: none;
-}
-
-.selectr-option.match {
-	color: #fff !important;
-	background-color: #1ab394 !important;
 }
 
 .selectr-options > li > * {
@@ -314,7 +276,7 @@
 
 .selectr-container.open .selectr-selected::after {
 	-webkit-transform: rotate(180deg) translate3d(0px, 50%, 0px);
-	        transform: rotate(180deg) translate3d(0px, 50%, 0px);
+	transform: rotate(180deg) translate3d(0px, 50%, 0px);
 }
 
 .selectr-container.disabled {
@@ -326,26 +288,29 @@
 	display: none;
 }
 
-.has-selected .selectr-text {
+.has-selected .selectr-label {
 	display: block;
+}
+
+.has-selected .selectr-tags {
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
 }
 
 .selectr-input-container.loading::after {
 	position: absolute;
 	top: 50%;
 	right: 20px;
-
 	width: 20px;
 	height: 20px;
-
 	content: '';
 	-webkit-transform: translate3d(0px, -50%, 0px);
-	        transform: translate3d(0px, -50%, 0px);
+	transform: translate3d(0px, -50%, 0px);
 	-webkit-transform-origin: 50% 0 0;
-	        transform-origin: 50% 0 0;
+	transform-origin: 50% 0 0;
 	-webkit-animation: 500ms linear 0s normal forwards infinite running spin;
-	        animation: 500ms linear 0s normal forwards infinite running spin;
-
+	animation: 500ms linear 0s normal forwards infinite running spin;
 	border-width: 3px;
 	border-style: solid;
 	border-color: #aaa #ddd #ddd;
@@ -355,22 +320,21 @@
 @-webkit-keyframes spin {
 	0% {
 		-webkit-transform: rotate(0deg) translate3d(0px, -50%, 0px);
-		        transform: rotate(0deg) translate3d(0px, -50%, 0px);
+		transform: rotate(0deg) translate3d(0px, -50%, 0px);
 	}
 	100% {
 		-webkit-transform: rotate(360deg) translate3d(0px, -50%, 0px);
-		        transform: rotate(360deg) translate3d(0px, -50%, 0px);
+		transform: rotate(360deg) translate3d(0px, -50%, 0px);
 	}
 }
-
 @keyframes spin {
 	0% {
 		-webkit-transform: rotate(0deg) translate3d(0px, -50%, 0px);
-		        transform: rotate(0deg) translate3d(0px, -50%, 0px);
+		transform: rotate(0deg) translate3d(0px, -50%, 0px);
 	}
 	100% {
 		-webkit-transform: rotate(360deg) translate3d(0px, -50%, 0px);
-		        transform: rotate(360deg) translate3d(0px, -50%, 0px);
+		transform: rotate(360deg) translate3d(0px, -50%, 0px);
 	}
 }
 .selectr-container.open.inverted .selectr-selected {

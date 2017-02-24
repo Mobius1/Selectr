@@ -1,8 +1,8 @@
 {
   "name": "mobius1-selectr",
-  "version": "1.0.8",
+  "version": "2.0.0",
   "description": "A lightweight dependency-free javascript select box replacement.",
-  "main": "selectr.min.js",
+  "main": "dist/selectr.min.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
