@@ -1,5 +1,5 @@
 # Selectr
-A lightweight dependency-free select box replacement written in vanilla javascript. 2.8kb minified and gzipped.
+A lightweight dependency-free select box replacement written in vanilla javascript. Similar to Select2 and Chosen without the dependencies.
 
 Features:
 
