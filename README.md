@@ -5,9 +5,7 @@ Features:
 
 * Supports single and multiple select boxes
 * Supports optgroups
-* Tagging support
 * Searchable options
-* Ajax options
 * Custom events
 * Custom styling
 * Much more...
