@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.0.0
+ * Selectr 2.0.1
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -44,14 +44,14 @@
 			}
 			return d;
 		},
-		hasClass: function(e, c) {
-			return e.classList ? e.classList.contains(c) : !!e.className.match(new RegExp("(\\s|^)" + c + "(\\s|$)"));
+		hasClass: function(a, b) {
+			return a.classList ? a.classList.contains(b) : !!a.className && !!a.className.match(new RegExp("(\\s|^)" + b + "(\\s|$)"))
 		},
 		addClass: function(a, b) {
-			a.classList ? a.classList.add(b) : utils.hasClass(b) || (a.className = a.className.trim() + " " + b)
+			util.hasClass(a, b) || (a.classList ? a.classList.add(b) : a.className = a.className.trim() + " " + b)
 		},
 		removeClass: function(a, b) {
-			a.classList ? a.classList.remove(b) : utils.hasClass(b) && (a.className = a.className.replace(new RegExp("(^|\\b)" + b.split(" ").join("|") + "(\\b|$)", "gi"), " "))
+			util.hasClass(a, b) && (a.classList ? a.classList.remove(b) : a.className = a.className.replace(new RegExp("(^|\\s)" + b.split(" ").join("|") + "(\\s|$)", "gi"), " "))
 		},
 		closest: function(el, fn) {
 			return el && el !== document.body && ( fn(el) ? el : util.closest(el.parentNode, fn) );
@@ -854,10 +854,11 @@
 		if ( _.multiple ) {
 			if ( toObject) {
 				if ( _.selectedIndexes.length ) {
-					value = [];
+					value = {};
+					value.values = [];
 					util.each(_.selectedIndexes, function(i,index) {
 						var option = _.el.options[index];
-						value[i] =  {
+						value.values[i] = {
 							value: option.value,
 							text: option.textContent,
 						};
