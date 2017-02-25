@@ -12,6 +12,8 @@ Features:
 
 Supports most modern browsers including IE9 and above.
 
+[![Sauce Test Status](https://saucelabs.com/buildstatus/YOUR_SAUCE_USERNAME)](https://saucelabs.com/u/YOUR_SAUCE_USERNAME)
+
 [Demos & Documentation](http://mobius.ovh/docs/selectr)
 
 #Change Log
