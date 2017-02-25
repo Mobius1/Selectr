@@ -26,9 +26,9 @@
 		},
 		each: function(a, b, c) {
 			if ("[object Object]" === Object.prototype.toString.call(a))
-				for (var d in a) Object.prototype.hasOwnProperty.call(a, d) && b.call(c, d, a[d], a);
+				for (var d in a) {if ( Object.prototype.hasOwnProperty.call(a, d) ) { b.call(c, d, a[d], a); }}
 			else
-				for (var e = 0, f = a.length; e < f; e++) b.call(c, e, a[e], a)
+			for (var e = 0, f = a.length; e < f; e++) { b.call(c, e, a[e], a); }
 		},
 		createElement: function(a, b) {
 			var c = document,
@@ -39,19 +39,20 @@
 					if ("html" === e) d.innerHTML = b[e];
 					else if ("text" === e) {
 					var f = c.createTextNode(b[e]);
-					d.appendChild(f)
-				} else d.setAttribute(e, b[e])
+					d.appendChild(f);
+				} else d.setAttribute(e, b[e]);
 			}
 			return d;
 		},
 		hasClass: function(a, b) {
-			return a.classList ? a.classList.contains(b) : !!a.className && !!a.className.match(new RegExp("(\\s|^)" + b + "(\\s|$)"))
+			return a.classList ? a.classList.contains(b) : !!a.className && !!a.className.match(new RegExp("(\\s|^)" + b + "(\\s|$)"));
 		},
 		addClass: function(a, b) {
-			util.hasClass(a, b) || (a.classList ? a.classList.add(b) : a.className = a.className.trim() + " " + b)
+			if (!util.hasClass(a, b)) {
+				if (a.classList) { a.classList.add(b); } else { a.className = a.className.trim() + " " + b; } }
 		},
 		removeClass: function(a, b) {
-			util.hasClass(a, b) && (a.classList ? a.classList.remove(b) : a.className = a.className.replace(new RegExp("(^|\\s)" + b.split(" ").join("|") + "(\\s|$)", "gi"), " "))
+			if (util.hasClass(a, b)) { if (a.classList) { a.classList.remove(b); } else { a.className = a.className.replace(new RegExp("(^|\\s)" + b.split(" ").join("|") + "(\\s|$)", "gi"), " "); }}
 		},
 		closest: function(el, fn) {
 			return el && el !== document.body && ( fn(el) ? el : util.closest(el.parentNode, fn) );
@@ -63,15 +64,15 @@
 			e.addEventListener(type, callback, capture || false);
 		},
 		isObject: function(a) {
-			return "[object Object]" === Object.prototype.toString.call(a)
+			return "[object Object]" === Object.prototype.toString.call(a);
 		},
 		isArray: function(a) {
-			return "[object Array]" === Object.prototype.toString.call(a)
+			return "[object Array]" === Object.prototype.toString.call(a);
 		},
 		isInt: function(val) {
 			return !isNaN(val) && (function(x) {
-				return (x | 0) === x;
-			})(parseFloat(val))
+				return (x || 0) === x;
+			})(parseFloat(val));
 		},
 		debounce: function(a, b, c) {
 			var d;
@@ -79,14 +80,18 @@
 				var e = this,
 					f = arguments,
 					g = function() {
-						d = null, c || a.apply(e, f)
+						d = null;
+						if (!c) a.apply(e, f);
 					},
 					h = c && !d;
-				clearTimeout(d), d = setTimeout(g, b), h && a.apply(e, f)
-			}
+				clearTimeout(d); d = setTimeout(g, b);
+				if (h){ a.apply(e, f); }
+			};
 		},
 		getBoundingRect: function(el) {
 			var win = window;
+			var doc = document;
+			var body = doc.body;
 			var rect = el.getBoundingClientRect();
 			var offsetX = win.pageXOffset !== undefined ? win.pageXOffset : (doc.documentElement || body.parentNode || body).scrollLeft;
 			var offsetY = win.pageYOffset !== undefined ? win.pageYOffset : (doc.documentElement || body.parentNode || body).scrollTop;
@@ -104,8 +109,6 @@
 			e = e || window.event;
 			if (e.preventDefault) {
 				return e.preventDefault();
-			} else {
-				return e.returnValue = false;
 			}
 		},
 		includes: function(a,b) {
@@ -160,7 +163,7 @@
 
 			if ( o.pagination ) {
 				this.pages = o.data.map( function(v, i) {
-					return i % o.pagination == 0 ? o.data.slice(i, i+o.pagination) : null;
+					return i % o.pagination === 0 ? o.data.slice(i, i+o.pagination) : null;
 				}).filter(function(pages){ return pages; });
 			}
 		}
@@ -489,7 +492,7 @@
 		if ( _.multiple ) {
 			var max = _.settings.maxSelections;
 			if ( max && _.tags.length == max ) {
-				_.setMessage("A maximum of " + max + " items can be selected.", true)
+				_.setMessage("A maximum of " + max + " items can be selected.", true);
 				return;
 			}
 		}
@@ -524,8 +527,8 @@
 				var x = [], y = [];
 
 				// Deal with values that contain numbers
-				a.tag.replace(/(\d+)|(\D+)/g, function(_, $1, $2) { x.push([$1 || Infinity, $2 || ""]) });
-				b.tag.replace(/(\d+)|(\D+)/g, function(_, $1, $2) { y.push([$1 || Infinity, $2 || ""]) });
+				a.tag.replace(/(\d+)|(\D+)/g, function(_, $1, $2) { x.push([$1 || Infinity, $2 || ""]); });
+				b.tag.replace(/(\d+)|(\D+)/g, function(_, $1, $2) { y.push([$1 || Infinity, $2 || ""]); });
 
 				while(x.length && y.length) {
 					var ax = x.shift();
@@ -574,7 +577,7 @@
 		});
 
 		if (index > -1) {
-			var option = _.el.options[index];
+			option = _.el.options[index];
 			_.tags[tagIdx].parentNode.removeChild(_.tags[tagIdx]);
 			_.selectedValues.splice(tagIdx, 1);
 			option.defaultSelected = false;
@@ -636,10 +639,12 @@
 
 				return void selectOption.call(_, index);
 			case 38:
-				dir = "up", _.activeIdx > 0 && _.activeIdx--;
+				dir = "up"; 
+				if ( _.activeIdx > 0 ) { _.activeIdx--; }
 				break;
 			case 40:
-				dir = "down", _.activeIdx < list.length - 1 && _.activeIdx++;
+				dir = "down"; 
+				if ( _.activeIdx < list.length - 1 ) { _.activeIdx++; }
 		}
 
 		this.navigating = true;
@@ -649,11 +654,12 @@
 		var optsTop = _.optsOptions.scrollTop;
 		var scrollY = window.scrollY || window.pageYOffset;
 		var offset = _.optsRect.top + scrollY;
+		var currentOffset, nextOffset;
 
 		if (dir === "up") {
-			var currentOffset = offset;
 			var nextTop = nextRect.top + scrollY;
-			var nextOffset = optsTop + (nextTop - currentOffset);
+			currentOffset = offset;
+			nextOffset = optsTop + (nextTop - currentOffset);
 
 			if (_.activeIdx === 0) {
 				_.optsOptions.scrollTop = 0;
@@ -661,9 +667,9 @@
 				_.optsOptions.scrollTop = nextOffset;
 			}
 		} else {
-			var currentOffset = offset + _.optsRect.height;
 			var nextBottom = nextRect.top + scrollY + nextRect.height;
-			var nextOffset = optsTop + nextBottom - currentOffset;
+			currentOffset = offset + _.optsRect.height;
+			nextOffset = optsTop + nextBottom - currentOffset;
 
 			if (_.activeIdx === 0) {
 				_.optsOptions.scrollTop = 0;
@@ -731,20 +737,35 @@
 	/* EMITTER */
 	var Emitter = function() {};
 	Emitter.prototype = {
-		on: function(a, b) {
-			this._events = this._events || {}, this._events[a] = this._events[a] || [], this._events[a].push(b)
+		on: function(event, fct){
+			this._events = this._events || {};
+			this._events[event] = this._events[event]	|| [];
+			this._events[event].push(fct);
 		},
-		off: function(a, b) {
-			this._events = this._events || {}, a in this._events != !1 && this._events[a].splice(this._events[a].indexOf(b), 1)
+		off: function(event, fct){
+			this._events = this._events || {};
+			if( event in this._events === false  )	return;
+			this._events[event].splice(this._events[event].indexOf(fct), 1);
 		},
-		emit: function(a) {
-			if (this._events = this._events || {}, a in this._events != !1)
-				for (var b = 0; b < this._events[a].length; b++) this._events[a][b].apply(this, Array.prototype.slice.call(arguments, 1))
+		emit: function(event /* , args... */){
+			this._events = this._events || {};
+			if( event in this._events === false  )	return;
+			for(var i = 0; i < this._events[event].length; i++){
+				this._events[event][i].apply(this, Array.prototype.slice.call(arguments, 1));
+			}
 		}
 	};
-	Emitter.mixin = function(a) {
-		for (var b = ["on", "off", "emit"], c = 0; c < b.length; c++) "function" == typeof a ? a.prototype[b[c]] = Emitter.prototype[b[c]] : a[b[c]] = Emitter.prototype[b[c]];
-		return a
+
+	Emitter.mixin = function(obj) {
+		var props	= ['on', 'off', 'emit'];
+		for(var i = 0; i < props.length; i ++){
+			if( typeof obj === 'function' ){
+				obj.prototype[props[i]]	= Emitter.prototype[props[i]];
+			}else{
+				obj[props[i]] = Emitter.prototype[props[i]];
+			}
+		}
+		return obj;
 	};
 
 	/**
@@ -771,7 +792,7 @@
 			this.el = document.querySelector(el);
 		}
 
-		if ( this.el == null ) {
+		if ( this.el === null ) {
 			throw new Error("The element you passed to Selectr can not be found.");
 		}
 
@@ -805,7 +826,7 @@
 		this.list = [];
 
 		this.activeIdx = 0;
-		this.navigating;
+		this.navigating = false;
 		this.elRect = this.el.getBoundingClientRect();
 
 		build.call(this);
@@ -895,7 +916,6 @@
 		query = query.trim();
 
 		var _ = this;
-		var len = query.length;
 
 		if (_.navigating) return;
 
@@ -963,7 +983,7 @@
 		if (!this.disabled) {
 			var open = util.hasClass(this.container, "open");
 			if (open) {
-				this.close()
+				this.close();
 			} else {
 				this.open();
 			}
