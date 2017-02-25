@@ -12,7 +12,7 @@ Features:
 
 Supports most modern browsers including IE9 and above.
 
-[![Sauce Test Status](https://saucelabs.com/buildstatus/YOUR_SAUCE_USERNAME)](https://saucelabs.com/u/YOUR_SAUCE_USERNAME)
+[![Sauce Test Status](https://saucelabs.com/buildstatus/Mobius1)](https://saucelabs.com/u/Mobius1)
 
 [Demos & Documentation](http://mobius.ovh/docs/selectr)
 
