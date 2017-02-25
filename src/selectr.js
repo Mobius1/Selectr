@@ -113,7 +113,7 @@
 		},
 		includes: function(a,b) {
 			return a.indexOf(b) > -1;
-		},
+		}
 	};
 
 	var setSelected = function() {
@@ -225,7 +225,7 @@
 		util.each(_.el.children, function(idx, opt) {
 			if (opt.nodeName === "OPTGROUP") {
 				var group = util.createElement("ul", {
-					class: "selectr-optgroup",
+					class: "selectr-optgroup"
 				});
 				util.append(group, util.createElement("li", {
 					class: "selectr-optgroup--label",
@@ -713,7 +713,7 @@
 				items: _.items.length,
 				total: _.settings.data.length,
 				page: _.pageIndex,
-				pages: _.pages.length,
+				pages: _.pages.length
 			});
 		}
 	};
@@ -778,7 +778,7 @@
 			width: "auto",
 			searchable: true,
 			clearable: false,
-			sortSelected: false,
+			sortSelected: false
 		};
 
 		// Checks
@@ -881,7 +881,7 @@
 						var option = _.el.options[index];
 						value.values[i] = {
 							value: option.value,
-							text: option.textContent,
+							text: option.textContent
 						};
 					});
 				}
@@ -893,7 +893,7 @@
 				var option = _.el.options[_.selectedIndex];
 				value = {
 					value: option.value,
-					text: option.textContent,
+					text: option.textContent
 				};
 			} else {
 				value = _.selectedValue;
@@ -965,7 +965,7 @@
 					var option = _.el.options[item.idx];
 					arr.values[i] = {
 						value: option.value,
-						text: option.textContent,
+						text: option.textContent
 					};
 				});
 
