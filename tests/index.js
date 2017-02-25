@@ -3,7 +3,7 @@
 	var s = document.createElement('select');
 
 
-	document.body.appendChild(t);
+	document.body.appendChild(s);
 
 	var st = new Selectr(s, {
 		data: [
