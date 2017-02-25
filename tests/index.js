@@ -16,7 +16,7 @@
 			{ value: 'value-7', text: 'Value 7' },
 			{ value: 'value-8', text: 'Value 8' },
 			{ value: 'value-9', text: 'Value 9' },
-			{ value: 'value-10', text: 'Value 10' },
+			{ value: 'value-10', text: 'Value 10' }
 		],
 		multiple: true
 	});
