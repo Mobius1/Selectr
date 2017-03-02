@@ -10,6 +10,8 @@ Features:
 * Custom styling
 * Much more...
 
+Check the out [here](http://mobius.ovh/docs/selectr/pages/demos-1).
+
 ---
 
 ## Install with bower
