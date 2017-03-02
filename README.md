@@ -10,7 +10,7 @@ Features:
 * Custom styling
 * Much more...
 
-Check the out [here](http://mobius.ovh/docs/selectr/pages/demos-1).
+### Check the demos out [here](http://mobius.ovh/docs/selectr/pages/demos-1).
 
 ---
 
