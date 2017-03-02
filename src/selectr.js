@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.0.2
+ * Selectr 2.0.3
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -165,7 +165,13 @@
 			var data = o.pagination ? o.data.slice(0, o.pagination) : o.data;
 
 			util.each(data, function(idx, itm) {
-				_.el.add(new Option(itm.text, itm.value, itm.selected || false, itm.selected || false));
+				var option = new Option(itm.text, itm.value, itm.selected || false, itm.selected || false);
+
+				if ( itm.disabled ) {
+					option.disabled = true;
+				}
+
+				_.el.add(option);
 			});
 
 			if ( o.pagination ) {
@@ -183,6 +189,11 @@
 		_.container = util.createElement("div", {
 			class: "selectr-container"
 		});
+
+		// Custom className
+		if (o.customClass) {
+			util.addClass(_.container, o.customClass);
+		}
 
 		setWidth.call(_);
 
@@ -646,25 +657,24 @@
 
 				return void selectOption.call(_, index);
 			case 38:
-				dir = "up"; 
+				dir = "up";
 				if ( _.activeIdx > 0 ) { _.activeIdx--; }
 				break;
 			case 40:
-				dir = "down"; 
+				dir = "down";
 				if ( _.activeIdx < list.length - 1 ) { _.activeIdx++; }
 		}
 
 		this.navigating = true;
 
 		var nextElem = list[_.activeIdx];
-		var nextRect = nextElem.getBoundingClientRect();
+		var nextRect = util.getBoundingRect(nextElem);
 		var optsTop = _.optsOptions.scrollTop;
-		var scrollY = window.scrollY || window.pageYOffset;
-		var offset = _.optsRect.top + scrollY;
+		var offset = _.optsRect.top;
 		var currentOffset, nextOffset;
 
 		if (dir === "up") {
-			var nextTop = nextRect.top + scrollY;
+			var nextTop = nextRect.top;
 			currentOffset = offset;
 			nextOffset = optsTop + (nextTop - currentOffset);
 
@@ -674,7 +684,7 @@
 				_.optsOptions.scrollTop = nextOffset;
 			}
 		} else {
-			var nextBottom = nextRect.top + scrollY + nextRect.height;
+			var nextBottom = nextRect.top + nextRect.height;
 			currentOffset = offset + _.optsRect.height;
 			nextOffset = optsTop + nextBottom - currentOffset;
 
@@ -1003,33 +1013,41 @@
 	Selectr.prototype.open = function() {
 		var _ = this;
 
-		util.addClass(this.container, "open");
+		util.addClass(_.container, "open");
 
 		_.optsRect = util.getBoundingRect(_.optsOptions);
+
 		var wh = window.innerHeight;
 		var scrollHeight = _.optsOptions.scrollHeight;
+		var doInvert = _.elRect.top + _.elRect.height + _.optsRect.height > wh;
 
 		if ( scrollHeight <= _.optsRect.height ) {
-			paginate.call(_);
+			if ( _.requiresPagination ) {
+				paginate.call(_);
+			}
 		}
 
-		if (_.optsRect.bottom > wh) {
-			util.addClass(this.container, "inverted");
+		if (doInvert) {
+			util.addClass(_.container, "inverted");
+			this.isInverted = true;
 		} else {
-			util.removeClass(this.container, "inverted");
+			util.removeClass(_.container, "inverted");
+			this.isInverted = false;
 		}
 
-		util.removeClass(this.container, "notice");
+		util.removeClass(_.container, "notice");
 
-		if (this.settings.searchable) {
+		if (_.settings.searchable) {
 			setTimeout(function() {
 				_.input.focus();
 			}, 10);
 		}
 
-		this.opened = true;
+		_.optsRect = util.getBoundingRect(_.optsOptions);
 
-		this.emit("selectr.open");
+		_.opened = true;
+
+		_.emit("selectr.open");
 	};
 
 	/**
