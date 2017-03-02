@@ -10,7 +10,7 @@ Features:
 * Custom styling
 * Much more...
 
-### Check the demos out [here](http://mobius.ovh/docs/selectr/pages/demos-1).
+### Check the demos out [here](http://mobius.ovh/docs/selectr/pages/demos).
 
 ---
 
@@ -100,11 +100,11 @@ Updated functions:
 * `setValue()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
 
 Added options:
-* `clearable` (see [docs](http://mobius.ovh/docs/selectr/pages/options-2))
-* `sortSelected` (see [docs](http://mobius.ovh/docs/selectr/pages/options-2))
+* `clearable` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
+* `sortSelected` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
 
 Updated options:
-* `selectedValue` is now used for both single and multi selects (see [docs](http://mobius.ovh/docs/selectr/pages/options-2))
+* `selectedValue` is now used for both single and multi selects (see [docs](http://mobius.ovh/docs/selectr/pages/options))
 
 Removed options:
 
@@ -115,7 +115,7 @@ Removed options:
 * `selectedIndex, selectedIndexes`
 
 Removed events:
-* `selectr.change` (see [docs](http://mobius.ovh/docs/selectr/pages/events-2))
+* `selectr.change` (see [docs](http://mobius.ovh/docs/selectr/pages/events))
 
 # License
 
