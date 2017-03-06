@@ -1105,7 +1105,7 @@
 			if ( _.settings.data ) {
 				_.settings.data.push({
 					value: data.value,
-					text: data.text,
+					text: data.text
 				});
 			}
 
@@ -1323,7 +1323,7 @@
 		util.each(this.el.options, function(i, option) {
 			var obj = {
 				value: option.value,
-				text: option.textContent,
+				text: option.textContent
 			};
 
 			if ( option.defaultSelected ) {
