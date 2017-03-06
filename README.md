@@ -6,6 +6,7 @@ Features:
 * Supports single and multiple select boxes
 * Supports optgroups
 * Searchable options
+* Tagging support
 * Custom events
 * Custom styling
 * Much more...
@@ -88,6 +89,24 @@ Supports most modern browsers including IE9 and above.
 ---
 
 ## Change Log
+
+### v.2.1.0
+
+* New tagging feature (see [docs](http://mobius.ovh/docs/selectr/pages/options))
+
+New functions:
+* `addOption()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
+* `serialize()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
+* `destroy()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
+* `render()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
+
+New options:
+* `taggable` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
+* `tagSeperators` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
+
+Updated options:
+* `sortSelected` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
+
 
 ### v.2.0.0
 * Complete rewrite
