@@ -11,7 +11,7 @@ Features:
 * Custom styling
 * Much more...
 
-### Check the demos out [here](http://mobius.ovh/docs/selectr/pages/demos).
+### Check the demos out [here](http://mobius.ovh/docs/selectr/pages/demos) and the playground [here](http://codepen.io/Mobius1/full/jBqpze/).
 
 ---
 
