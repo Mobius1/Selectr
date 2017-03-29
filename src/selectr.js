@@ -550,8 +550,6 @@
 	var deselect = function(index) {
 		var option = this.el.options[index];
 
-		util.removeClass(this.items[index], "selected");
-
 		if ( this.el.multiple ) {
 			var selIndex = this.selectedIndexes.indexOf(index);
 			this.selectedIndexes.splice(selIndex, 1);
@@ -565,15 +563,19 @@
 				util.removeClass(this.container, "has-selected");
 			}
 		} else {
-			if ( this.settings.allowDeselect ) {
-				this.label.innerHTML = "";
-				this.selectedValue = null;
-
-				this.el.selectedIndex = -1;
-
-				util.removeClass(this.container, "has-selected");
+			if ( !this.settings.allowDeselect ) {
+				return false;
 			}
+
+			this.label.innerHTML = "";
+			this.selectedValue = null;
+
+			this.el.selectedIndex = -1;
+
+			util.removeClass(this.container, "has-selected");
 		}
+
+		util.removeClass(this.items[index], "selected");
 
 		option.defaultSelected = false;
 
