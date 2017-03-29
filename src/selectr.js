@@ -272,7 +272,8 @@
 			var li = util.createElement('li', { class: 'input-tag' });
 			_.input = util.createElement("input", {
 				class: "selectr-tag-input",
-				placeholder: 'Enter a tag...'
+				placeholder: 'Enter a tag...',
+				tagIndex: 0
 			});
 
 			li.appendChild(_.input);
@@ -287,7 +288,8 @@
 
 		if (o.searchable) {
 			_.input = util.createElement("input", {
-				class: "selectr-input"
+				class: "selectr-input",
+				tagIndex: -1
 			});
 			_.inputClear = util.createElement("button", {
 				class: "selectr-clear",
@@ -1254,6 +1256,8 @@
 		if (_.settings.searchable && !_.settings.taggable) {
 			setTimeout(function() {
 				_.input.focus();
+				// Allow tab focus
+				_.input.tabIndex = 0;
 			}, 10);
 		}
 
@@ -1274,6 +1278,8 @@
 
 		if (this.settings.searchable && !notice) {
 			this.input.blur();
+			// Disable tab focus
+			this.input.tabIndex = -1;
 			this.searching = false;
 		}
 
