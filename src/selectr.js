@@ -219,8 +219,12 @@
 		this.container.style.width = this.width;
 
 		_.selected = util.createElement("div", {
-			class: "selectr-selected"
+			class: "selectr-selected",
+			tabIndex: _.el.tabIndex // enable tabIndex (#9)
 		});
+
+		// We don't want to focus on the native select box
+		_.el.tabIndex = -1;
 
 		_.label = util.createElement(_.el.multiple ? "ul" : "span", {
 			class: "selectr-label"
