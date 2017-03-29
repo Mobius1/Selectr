@@ -699,15 +699,15 @@
 
 	var keyup = function(e) {
 		var _ = this;
-		if ( e.target == _.input ) {
-			_.input = e.target;
+		if ( e.target === _.input ) {
 			_.search(_.input.value, true);
+			return false;
 		}
-		if (_.navigating && e.keyCode != 13) {
+		if (_.navigating && e.keyCode !== 13) {
 			_.navigating = false;
 		}
 
-		if ( _.input.value.length ) {
+		if ( _.input && _.input.value.length ) {
 			var value = _.input.value.trim();
 
 			if ( e.which === 13 || util.includes(_.tagSeperators, e.key) ) {
