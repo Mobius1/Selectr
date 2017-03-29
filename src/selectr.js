@@ -255,7 +255,7 @@
 
 		_.selected.appendChild(_.label);
 
-		if ( o.clearable ) {
+		if ( _.el.multiple && o.clearable || !_.el.multiple && o.allowDeselect ) {
 			_.selectClear = util.createElement("button", {
 				class: "selectr-clear",
 				type: "button"
@@ -565,12 +565,14 @@
 				util.removeClass(this.container, "has-selected");
 			}
 		} else {
-			this.label.innerHTML = "";
-			this.selectedValue = null;
+			if ( this.settings.allowDeselect ) {
+				this.label.innerHTML = "";
+				this.selectedValue = null;
 
-			this.el.selectedIndex = -1;
+				this.el.selectedIndex = -1;
 
-			util.removeClass(this.container, "has-selected");
+				util.removeClass(this.container, "has-selected");
+			}
 		}
 
 		option.defaultSelected = false;
@@ -888,7 +890,8 @@
 		width: "auto",
 		searchable: true,
 		clearable: false,
-		sortSelected: false
+		sortSelected: false,
+		allowDeselect: false
 	};
 
 	/**
