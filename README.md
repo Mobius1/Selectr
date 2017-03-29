@@ -32,13 +32,13 @@ npm install mobius1-selectr --save
 Include the CSS file ...
 
 ```html
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/selectr/latest/selectr.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/selectr/2.1.0/selectr.min.css">
 ```
 
 ... and the JS file...
 
 ```html
-<script type="text/javascript" src="https://cdn.jsdelivr.net/selectr/latest/selectr.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/selectr/2.1.0/selectr.min.js"></script>
 ```
 
 CDN courtesy of [jsDelivr](http://www.jsdelivr.com/)
@@ -90,7 +90,13 @@ Supports most modern browsers including IE9 and above.
 
 ## Change Log
 
-### v.2.1.0
+### v2.1.1
+
+* new option `allowDeselect` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
+* tabIndex enabled on th main container
+* tabIndex disabled on search input when closed
+
+### v2.1.0
 
 * New tagging feature (see [docs](http://mobius.ovh/docs/selectr/pages/options))
 
@@ -108,7 +114,7 @@ Updated options:
 * `sortSelected` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
 
 
-### v.2.0.0
+### v2.0.0
 * Complete rewrite
 * New options added
 * New methods added
