@@ -707,7 +707,6 @@
 		var _ = this;
 		if ( e.target === _.input ) {
 			_.search(_.input.value, true);
-			return false;
 		}
 		if (_.navigating && e.keyCode !== 13) {
 			_.navigating = false;
