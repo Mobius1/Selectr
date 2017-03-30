@@ -90,6 +90,12 @@ Supports most modern browsers including IE9 and above.
 
 ## Change Log
 
+### v2.1.2
+
+* New option `closeOnScroll` ([#11](https://github.com/Mobius1/Selectr/issues/11)) (see [docs](http://mobius.ovh/docs/selectr/pages/options))
+* Fixed bug with checking dropdown is on-screen ([#10](https://github.com/Mobius1/Selectr/issues/10))
+* Fixed navigation bug ([70168f2](/Mobius1/Selectr/commit/70168f2df967881818116a81ac4edbaa98588381))
+
 ### v2.1.1
 
 * new option `allowDeselect` (see [docs](http://mobius.ovh/docs/selectr/pages/options))

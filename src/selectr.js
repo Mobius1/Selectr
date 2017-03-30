@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.1.1
+ * Selectr 2.1.2
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -99,13 +99,11 @@
 				if (h){ a.apply(e, f); }
 			};
 		},
-		getBoundingRect: function(el) {
+		getBoundingRect: function(el, abs) {
 			var win = window;
-			var doc = document;
-			var body = doc.body;
 			var rect = el.getBoundingClientRect();
-			var offsetX = win.pageXOffset !== undefined ? win.pageXOffset : (doc.documentElement || body.parentNode || body).scrollLeft;
-			var offsetY = win.pageYOffset !== undefined ? win.pageYOffset : (doc.documentElement || body.parentNode || body).scrollTop;
+			var offsetX = abs ? win.pageXOffset : 0;
+			var offsetY = abs ? win.pageYOffset : 0;
 
 			return {
 				bottom: rect.bottom + offsetY,
@@ -463,12 +461,14 @@
 		util.on(document, "keyup", this.events.keyup);
 
 		_.update = util.debounce(function() {
-			if (_.opened) {
+			// Optionally close dropdown on scroll / resize (#11)
+			if (_.opened && _.settings.closeOnScroll) {
 				_.close();
 			}
 			if ( this.width ) {
 				this.container.style.width = this.width;
 			}
+			checkInvert.call(_);
 		}, 50);
 
 		util.on(window, "resize", _.update);
@@ -796,7 +796,7 @@
 		} else {
 			var nextBottom = nextRect.top + nextRect.height;
 			currentOffset = offset + _.optsRect.height;
-			nextOffset = optsTop + nextBottom - currentOffset;
+			nextOffset = optsTop + (nextBottom - currentOffset);
 
 			if (_.activeIdx === 0) {
 				_.optsOptions.scrollTop = 0;
@@ -843,6 +843,24 @@
 				pages: _.pages.length
 			});
 		}
+	};
+
+	// Make sure dropdown stays on screen
+	var checkInvert = function() {
+		var s = util.getBoundingRect(this.selected);
+		var o = this.optsOptions.parentNode.offsetHeight;
+		var wh = window.innerHeight;
+		var doInvert =  s.top + s.height + o > wh;
+
+		if (doInvert) {
+			util.addClass(this.container, "inverted");
+			this.isInverted = true;
+		} else {
+			util.removeClass(this.container, "inverted");
+			this.isInverted = false;
+		}
+
+		this.optsRect = util.getBoundingRect(this.optsOptions);
 	};
 
 	var dismiss = function(e) {
@@ -899,7 +917,8 @@
 		searchable: true,
 		clearable: false,
 		sortSelected: false,
-		allowDeselect: false
+		allowDeselect: false,
+		closeOnScroll: false
 	};
 
 	/**
@@ -968,13 +987,14 @@
 
 		this.activeIdx = 0;
 		this.navigating = false;
-		this.elRect = this.el.getBoundingClientRect();
 
 		Emitter.mixin(this);
 
 		build.call(this);
 
 		this.update();
+
+		this.optsRect = util.getBoundingRect(this.optsOptions);
 
 		this.rendered = true;
 
@@ -1033,9 +1053,9 @@
 			value = value.toString().trim();
 		}
 
-		// Can"t pass array to select-one
+		// Can't pass array to select-one
 		if ( !_.el.multiple && isArray ) {
-			return;
+			return false;
 		}
 
 		util.each(this.el.options, function(i, opt) {
@@ -1231,24 +1251,14 @@
 
 		util.addClass(_.container, "open");
 
-		_.optsRect = util.getBoundingRect(_.optsOptions);
+		checkInvert.call(_);
 
-		var wh = window.innerHeight;
-		var scrollHeight = _.optsOptions.scrollHeight;
-		var doInvert = _.elRect.top + _.elRect.height + _.optsRect.height > wh;
+		var scrollHeight = this.optsOptions.scrollHeight;
 
 		if ( scrollHeight <= _.optsRect.height ) {
 			if ( _.requiresPagination ) {
 				paginate.call(_);
 			}
-		}
-
-		if (doInvert) {
-			util.addClass(_.container, "inverted");
-			this.isInverted = true;
-		} else {
-			util.removeClass(_.container, "inverted");
-			this.isInverted = false;
 		}
 
 		util.removeClass(_.container, "notice");
@@ -1260,8 +1270,6 @@
 				_.input.tabIndex = 0;
 			}, 10);
 		}
-
-		_.optsRect = util.getBoundingRect(_.optsOptions);
 
 		if ( !this.opened ) {
 			_.emit("selectr.open");
