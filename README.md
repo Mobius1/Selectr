@@ -36,9 +36,9 @@ npm install mobius1-selectr --save
 Grab the files from the CDN and include them in your page:
 
 ```html
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/selectr/2.1.2/selectr.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/selectr/2.1.3/selectr.min.css">
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/selectr/2.1.2/selectr.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/selectr/2.1.3/selectr.min.js"></script>
 ```
 
 CDN courtesy of [jsDelivr](http://www.jsdelivr.com/)
@@ -62,9 +62,7 @@ Start with a standard select box you want to convert:
 
 #### Javascript
 
-You can then instantiate Selectr by passing a reference to your select box as the first parameter:
-
-You can either pass a DOM node or a CSS3 selector string:
+You can then instantiate Selectr by passing a reference to your select box as the first parameter as either a DOM node or a CSS3 selector string:
 
 ```javascript
 new Selectr(document.getElementById('#mySelect'));
@@ -74,12 +72,12 @@ new Selectr(document.getElementById('#mySelect'));
 new Selectr('#mySelect');
 ```
 
-Selectr accepts a second parameter as an object with the options you want to set:
+Selectr accepts the options object as a second parameter:
 
 ```javascript
 new Selectr('#mySelect', {
-    searchable: false,
-    width: 300
+	searchable: false,
+	width: 300
 });
 ```
 
