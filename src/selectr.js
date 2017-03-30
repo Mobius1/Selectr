@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.1.2
+ * Selectr 2.1.3
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -712,8 +712,12 @@
 			_.navigating = false;
 		}
 
-		if ( _.input && _.input.value.length ) {
+		if ( _.settings.taggable && _.input.value.length ) {
 			var value = _.input.value.trim();
+
+			if ( _.searchItems.length ) {
+				return false;
+			}
 
 			if ( e.which === 13 || util.includes(_.tagSeperators, e.key) ) {
 
@@ -759,7 +763,7 @@
 		switch (key) {
 			case 13:
 				if ( _.settings.taggable && _.input === document.activeElement ) {
-					return;
+					_.input.value = "";
 				}
 				var opt = _.optsOptions.querySelector(".active");
 				var index = _.items.indexOf(opt);

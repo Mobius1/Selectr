@@ -87,6 +87,9 @@ new Selectr('#mySelect', {
 
 ## Change Log
 
+### v2.1.3
+* Fixed bug with tagging system
+
 ### v2.1.2
 
 * New option `closeOnScroll` ([#11](https://github.com/Mobius1/Selectr/issues/11)) (see [docs](http://mobius.ovh/docs/selectr/pages/options))
