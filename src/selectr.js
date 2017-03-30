@@ -783,7 +783,7 @@
 		var offset = _.optsRect.top;
 		var currentOffset, nextOffset;
 
-		if (dir > 1) {
+		if (dir > 0) {
 			var nextTop = nextRect.top;
 			currentOffset = offset;
 			nextOffset = optsTop + (nextTop - currentOffset);
