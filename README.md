@@ -1,6 +1,8 @@
 # Selectr [![Build Status](https://travis-ci.org/Mobius1/Selectr.svg?branch=master)](https://travis-ci.org/Mobius1/Selectr) [![npm version](https://badge.fury.io/js/mobius1-selectr.svg)](https://badge.fury.io/js/mobius1-selectr) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Mobius1/Selectr/blob/master/LICENSE)
 A lightweight dependency-free select box replacement written in vanilla javascript. Similar to Select2 and Chosen without the dependencies.
 
+Supports most modern browsers including IE9.
+
 Features:
 
 * Supports single and multiple select boxes
@@ -11,40 +13,39 @@ Features:
 * Custom styling
 * Much more...
 
-### Check the demos out [here](http://mobius.ovh/docs/selectr/pages/demos) and the playground [here](http://codepen.io/Mobius1/full/jBqpze/).
+[Demos](http://mobius.ovh/docs/selectr/pages/demos) | [Documentation](http://mobius.ovh/docs/selectr) | [Playground](http://codepen.io/Mobius1/full/jBqpze/)
 
 ---
 
-## Install with bower
+## Install
+
+### bower
 
 ```
 bower install mobius1-selectr --save
 ```
 
-## Install with npm
+### npm
 
 ```
 npm install mobius1-selectr --save
 ```
 
-## Manual Installation
+## Browser
 
-Include the CSS file ...
-
-```html
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/selectr/2.1.0/selectr.min.css">
-```
-
-... and the JS file...
+Grab the files from the CDN and include them in your page:
 
 ```html
-<script type="text/javascript" src="https://cdn.jsdelivr.net/selectr/2.1.0/selectr.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/selectr/2.1.2/selectr.min.css">
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/selectr/2.1.2/selectr.min.js"></script>
 ```
 
 CDN courtesy of [jsDelivr](http://www.jsdelivr.com/)
 
-## Initialisation
+---
 
+## Initialisation
 
 #### HTML
 
@@ -81,10 +82,6 @@ new Selectr('#mySelect', {
     width: 300
 });
 ```
-
-Supports most modern browsers including IE9 and above.
-
-[Demos & Full Documentation](http://mobius.ovh/docs/selectr)
 
 ---
 
