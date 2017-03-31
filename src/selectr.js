@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.1.3
+ * Selectr 2.1.4
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -846,7 +846,7 @@
 		var offsetHeight = opts.offsetHeight;
 		var atBottom = scrollTop >= (scrollHeight - offsetHeight);
 
-		if ( atBottom && _.pageIndex < _.pages.length ) {
+		if ( (atBottom && _.pageIndex < _.pages.length) || _.activeIdx === _.list.length - 1 ) {
 			var selectFrag = document.createDocumentFragment();
 			var optsFrag = document.createDocumentFragment();
 

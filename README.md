@@ -85,6 +85,11 @@ new Selectr('#mySelect', {
 
 ## Change Log
 
+### v2.1.4
+* Fixed form.reset() not clearing Selectr elements ([#13](https://github.com/Mobius1/Selectr/issues/13))
+* Fixed autocomplete bug in Chrome ([#12](https://github.com/Mobius1/Selectr/issues/12))
+* Fixed pagination not incrementing when navigating with the down key
+
 ### v2.1.3
 * Fixed bug with tagging system
 
@@ -117,34 +122,6 @@ New options:
 Updated options:
 * `sortSelected` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
 
-
-### v2.0.0
-* Complete rewrite
-* New options added
-* New methods added
-* New events added
-
-Updated functions:
-* `getValue()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
-* `setValue()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
-
-Added options:
-* `clearable` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
-* `sortSelected` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
-
-Updated options:
-* `selectedValue` is now used for both single and multi selects (see [docs](http://mobius.ovh/docs/selectr/pages/options))
-
-Removed options:
-
-* `ajax`
-* `minChars`
-* `emptyOption`
-* `selectedValues`
-* `selectedIndex, selectedIndexes`
-
-Removed events:
-* `selectr.change` (see [docs](http://mobius.ovh/docs/selectr/pages/events))
 
 # License
 
