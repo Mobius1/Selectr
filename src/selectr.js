@@ -270,7 +270,8 @@
 			var li = util.createElement('li', { class: 'input-tag' });
 			_.input = util.createElement("input", {
 				class: "selectr-tag-input",
-				placeholder: 'Enter a tag...',
+				placeholder: "Enter a tag...",
+				autocomplete: "off",
 				tagIndex: 0
 			});
 
@@ -287,6 +288,7 @@
 		if (o.searchable) {
 			_.input = util.createElement("input", {
 				class: "selectr-input",
+				autocomplete: "off",
 				tagIndex: -1
 			});
 			_.inputClear = util.createElement("button", {
