@@ -125,7 +125,7 @@
 		}
 	};
 
-	var setSelected = function() {
+	var setSelected = function(reset) {
 		var o = this.settings;
 		var opts = this.el.options;
 
@@ -140,6 +140,20 @@
 
 		if ( !opts[0].defaultSelected && opts[0].selected ) {
 			this.el.selectedIndex = -1;
+		}
+
+		// Check the original data for selected options on form.reset()
+		if ( reset ) {
+			if ( o.data ) {
+				util.each(o.data, function(idx, itm) {
+					var selected = itm.hasOwnProperty('selected') && itm.selected === true;
+					util.each(opts, function(i, opt) {
+						if ( opt.value === itm.value && selected ) {
+							opt.defaultSelected = true;
+						}
+					});
+				});
+			}
 		}
 	};
 
@@ -482,6 +496,12 @@
 			}, 50);
 
 			util.on(_.optsOptions, "scroll", _.paginateItems);
+		}
+
+		// Listen for form.reset() (#13)
+		var form = _.el.form;
+		if ( form ) {
+			util.on(form, "reset", _.reset.bind(_));
 		}
 	};
 
@@ -1318,7 +1338,7 @@
 	Selectr.prototype.reset = function(init) {
 		this.clear();
 
-		setSelected.call(this);
+		setSelected.call(this, true);
 
 		util.each(this.el.options, function(i,opt) {
 			if ( opt.defaultSelected ) {
