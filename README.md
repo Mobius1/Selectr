@@ -86,9 +86,10 @@ new Selectr('#mySelect', {
 ## Change Log
 
 ### v2.1.4
-* Fixed form.reset() not clearing Selectr elements ([#13](https://github.com/Mobius1/Selectr/issues/13))
+* Fixed form.reset() not resetting Selectr elements ([#13](https://github.com/Mobius1/Selectr/issues/13))
 * Fixed autocomplete bug in Chrome ([#12](https://github.com/Mobius1/Selectr/issues/12))
 * Fixed pagination not incrementing when navigating with the down key
+* Fixed `reset()` method not checking `data`
 
 ### v2.1.3
 * Fixed bug with tagging system
