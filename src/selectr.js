@@ -197,7 +197,7 @@
 		_.el.tabIndex = -1;
 
 		util.attr(_.el, {
-			"aria-hidden": true,
+			"aria-hidden": true
 		});
 
 		if ( _.disabled ) {
