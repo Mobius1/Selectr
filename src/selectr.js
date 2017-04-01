@@ -133,6 +133,7 @@
 			var val = o.selectedValue.toString();
 			util.each(opts, function(i, opt) {
 				if ( util.includes(val, opt.value) )  {
+					opt.selected = true;
 					opt.defaultSelected = true;
 				}
 			});
@@ -149,6 +150,7 @@
 					var selected = itm.hasOwnProperty('selected') && itm.selected === true;
 					util.each(opts, function(i, opt) {
 						if ( opt.value === itm.value && selected ) {
+							opt.selected = true;
 							opt.defaultSelected = true;
 						}
 					});
@@ -554,14 +556,15 @@
 			this.selectedValue = option.value;
 			this.selectedIndex = index;
 
-			util.each(this.el.options, function(i, option) {
+			util.each(this.el.options, function(i, o) {
 				var opt = this.items[i];
 
 				if ( i !== index ) {
 					if ( opt ) {
 						util.removeClass(opt, "selected");
 					}
-					option.defaultSelected = false;
+					o.selected = false;
+					o.defaultSelected = false;
 				}
 			}, this);
 		}
@@ -569,6 +572,7 @@
 		util.addClass(this.items[index], "selected");
 		util.addClass(this.container, "has-selected");
 
+		option.selected = true;
 		option.defaultSelected = true;
 
 		this.emit("selectr.select", option);
@@ -605,6 +609,7 @@
 
 		util.removeClass(this.items[index], "selected");
 
+		option.selected = false;
 		option.defaultSelected = false;
 
 		this.emit("selectr.deselect", option);
@@ -1166,6 +1171,7 @@
 			}
 
 			if ( data.selected ) {
+				option.selected = true;
 				option.defaultSelected = true;
 			}
 
