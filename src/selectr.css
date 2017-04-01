@@ -248,12 +248,7 @@
 	background-color: #ddd;
 }
 
-.selectr-option:not(.disabled):hover,
-.selectr-option.active,
-.selectr-option.active:hover,
-.selectr-option.selected:hover,
-.selectr-option.selected.active,
-.selectr-option.selected.active:hover {
+.selectr-option.active {
 	color: #fff;
 	background-color: #5897fb;
 }

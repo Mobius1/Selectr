@@ -74,6 +74,15 @@
 		off: function(e, type, callback) {
 			e.removeEventListener(type, callback);
 		},
+		attr: function(el, attr, val) {
+			if ( util.isObject(attr) ) {
+				util.each(attr, function(a,v) {
+					el.setAttribute(a,v);
+				});
+			} else {
+				el.setAttribute(attr, val);
+			}
+		},
 		isObject: function(a) {
 			return "[object Object]" === Object.prototype.toString.call(a);
 		},
@@ -99,19 +108,19 @@
 				if (h){ a.apply(e, f); }
 			};
 		},
-		getBoundingRect: function(el, abs) {
-			var win = window;
-			var rect = el.getBoundingClientRect();
-			var offsetX = abs ? win.pageXOffset : 0;
-			var offsetY = abs ? win.pageYOffset : 0;
+		getRect: function(el, abs) {
+			var w = window;
+			var r = el.getBoundingClientRect();
+			var x = abs ? w.pageXOffset : 0;
+			var y = abs ? w.pageYOffset : 0;
 
 			return {
-				bottom: rect.bottom + offsetY,
-				height: rect.height,
-				left  : rect.left + offsetX,
-				right : rect.right + offsetX,
-				top   : rect.top + offsetY,
-				width : rect.width
+				bottom: r.bottom + y,
+				height: r.height,
+				left  : r.left + x,
+				right : r.right + x,
+				top   : r.top + y,
+				width : r.width
 			};
 		},
 		preventDefault: function(e) {
@@ -180,7 +189,21 @@
 	var build = function() {
 		var _ = this;
 		var o = _.settings;
+
+
 		util.addClass(_.el, "hidden-input");
+
+		// We don't want to focus on the native select box
+		_.el.tabIndex = -1;
+
+		util.attr(_.el, {
+			"aria-hidden": true,
+		});
+
+		if ( _.disabled ) {
+			_.el.disabled = true;
+		}
+
 
 		// Check for data
 		if ( o.data ) {
@@ -234,11 +257,10 @@
 
 		_.selected = util.createElement("div", {
 			class: "selectr-selected",
-			tabIndex: _.el.tabIndex // enable tabIndex (#9)
+			disabled: _.disabled,
+			tabIndex: _.el.tabIndex, // enable tabIndex (#9)
+			"aria-expanded": false
 		});
-
-		// We don't want to focus on the native select box
-		_.el.tabIndex = -1;
 
 		_.label = util.createElement(_.el.multiple ? "ul" : "span", {
 			class: "selectr-label"
@@ -249,7 +271,10 @@
 		});
 
 		_.optsOptions = util.createElement("ul", {
-			class: "selectr-options"
+			class: "selectr-options",
+			role: "tree",
+			"aria-hidden": true,
+			"aria-expanded": false
 		});
 
 		_.notice = util.createElement("div", {
@@ -287,8 +312,13 @@
 			_.input = util.createElement("input", {
 				class: "selectr-tag-input",
 				placeholder: "Enter a tag...",
+				tagIndex: 0,
 				autocomplete: "off",
-				tagIndex: 0
+				autocorrect: "off",
+				autocapitalize: "off",
+				spellcheck: "false",
+				role: "textbox",
+				type: "search"
 			});
 
 			li.appendChild(_.input);
@@ -304,8 +334,13 @@
 		if (o.searchable) {
 			_.input = util.createElement("input", {
 				class: "selectr-input",
+				tagIndex: -1,
 				autocomplete: "off",
-				tagIndex: -1
+				autocorrect: "off",
+				autocapitalize: "off",
+				spellcheck: "false",
+				role: "textbox",
+				type: "search"
 			});
 			_.inputClear = util.createElement("button", {
 				class: "selectr-clear",
@@ -330,7 +365,8 @@
 		util.each(_.el.children, function(idx, opt) {
 			if (opt.nodeName === "OPTGROUP") {
 				var group = util.createElement("ul", {
-					class: "selectr-optgroup"
+					class: "selectr-optgroup",
+					role: "group"
 				});
 				group.appendChild(util.createElement("li", {
 					class: "selectr-optgroup--label",
@@ -380,7 +416,9 @@
 		var content = this.customOption ? this.settings.renderOption(option) : option.textContent.trim();
 		var opt = util.createElement("li", {
 			class: "selectr-option",
-			html: content
+			html: content,
+			role: "treeitem",
+			"aria-selected": false
 		});
 
 		// Store the index for later
@@ -416,11 +454,15 @@
 		this.events.keyup = keyup.bind(_);
 		this.events.navigate = navigate.bind(_);
 		this.events.dismiss = dismiss.bind(_);
+		this.events.reset = this.reset.bind(_);
 
 		_.requiresPagination = _.settings.data && _.settings.data.length > _.settings.pagination;
 
 		// Global listener
 		util.on(_.container, "click", function(e) {
+
+			if ( _.disabled ) return false;
+
 			e = e || window.event;
 
 			var target = e.target;
@@ -468,6 +510,16 @@
 		// Prevent text selection
 		util.on(_.optsOptions, "mousedown", function(e) { util.preventDefault(e); });
 
+		// Mouseover list items
+		util.on(_.optsOptions, "mouseover", function(e) {
+			var t = e.target;
+			if ( util.hasClass(t, "selectr-option") ) {
+				util.removeClass(_.items[_.activeIdx], "active");
+				util.addClass(t, "active");
+				_.activeIdx = [].slice.call(_.optsOptions.children).indexOf(t);
+			}
+		});
+
 		if (_.settings.searchable) {
 			util.on(_.inputClear, "click", function(e) {
 				clearSearch.call(_);
@@ -503,7 +555,7 @@
 		// Listen for form.reset() (#13)
 		var form = _.el.form;
 		if ( form ) {
-			util.on(form, "reset", _.reset.bind(_));
+			util.on(form, "reset", this.events.reset);
 		}
 	};
 
@@ -569,6 +621,10 @@
 			}, this);
 		}
 
+		util.attr(this.items[index], {
+			"aria-selected": true
+		});
+
 		util.addClass(this.items[index], "selected");
 		util.addClass(this.container, "has-selected");
 
@@ -606,6 +662,10 @@
 
 			util.removeClass(this.container, "has-selected");
 		}
+
+		util.attr(this.items[index], {
+			"aria-selected": false
+		});
 
 		util.removeClass(this.items[index], "selected");
 
@@ -808,7 +868,7 @@
 		this.navigating = true;
 
 		var nextElem = list[_.activeIdx];
-		var nextRect = util.getBoundingRect(nextElem);
+		var nextRect = util.getRect(nextElem);
 		var optsTop = _.optsOptions.scrollTop;
 		var offset = _.optsRect.top;
 		var currentOffset, nextOffset;
@@ -877,7 +937,7 @@
 
 	// Make sure dropdown stays on screen
 	var checkInvert = function() {
-		var s = util.getBoundingRect(this.selected);
+		var s = util.getRect(this.selected);
 		var o = this.optsOptions.parentNode.offsetHeight;
 		var wh = window.innerHeight;
 		var doInvert =  s.top + s.height + o > wh;
@@ -890,7 +950,7 @@
 			this.isInverted = false;
 		}
 
-		this.optsRect = util.getBoundingRect(this.optsOptions);
+		this.optsRect = util.getRect(this.optsOptions);
 	};
 
 	var dismiss = function(e) {
@@ -944,6 +1004,7 @@
 
 	var defaults = {
 		width: "auto",
+		disabled: false,
 		searchable: true,
 		clearable: false,
 		sortSelected: false,
@@ -988,10 +1049,14 @@
 
 	/**
 	 * Render the instance
+	 * @param  {object} options
+	 * @return {void}
 	 */
 	Selectr.prototype.render = function(options) {
 
 		if ( this.rendered ) return;
+
+		this.disabled = false;
 
 		this.settings = util.extend(defaults, options);
 
@@ -1001,6 +1066,10 @@
 
 		if ( this.settings.taggable ) {
 			this.settings.searchable = false;
+		}
+
+		if ( this.settings.disabled ) {
+			this.disabled = true;
 		}
 
 		// Check for optgroupd
@@ -1024,7 +1093,7 @@
 
 		this.update();
 
-		this.optsRect = util.getBoundingRect(this.optsOptions);
+		this.optsRect = util.getRect(this.optsOptions);
 
 		this.rendered = true;
 
@@ -1036,6 +1105,7 @@
 
 	/**
 	 * Destroy the instance
+	 * @return {void}
 	 */
 	Selectr.prototype.destroy = function() {
 
@@ -1057,6 +1127,12 @@
 
 		// Remove the className from select element
 		util.removeClass(this.el, 'hidden-input');
+
+		// Remove reset listener from parent form
+		var form = _.el.form;
+		if ( form ) {
+			util.off(form, "reset", this.events.reset);
+		}
 
 		// Remove event listeners attached to doc and win
 		util.off(document, "click", this.events.dismiss);
@@ -1139,6 +1215,10 @@
 		return value;
 	};
 
+	/**
+	 * Add a new option
+	 * @param {object} data
+	 */
 	Selectr.prototype.addOption = function(data) {
 		var _ = this;
 		if ( data && util.isObject(data) && data.value ) {
@@ -1262,6 +1342,7 @@
 
 	/**
 	 * Toggle the dropdown
+	 * @return {void}
 	 */
 	Selectr.prototype.toggle = function() {
 		if (!this.disabled) {
@@ -1276,6 +1357,7 @@
 
 	/**
 	 * Open the dropdown
+	 * @return {void}
 	 */
 	Selectr.prototype.open = function() {
 		var _ = this;
@@ -1294,6 +1376,12 @@
 
 		util.removeClass(_.container, "notice");
 
+		util.attr(_.selected, "aria-expanded", true);
+		util.attr(_.optsOptions, {
+			"aria-hidden": false,
+			"aria-expanded": true
+		});
+
 		if (_.settings.searchable && !_.settings.taggable) {
 			setTimeout(function() {
 				_.input.focus();
@@ -1311,6 +1399,7 @@
 
 	/**
 	 * Close the dropdown
+	 * @return {void}
 	 */
 	Selectr.prototype.close = function() {
 		var notice = util.hasClass(this.container, "notice");
@@ -1329,6 +1418,12 @@
 
 		util.removeClass(this.container, "open");
 
+		util.attr(this.selected, "aria-expanded", false);
+		util.attr(this.optsOptions, {
+			"aria-hidden": true,
+			"aria-expanded": false
+		});
+
 		clearSearch.call(this);
 
 		if ( this.opened ) {
@@ -1340,8 +1435,9 @@
 
 	/**
 	 * Reset to initial state
+	 * @return {void}
 	 */
-	Selectr.prototype.reset = function(init) {
+	Selectr.prototype.reset = function() {
 		this.clear();
 
 		setSelected.call(this, true);
@@ -1357,8 +1453,9 @@
 
 	/**
 	 * Clear all selections
+	 * @return {void}
 	 */
-	Selectr.prototype.clear = function(init) {
+	Selectr.prototype.clear = function() {
 		if ( this.el.multiple ) {
 			// Copy the array for reference otherwise it'll chuck an error
 			var indexes = this.selectedIndexes.slice();
@@ -1372,6 +1469,11 @@
 		this.emit("selectr.clear");
 	};
 
+	/**
+	 * Return serialised data
+	 * @param  {boolean} toJson
+	 * @return {mixed} Returns either an object or JSON string
+	 */
 	Selectr.prototype.serialise = function(toJson) {
 		var data = [];
 		util.each(this.el.options, function(i, option) {
@@ -1392,9 +1494,35 @@
 		return toJson ? JSON.stringify(data) : data;
 	};
 
-	/* Friends from across the pond */
+	/**
+	 * Localised version of serialise() method
+	 */
 	Selectr.prototype.serialize = function(toJson) {
 		return this.serialise(toJson);
+	};
+
+	/**
+	 * Enable the element
+	 * @return {void}
+	 */
+	Selectr.prototype.enable = function() {
+		if ( this.disabled ) {
+			this.disabled = false;
+			this.el.disabled = false;
+			util.removeClass(this.container, "disabled");
+		}
+	};
+
+	/**
+	 * Disable the element
+	 * @return {void}
+	 */
+	Selectr.prototype.disable = function() {
+		if ( !this.disabled ) {
+			this.disabled = true;
+			this.el.disabled = true;
+			util.addClass(this.container, "disabled");
+		}
 	};
 
 	/**
