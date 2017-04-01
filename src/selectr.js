@@ -1129,7 +1129,7 @@
 		util.removeClass(this.el, 'hidden-input');
 
 		// Remove reset listener from parent form
-		var form = _.el.form;
+		var form = this.el.form;
 		if ( form ) {
 			util.off(form, "reset", this.events.reset);
 		}
