@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.1.5
+ * Selectr 2.1.6
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -41,19 +41,20 @@
 				}
 			}
 		},
-		createElement: function(a, b) {
-			var c = document,
-				d = c.createElement(a);
-			if (b && "object" == typeof b) {
-				var e;
-				for (e in b)
-					if ("html" === e) d.innerHTML = b[e];
-					else if ("text" === e) {
-					var f = c.createTextNode(b[e]);
-					d.appendChild(f);
-				} else d.setAttribute(e, b[e]);
+		createElement: function(e, a) {
+			var d = document,
+				el = d.createElement(e);
+			if (a && util.isObject(a)) {
+				var i;
+				for (i in a)
+					if (i in el) el[i] = a[i];
+					else if ("html" === i) el.innerHTML = a[i];
+				else if ("text" === i) {
+					var t = d.createTextNode(a[i]);
+					el.appendChild(t)
+				} else el.setAttribute(i, a[i])
 			}
-			return d;
+			return el;
 		},
 		hasClass: function(a, b) {
 			return a.classList ? a.classList.contains(b) : !!a.className && !!a.className.match(new RegExp("(\\s|^)" + b + "(\\s|$)"));
@@ -271,7 +272,7 @@
 			class: "selectr-options-container"
 		});
 
-		_.optsOptions = util.createElement("ul", {
+		_.tree = util.createElement("ul", {
 			class: "selectr-options",
 			role: "tree",
 			"aria-hidden": true,
@@ -359,7 +360,7 @@
 		// Check for optgroups
 		if (_.hasOptGroups) {
 			var x = 0;
-			util.addClass(_.optsOptions, "optgroups");
+			util.addClass(_.tree, "optgroups");
 		}
 
 		var i = 0;
@@ -373,7 +374,7 @@
 					class: "selectr-optgroup--label",
 					text: opt.label
 				}));
-				_.optsOptions.appendChild(group);
+				_.tree.appendChild(group);
 
 				if (opt.children) {
 					util.each(opt.children, function(i, option) {
@@ -392,7 +393,7 @@
 		util.addClass(_.list[_.activeIdx], "active");
 
 		optsContainer.appendChild(_.notice);
-		optsContainer.appendChild(_.optsOptions);
+		optsContainer.appendChild(_.tree);
 
 		_.container.appendChild(_.selected);
 		_.container.appendChild(optsContainer);
@@ -439,7 +440,7 @@
 		if (group) {
 			group.appendChild(opt);
 		} else {
-			this.optsOptions.appendChild(opt);
+			this.tree.appendChild(opt);
 		}
 
 		if (!option.disabled) {
@@ -509,15 +510,15 @@
 		});
 
 		// Prevent text selection
-		util.on(_.optsOptions, "mousedown", function(e) { util.preventDefault(e); });
+		util.on(_.tree, "mousedown", function(e) { util.preventDefault(e); });
 
 		// Mouseover list items
-		util.on(_.optsOptions, "mouseover", function(e) {
+		util.on(_.tree, "mouseover", function(e) {
 			var t = e.target;
 			if ( util.hasClass(t, "selectr-option") ) {
 				util.removeClass(_.items[_.activeIdx], "active");
 				util.addClass(t, "active");
-				_.activeIdx = [].slice.call(_.optsOptions.children).indexOf(t);
+				_.activeIdx = [].slice.call(_.tree.children).indexOf(t);
 			}
 		});
 
@@ -550,7 +551,7 @@
 				paginate.call(_);
 			}, 50);
 
-			util.on(_.optsOptions, "scroll", _.paginateItems);
+			util.on(_.tree, "scroll", _.paginateItems);
 		}
 
 		// Listen for form.reset() (#13)
@@ -853,7 +854,7 @@
 				if ( _.settings.taggable && _.input === document.activeElement ) {
 					_.input.value = "";
 				}
-				var opt = _.optsOptions.querySelector(".active");
+				var opt = _.tree.querySelector(".active");
 				var index = _.items.indexOf(opt);
 
 				return void change.call(_, index);
@@ -870,7 +871,7 @@
 
 		var nxtEl = list[_.activeIdx];
 		var nxtRct = util.getRect(nxtEl);
-		var opsTop = _.optsOptions.scrollTop;
+		var opsTop = _.tree.scrollTop;
 		var offset = _.optsRect.top;
 		var curOffset, nxtOffset;
 
@@ -880,9 +881,9 @@
 			nxtOffset = opsTop + (nxtTp - curOffset);
 
 			if (_.activeIdx === 0) {
-				_.optsOptions.scrollTop = 0;
+				_.tree.scrollTop = 0;
 			} else if (nxtTp - curOffset < 0) {
-				_.optsOptions.scrollTop = nxtOffset;
+				_.tree.scrollTop = nxtOffset;
 			}
 		} else {
 			var nxtBottom = nxtRct.top + nxtRct.height;
@@ -890,9 +891,9 @@
 			nxtOffset = opsTop + (nxtBottom - curOffset);
 
 			if (_.activeIdx === 0) {
-				_.optsOptions.scrollTop = 0;
+				_.tree.scrollTop = 0;
 			} else if (nxtBottom > curOffset) {
-				_.optsOptions.scrollTop = nxtOffset;
+				_.tree.scrollTop = nxtOffset;
 			}
 
 			if ( _.requiresPagination ) {
@@ -900,13 +901,13 @@
 			}
 		}
 
-		util.removeClass(_.optsOptions.querySelector(".active"), "active");
+		util.removeClass(_.tree.querySelector(".active"), "active");
 		util.addClass(list[_.activeIdx], "active");
 	};
 
 	var paginate = function() {
 		var _ = this;
-		var opts = _.optsOptions;
+		var opts = _.tree;
 		var scrollTop = opts.scrollTop;
 		var scrollHeight = opts.scrollHeight;
 		var offsetHeight = opts.offsetHeight;
@@ -939,7 +940,7 @@
 	// Make sure dropdown stays on screen
 	var checkInvert = function() {
 		var s = util.getRect(this.selected);
-		var o = this.optsOptions.parentNode.offsetHeight;
+		var o = this.tree.parentNode.offsetHeight;
 		var wh = window.innerHeight;
 		var doInvert =  s.top + s.height + o > wh;
 
@@ -951,7 +952,7 @@
 			this.isInverted = false;
 		}
 
-		this.optsRect = util.getRect(this.optsOptions);
+		this.optsRect = util.getRect(this.tree);
 	};
 
 	var dismiss = function(e) {
@@ -1094,7 +1095,7 @@
 
 		this.update();
 
-		this.optsRect = util.getRect(this.optsOptions);
+		this.optsRect = util.getRect(this.tree);
 
 		this.rendered = true;
 
@@ -1367,7 +1368,7 @@
 
 		checkInvert.call(_);
 
-		var scrollHeight = this.optsOptions.scrollHeight;
+		var scrollHeight = this.tree.scrollHeight;
 
 		if ( scrollHeight <= _.optsRect.height ) {
 			if ( _.requiresPagination ) {
@@ -1378,7 +1379,7 @@
 		util.removeClass(_.container, "notice");
 
 		util.attr(_.selected, "aria-expanded", true);
-		util.attr(_.optsOptions, {
+		util.attr(_.tree, {
 			"aria-hidden": false,
 			"aria-expanded": true
 		});
@@ -1420,7 +1421,7 @@
 		util.removeClass(this.container, "open");
 
 		util.attr(this.selected, "aria-expanded", false);
-		util.attr(this.optsOptions, {
+		util.attr(this.tree, {
 			"aria-hidden": true,
 			"aria-expanded": false
 		});
@@ -1518,10 +1519,13 @@
 	 * Disable the element
 	 * @return {void}
 	 */
-	Selectr.prototype.disable = function() {
+	Selectr.prototype.disable = function(container) {
 		if ( !this.disabled ) {
+			if ( !container ) {
+				this.el.disabled = true;
+			}
+
 			this.disabled = true;
-			this.el.disabled = true;
 			util.addClass(this.container, "disabled");
 		}
 	};
