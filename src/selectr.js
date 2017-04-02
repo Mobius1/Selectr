@@ -513,7 +513,7 @@
 
 		// Mouseover list items
 		util.on(_.optsOptions, "mouseover", function(e) {
-			var t = e.t;
+			var t = e.target;
 			if ( util.hasClass(t, "selectr-option") ) {
 				util.removeClass(_.items[_.activeIdx], "active");
 				util.addClass(t, "active");
