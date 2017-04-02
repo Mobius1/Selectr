@@ -2,6 +2,10 @@
 	position: relative;
 }
 
+.selectr-container.disabled * {
+    pointer-events: none;
+}
+
 .selectr-container li {
 	list-style: none;
 }

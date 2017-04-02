@@ -195,17 +195,6 @@
 
 		util.addClass(_.el, "hidden-input");
 
-		// We don't want to focus on the native select box
-		_.el.tabIndex = -1;
-
-		util.attr(_.el, {
-			"aria-hidden": true
-		});
-
-		if ( _.disabled ) {
-			_.el.disabled = true;
-		}
-
 
 		// Check for data
 		if ( o.data ) {
@@ -282,6 +271,17 @@
 		_.notice = util.createElement("div", {
 			class: "selectr-notice"
 		});
+
+		// We don't want to focus on the native select box
+		_.el.tabIndex = -1;
+
+		util.attr(_.el, {
+			"aria-hidden": true
+		});
+
+		if ( _.disabled ) {
+			_.el.disabled = true;
+		}
 
 		if (_.el.multiple) {
 			util.addClass(_.label, "selectr-tags");
@@ -449,7 +449,7 @@
 	};
 
 	var addListeners = function() {
-		var _ = this;
+		var _ = this, o = _.settings;
 
 		this.events = {};
 
@@ -458,7 +458,7 @@
 		this.events.dismiss = dismiss.bind(_);
 		this.events.reset = this.reset.bind(_);
 
-		_.requiresPagination = _.settings.data && _.settings.data.length > _.settings.pagination;
+		_.requiresPagination = o.data && o.data.length > o.pagination;
 
 		// Global listener
 		util.on(_.container, "click", function(e) {
@@ -479,7 +479,7 @@
 
 
 			// Clear
-			if ( _.settings.clearable && t === _.selectClear ) {
+			if ( o.clearable && t === _.selectClear ) {
 				_.clear();
 				return;
 			}
@@ -522,7 +522,7 @@
 			}
 		});
 
-		if (_.settings.searchable) {
+		if (o.searchable) {
 			util.on(_.inputClear, "click", function(e) {
 				clearSearch.call(_);
 			});
@@ -534,7 +534,7 @@
 
 		_.update = util.debounce(function() {
 			// Optionally close dropdown on scroll / resize (#11)
-			if (_.opened && _.settings.closeOnScroll) {
+			if (_.opened && o.closeOnScroll) {
 				_.close();
 			}
 			if ( this.width ) {
@@ -1045,6 +1045,7 @@
 		}
 
 		this.originalType = this.el.type;
+		this.originalIndex = this.el.tabIndex;
 
 		this.render(options);
 	}
@@ -1440,17 +1441,19 @@
 	 * @return {void}
 	 */
 	Selectr.prototype.reset = function() {
-		this.clear();
+		if ( !this.disabled ) {
+			this.clear();
 
-		setSelected.call(this, true);
+			setSelected.call(this, true);
 
-		util.each(this.el.options, function(i,opt) {
-			if ( opt.defaultSelected ) {
-				change.call(this, i);
-			}
-		}, this);
+			util.each(this.el.options, function(i,opt) {
+				if ( opt.defaultSelected ) {
+					change.call(this, i);
+				}
+			}, this);
 
-		this.emit("selectr.reset");
+			this.emit("selectr.reset");
+		}
 	};
 
 	/**
@@ -1511,12 +1514,20 @@
 		if ( this.disabled ) {
 			this.disabled = false;
 			this.el.disabled = false;
+
+			this.selected.tabIndex = this.originalIndex;
+
+			util.each(this.tags, function(i,t) {
+				t.lastElementChild.tabIndex = 0;
+			});
+
 			util.removeClass(this.container, "disabled");
 		}
 	};
 
 	/**
 	 * Disable the element
+	 * @param  {boolean} container Disable the container only (allow value submit with form)
 	 * @return {void}
 	 */
 	Selectr.prototype.disable = function(container) {
@@ -1524,6 +1535,12 @@
 			if ( !container ) {
 				this.el.disabled = true;
 			}
+
+			this.selected.tabIndex = -1;
+
+			util.each(this.tags, function(i,t) {
+				t.lastElementChild.tabIndex = -1;
+			});
 
 			this.disabled = true;
 			util.addClass(this.container, "disabled");
