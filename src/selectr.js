@@ -51,8 +51,8 @@
 					else if ("html" === i) el.innerHTML = a[i];
 				else if ("text" === i) {
 					var t = d.createTextNode(a[i]);
-					el.appendChild(t)
-				} else el.setAttribute(i, a[i])
+					el.appendChild(t);
+				} else el.setAttribute(i, a[i]);
 			}
 			return el;
 		},
