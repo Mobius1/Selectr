@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.1.4
+ * Selectr 2.1.5
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -136,19 +136,19 @@
 
 	var setSelected = function(reset) {
 		var o = this.settings;
-		var opts = this.el.options;
+		var ops = this.el.options;
 
 		if ( o.selectedValue ) {
 			var val = o.selectedValue.toString();
-			util.each(opts, function(i, opt) {
-				if ( util.includes(val, opt.value) )  {
-					opt.selected = true;
-					opt.defaultSelected = true;
+			util.each(ops, function(i, op) {
+				if ( util.includes(val, op.value) )  {
+					op.selected = true;
+					op.defaultSelected = true;
 				}
 			});
 		}
 
-		if ( !opts[0].defaultSelected && opts[0].selected ) {
+		if ( !ops[0].defaultSelected && ops[0].selected ) {
 			this.el.selectedIndex = -1;
 		}
 
@@ -157,10 +157,10 @@
 			if ( o.data ) {
 				util.each(o.data, function(idx, itm) {
 					var selected = itm.hasOwnProperty('selected') && itm.selected === true;
-					util.each(opts, function(i, opt) {
-						if ( opt.value === itm.value && selected ) {
-							opt.selected = true;
-							opt.defaultSelected = true;
+					util.each(ops, function(i, op) {
+						if ( op.value === itm.value && selected ) {
+							op.selected = true;
+							op.defaultSelected = true;
 						}
 					});
 				});
@@ -169,7 +169,8 @@
 	};
 
 	var setWidth = function() {
-		var w = this.settings.width;
+		var o = this.settings;
+		var w = o.width;
 
 		if (w) {
 			if (util.isInt(w)) {
@@ -177,8 +178,8 @@
 			} else {
 				if (w === "auto") {
 					w = "100%";
-				} else if (util.includes(this.settings.width, "%")) {
-					w = this.settings.width;
+				} else if (util.includes(o.width, "%")) {
+					w = o.width;
 				}
 			}
 
@@ -465,41 +466,41 @@
 
 			e = e || window.event;
 
-			var target = e.target;
+			var t = e.target;
 
-			var isSelected = util.closest(target, function(el) {
+			var isSelected = util.closest(t, function(el) {
 				return (el && el == _.selected);
 			});
 
-			if ( target === _.input ) {
+			if ( t === _.input ) {
 				return;
 			}
 
 
 			// Clear
-			if ( _.settings.clearable && target === _.selectClear ) {
+			if ( _.settings.clearable && t === _.selectClear ) {
 				_.clear();
 				return;
 			}
 
 			// Remove tag button
-			if (util.hasClass(target, "selectr-tag-remove")) {
-				deselect.call(_, target.parentNode.idx);
+			if (util.hasClass(t, "selectr-tag-remove")) {
+				deselect.call(_, t.parentNode.idx);
 			}
 
 			// Click on placeholder or selected text
-			if (target === _.label || target === _.placeEl) {
-				target = _.placeEl.parentNode;
+			if (t === _.label || t === _.placeEl) {
+				t = _.placeEl.parentNode;
 			}
 
 			// Open / close dropdown
-			if (isSelected || target === _.selected) {
+			if (isSelected || t === _.selected) {
 				_.toggle();
 			}
 
 			// Select option
-			if (util.hasClass(target, "selectr-option")) {
-				var index = _.items.indexOf(target);
+			if (util.hasClass(t, "selectr-option")) {
+				var index = _.items.indexOf(t);
 				change.call(_, index);
 			}
 
@@ -512,7 +513,7 @@
 
 		// Mouseover list items
 		util.on(_.optsOptions, "mouseover", function(e) {
-			var t = e.target;
+			var t = e.t;
 			if ( util.hasClass(t, "selectr-option") ) {
 				util.removeClass(_.items[_.activeIdx], "active");
 				util.addClass(t, "active");
@@ -800,7 +801,7 @@
 		}
 
 		if ( _.settings.taggable && _.input.value.length ) {
-			var value = _.input.value.trim();
+			var val = _.input.value.trim();
 
 			if ( _.searchItems.length ) {
 				return false;
@@ -809,12 +810,12 @@
 			if ( e.which === 13 || util.includes(_.tagSeperators, e.key) ) {
 
 				util.each(_.tagSeperators, function(i,k) {
-					value = value.replace(k, '');
+					val = val.replace(k, '');
 				});
 
 				var option = _.addOption({
-					value: value,
-					text: value,
+					value: val,
+					text: val,
 					selected: true
 				});
 
@@ -867,31 +868,31 @@
 
 		this.navigating = true;
 
-		var nextElem = list[_.activeIdx];
-		var nextRect = util.getRect(nextElem);
-		var optsTop = _.optsOptions.scrollTop;
+		var nxtEl = list[_.activeIdx];
+		var nxtRct = util.getRect(nxtEl);
+		var opsTop = _.optsOptions.scrollTop;
 		var offset = _.optsRect.top;
-		var currentOffset, nextOffset;
+		var curOffset, nxtOffset;
 
 		if (dir > 0) {
-			var nextTop = nextRect.top;
-			currentOffset = offset;
-			nextOffset = optsTop + (nextTop - currentOffset);
+			var nxtTp = nxtRct.top;
+			curOffset = offset;
+			nxtOffset = opsTop + (nxtTp - curOffset);
 
 			if (_.activeIdx === 0) {
 				_.optsOptions.scrollTop = 0;
-			} else if (nextTop - currentOffset < 0) {
-				_.optsOptions.scrollTop = nextOffset;
+			} else if (nxtTp - curOffset < 0) {
+				_.optsOptions.scrollTop = nxtOffset;
 			}
 		} else {
-			var nextBottom = nextRect.top + nextRect.height;
-			currentOffset = offset + _.optsRect.height;
-			nextOffset = optsTop + (nextBottom - currentOffset);
+			var nxtBottom = nxtRct.top + nxtRct.height;
+			curOffset = offset + _.optsRect.height;
+			nxtOffset = opsTop + (nxtBottom - curOffset);
 
 			if (_.activeIdx === 0) {
 				_.optsOptions.scrollTop = 0;
-			} else if (nextBottom > currentOffset) {
-				_.optsOptions.scrollTop = nextOffset;
+			} else if (nxtBottom > curOffset) {
+				_.optsOptions.scrollTop = nxtOffset;
 			}
 
 			if ( _.requiresPagination ) {

@@ -85,6 +85,11 @@ new Selectr('#mySelect', {
 
 ## Change Log
 
+### v2.1.5
+* Improved accessibility
+* New methods `disable()` and `enable()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
+* Fixed navigation bug ([#5](https://github.com/Mobius1/Selectr/issues/5))
+
 ### v2.1.4
 * Fixed form.reset() not resetting Selectr elements ([#13](https://github.com/Mobius1/Selectr/issues/13))
 * Fixed autocomplete bug in Chrome ([#12](https://github.com/Mobius1/Selectr/issues/12))
