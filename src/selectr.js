@@ -201,7 +201,7 @@
 			var data = o.pagination ? o.data.slice(0, o.pagination) : o.data;
 			var firstSelected = false;
 
-			function dataToOption(idx, obj) {
+			var dataToOption = function (idx, obj) {
 				var selected = obj.hasOwnProperty('selected') && obj.selected === true;
 				var option = new Option(obj.text, obj.value, selected, selected);
 
@@ -382,13 +382,14 @@
 			optsContainer.appendChild(_.inputContainer);
 		}
 
+		var j = 0;
+
 		// Check for optgroups
 		if (_.hasOptGroups) {
 			var x = 0;
 			util.addClass(_.tree, "optgroups");
 		}
 
-		var i = 0;
 		util.each(_.el.children, function(idx, opt) {
 			if (opt.nodeName === "OPTGROUP") {
 				var group = util.createElement("ul", {
@@ -409,9 +410,9 @@
 					});
 				}
 			} else {
-				if ( o.pagination && o.data && i >= o.pagination ) return;
-				buildOption.call(_, i, opt);
-				i++;
+				if ( o.pagination && o.data && j >= o.pagination ) return;
+				buildOption.call(_, j, opt);
+				j++;
 			}
 		});
 
