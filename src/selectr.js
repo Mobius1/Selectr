@@ -192,21 +192,20 @@
 		var _ = this;
 		var o = _.settings;
 
-
 		util.addClass(_.el, "hidden-input");
 
-
 		// Check for data
+		_.data = [];
 		if ( o.data ) {
 			_.pageIndex = 1;
 			var data = o.pagination ? o.data.slice(0, o.pagination) : o.data;
 			var firstSelected = false;
 
-			util.each(data, function(idx, itm) {
-				var selected = itm.hasOwnProperty('selected') && itm.selected === true;
-				var option = new Option(itm.text, itm.value, selected, selected);
+			function dataToOption(idx, obj) {
+				var selected = obj.hasOwnProperty('selected') && obj.selected === true;
+				var option = new Option(obj.text, obj.value, selected, selected);
 
-				if ( itm.disabled ) {
+				if ( obj.disabled ) {
 					option.disabled = true;
 				}
 
@@ -214,21 +213,47 @@
 					firstSelected = true;
 				}
 
-				_.el.add(option);
+				return option;
+			}
+
+			var i = 0;
+
+			util.each(data, function(idx, itm) {
+				if ( itm.hasOwnProperty('children') ) {
+					var optgroup = util.createElement("optgroup", {
+						label: itm.text
+					});
+
+					util.each(itm.children, function(k,c) {
+						optgroup.appendChild(dataToOption(i, c));
+						i++;
+					});
+
+					_.el.appendChild(optgroup);
+				} else {
+					_.el.appendChild(dataToOption(i, itm));
+					i++;
+				}
 			});
 
 			if ( !firstSelected ) {
-				this.el.selectedIndex = -1;
+				_.el.selectedIndex = -1;
 			}
 
 			if ( o.pagination ) {
-				this.pages = o.data.map( function(v, i) {
+				_.pages = o.data.map( function(v, i) {
 					return i % o.pagination === 0 ? o.data.slice(i, i+o.pagination) : null;
 				}).filter(function(pages){ return pages; });
 			}
+
+			_.data = o.data;
 		}
 
 		setSelected.call(_);
+
+		util.each(_.data, function(i,o) {
+			o.idx = i;
+		});
 
 		_.customOption = o.hasOwnProperty("renderOption") && typeof o.renderOption === "function";
 		_.customSelected = o.hasOwnProperty("renderSelection") && typeof o.renderSelection === "function";
@@ -515,10 +540,15 @@
 		// Mouseover list items
 		util.on(_.tree, "mouseover", function(e) {
 			var t = e.target;
-			if ( util.hasClass(t, "selectr-option") ) {
+
+			var option = util.closest(t, function(el) {
+				return el && util.hasClass(el, "selectr-option");
+			});
+
+			if ( option ) {
 				util.removeClass(_.items[_.activeIdx], "active");
 				util.addClass(t, "active");
-				_.activeIdx = [].slice.call(_.tree.children).indexOf(t);
+				_.activeIdx = [].slice.call(_.items).indexOf(t);
 			}
 		});
 
@@ -1046,6 +1076,7 @@
 			throw new Error("You don't have any options in your select!");
 		}
 
+		this.sortDirection = "asc";
 		this.originalType = this.el.type;
 		this.originalIndex = this.el.tabIndex;
 
