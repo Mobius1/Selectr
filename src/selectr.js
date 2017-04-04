@@ -214,7 +214,7 @@
 				}
 
 				return option;
-			}
+			};
 
 			var i = 0;
 
