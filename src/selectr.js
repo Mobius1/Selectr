@@ -1021,6 +1021,8 @@
 	 */
 	function Selectr(el, options) {
 
+		options = options || {};
+
 		// Checks
 		if (el === null) {
 			throw new Error("Selectr requires an element to work.");
