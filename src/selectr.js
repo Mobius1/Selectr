@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.1.6
+ * Selectr 2.1.7
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -135,6 +135,10 @@
 		}
 	};
 
+	/**
+	 * Check for selected options
+	 * @param {bool} reset
+	 */
 	var setSelected = function(reset) {
 		var o = this.settings;
 		var ops = this.el.options;
@@ -169,6 +173,9 @@
 		}
 	};
 
+	/**
+	 * Set the custom width
+	 */
 	var setWidth = function() {
 		var o = this.settings;
 		var w = o.width;
@@ -188,6 +195,10 @@
 		}
 	};
 
+	/**
+	 * Render the containers
+	 * @return {void}
+	 */
 	var build = function() {
 		var _ = this;
 		var o = _.settings;
@@ -220,16 +231,16 @@
 
 			util.each(data, function(idx, itm) {
 				if ( itm.hasOwnProperty('children') ) {
-					var optgroup = util.createElement("optgroup", {
+					var g = util.createElement("optgroup", {
 						label: itm.text
 					});
 
 					util.each(itm.children, function(k,c) {
-						optgroup.appendChild(dataToOption(i, c));
+						g.appendChild(dataToOption(i, c));
 						i++;
 					});
 
-					_.el.appendChild(optgroup);
+					_.el.appendChild(g);
 				} else {
 					_.el.appendChild(dataToOption(i, itm));
 					i++;
@@ -438,6 +449,13 @@
 		addListeners.call(this);
 	};
 
+	/**
+	 * Build an list item from the HTMLOptionElement
+	 * @param  {int} i      HTMLOptionElement index
+	 * @param  {HTMLOptionElement} option
+	 * @param  {bool} group  Has parent optgroup
+	 * @return {void}
+	 */
 	var buildOption = function(i, option, group) {
 		if (option.nodeName !== "OPTION" || !option.value) return;
 
@@ -474,6 +492,9 @@
 		}
 	};
 
+	/**
+	 * Add the required event listeners
+	 */
 	var addListeners = function() {
 		var _ = this, o = _.settings;
 
@@ -592,6 +613,12 @@
 		}
 	};
 
+	/**
+	 * Trigger a change
+	 * @param  {int} index
+	 * @param  {bool} init
+	 * @return {void}
+	 */
 	var change = function(index, init) {
 		var _ = this;
 		var opt = _.items[index];
@@ -617,6 +644,11 @@
 		}
 	};
 
+	/**
+	 * Select an option
+	 * @param  {int} index
+	 * @return {void}
+	 */
 	var select = function(index) {
 		var option = this.el.options[index];
 
@@ -668,6 +700,11 @@
 		this.emit("selectr.change", option);
 	};
 
+	/**
+	 * Deselect an options
+	 * @param  {int} index
+	 * @return {void}
+	 */
 	var deselect = function(index) {
 		var option = this.el.options[index];
 
@@ -709,6 +746,10 @@
 		this.emit("selectr.change", option);
 	};
 
+	/**
+	 * Add a tag
+	 * @param {int} index
+	 */
 	var addTag = function(index) {
 		var _ = this;
 
@@ -778,6 +819,11 @@
 		}
 	};
 
+	/**
+	 * Remove a tag
+	 * @param  {int}
+	 * @return {void}
+	 */
 	var removeTag = function(index) {
 		var tag = false;
 
@@ -796,6 +842,10 @@
 		}
 	};
 
+	/**
+	 * Clear a search
+	 * @return {void}
+	 */
 	var clearSearch = function() {
 		var _  = this;
 
@@ -823,6 +873,11 @@
 		}
 	};
 
+	/**
+	 * keyup listener
+	 * @param  {obj} e
+	 * @return {void}
+	 */
 	var keyup = function(e) {
 		var _ = this;
 		if ( e.target === _.input ) {
@@ -863,6 +918,11 @@
 		}
 	};
 
+	/**
+	 * Navigate through the dropdown
+	 * @param  {obj} e
+	 * @return {void}
+	 */
 	var navigate = function(e) {
 		e = e || window.event;
 
@@ -936,6 +996,10 @@
 		util.addClass(list[_.activeIdx], "active");
 	};
 
+	/**
+	 * Paginate the dataset
+	 * @return {void}
+	 */
 	var paginate = function() {
 		var _ = this;
 		var opts = _.tree;
@@ -968,7 +1032,10 @@
 		}
 	};
 
-	// Make sure dropdown stays on screen
+	/**
+	 * Keep the dropdown within the window
+	 * @return {void}
+	 */
 	var checkInvert = function() {
 		var s = util.getRect(this.selected);
 		var o = this.tree.parentNode.offsetHeight;
@@ -986,6 +1053,11 @@
 		this.optsRect = util.getRect(this.tree);
 	};
 
+	/**
+	 * Dismiss / close the dropdown
+	 * @param  {obj} e
+	 * @return {void}
+	 */
 	var dismiss = function(e) {
 		var target = e.target;
 		if (!this.container.contains(target) && (this.opened || this.container.classList.contains("notice"))) {
@@ -993,6 +1065,13 @@
 		}
 	};
 
+	/**
+	 * Query matching for searches
+	 * @param  {string} query
+	 * @param  {HTMLOptionElement} opt
+	 * @param  {string} text
+	 * @return {bool}
+	 */
 	var match = function(query, opt, text) {
 		var result = new RegExp(query, "i").exec(text);
 		if ( result ) {
@@ -1035,6 +1114,10 @@
 		return obj;
 	};
 
+	/**
+	 * Plugin defaults
+	 * @type {Object}
+	 */
 	var defaults = {
 		width: "auto",
 		disabled: false,
