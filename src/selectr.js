@@ -164,9 +164,9 @@
 			var p;
 			for (p in src) {
 		if (src.hasOwnProperty(p)) {
-		  if (!props.hasOwnProperty(p)) {
-			props[p] = src[p];
-		  }
+			if (!props.hasOwnProperty(p)) {
+				props[p] = src[p];
+			}
 		}
 			}
 			return props;
@@ -620,7 +620,7 @@
 			this.data = [];
 			var optgroup = false, option;
 
-	  group = false; j = 0;
+			group = false; j = 0;
 
 			util.each(this.config.data, function(i, opt) {
 				// Check for group options
