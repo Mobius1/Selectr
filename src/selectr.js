@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.2.0
+ * Selectr 2.2.1
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -295,6 +295,10 @@
 	var set = function(obj, prop) {
 		return obj.hasOwnProperty(prop) && (obj[prop] === true || obj[prop].length);
 	};
+	
+	var selected = function(obj) {
+		return obj.hasOwnProperty("selected") && obj.selected === true;
+	}
 
 	/**
 	 * Check for selected options
@@ -317,18 +321,14 @@
 			this.setValue(this.config.selectedValue);
 		}
 
-		// Check the original data for selected options on form.reset()
-		if ( reset ) {
-			if ( this.config.data ) {
-				util.each(this.config.data, function(idx, item) {
-					util.each(this.options, function(i, option) {
-						if ( option.value === item.value && set(item, "selected") ) {
-							option.selected = true;
-							option.setAttribute("selected", "");
-						}
-					}, this);
+		if ( this.config.data ) {
+			util.each(this.config.data, function(idx, item) {
+				util.each(this.options, function(i, option) {
+					if ( option.value === item.value && selected(item) ) {
+						select.call(this, this.items[option.idx]);
+					}
 				}, this);
-			}
+			}, this);
 		}
 	};
 
@@ -634,7 +634,7 @@
 					});
 
 					util.each(opt.children, function(x, data) {
-						option = new Option(data.text, data.value, false, set(data, "selected"));
+						option = new Option(data.text, data.value, false, selected(data));
 
 						option.disabled = set(data, "disabled");
 
@@ -651,7 +651,7 @@
 						j++;
 					}, this);
 				} else {
-					option = new Option(opt.text, opt.value, false, set(opt, "selected"));
+					option = new Option(opt.text, opt.value, false, selected(opt));
 
 					option.disabled = set(opt, "disabled");
 
@@ -772,8 +772,6 @@
 							if ( !this.ctrlDown ) {
 								this.clear();
 							}
-
-							console.log(e.target, e.target.idx, this.items[e.target.idx]);
 
 							change.call(this, this.items[e.target.idx]);
 
@@ -973,7 +971,7 @@
 
 		this.items.push(opt);
 
-		if (option.selected && option.defaultSelected) {
+		if (option.selected) {
 			util.addClass(opt, "selected");
 		}
 
