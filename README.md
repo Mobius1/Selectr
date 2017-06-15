@@ -13,6 +13,7 @@ Features:
 * Custom events
 * Custom styling
 * Native select for mobile devices
+* Dynamically add options
 * Much more...
 
 [Documentation](https://github.com/Mobius1/Selectr/wiki) | [Demo](http://codepen.io/Mobius1/full/jBqpze/)
@@ -99,7 +100,8 @@ new Selectr('#mySelect', {
 * Searching with pagination active will now return results from entire set instead of the loaded set ([#15](https://github.com/Mobius1/Selectr/issues/15))
 * Custom renderers (`renderOption`, `renderSelection`) can now be used along with the `data` option.
 * The tag input placeholder can now be customised ([#21](https://github.com/Mobius1/Selectr/issues/21), [#22](https://github.com/Mobius1/Selectr/issues/22))
-* Reduced memory usaged
+* Reduced memory usage
+* Public method `addOption` now accepts an array of objects for dynamically adding multiple options
 * Various other fixes
 
 ### v2.1.5
