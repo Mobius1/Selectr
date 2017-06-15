@@ -163,11 +163,11 @@
 			props = props || {};
 			var p;
 			for (p in src) {
-        if (src.hasOwnProperty(p)) {
-          if (!props.hasOwnProperty(p)) {
-            props[p] = src[p];
-          }
-        }
+		if (src.hasOwnProperty(p)) {
+		  if (!props.hasOwnProperty(p)) {
+			props[p] = src[p];
+		  }
+		}
 			}
 			return props;
 		},
@@ -295,10 +295,10 @@
 	var set = function(obj, prop) {
 		return obj.hasOwnProperty(prop) && (obj[prop] === true || obj[prop].length);
 	};
-	
+
 	var selected = function(obj) {
 		return obj.hasOwnProperty("selected") && obj.selected === true;
-	}
+	};
 
 	/**
 	 * Check for selected options
@@ -591,7 +591,7 @@
 
 		// Element may have optgroups so
 		// iterate element.children instead of element.options
-    var group = false, j = 0;
+	var group = false, j = 0;
 		if ( this.el.children.length ) {
 			util.each(this.el.children, function(i, element) {
 				if ( element.nodeName === "OPTGROUP" ) {
@@ -620,7 +620,7 @@
 			this.data = [];
 			var optgroup = false, option;
 
-      group = false; j = 0;
+	  group = false; j = 0;
 
 			util.each(this.config.data, function(i, opt) {
 				// Check for group options
