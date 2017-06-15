@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.1.7
+ * Selectr 2.2.0
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -15,16 +15,159 @@
 		root[plugin] = factory(plugin);
 	}
 }(this, function (plugin) {
-	"use strict";
+	'use strict';
 
+	/**
+	 * Default configuration options
+	 * @type {Object}
+	 */
+	var defaultConfig = {
+		/**
+		 * Sets the width of the container
+		 * @type {String}
+		 */
+		width: "auto",
+
+		/**
+		 * Enables/ disables the container
+		 * @type {Boolean}
+		 */
+		disabled: false,
+
+		/**
+		 * Enables / disables the search function
+		 * @type {Boolean}
+		 */
+		searchable: true,
+
+		/**
+		 * Enable disable the clear button
+		 * @type {Boolean}
+		 */
+		clearable: false,
+
+		/**
+		 * Sort the tags / multiselect options
+		 * @type {Boolean}
+		 */
+		sortSelected: false,
+
+		/**
+		 * Allow deselecting of select-one options
+		 * @type {Boolean}
+		 */
+		allowDeselect: false,
+
+		/**
+		 * Close the dropdown when scrolling (@AlexanderReiswich, #11)
+		 * @type {Boolean}
+		 */
+		closeOnScroll: false,
+
+		/**
+		 * Allow the use of the native dropdown (@jonnyscholes, #14)
+		 * @type {Boolean}
+		 */
+		nativeDropdown: false,
+
+		/**
+		 * Set the main placeholder
+		 * @type {String}
+		 */
+		placeholder: "Select an option...",
+
+		/**
+		 * Allow the tagging feature
+		 * @type {Boolean}
+		 */
+		taggable: false,
+
+		/**
+		 * Set the tag input placeholder (@labikmartin, #21, #22)
+		 * @type {String}
+		 */
+		tagPlaceholder: "Enter a tag..."
+	};
+
+	/**
+	 * Event Emitter
+	 */
+	var Events = function() {};
+
+	/**
+	 * Event Prototype
+	 * @type {Object}
+	 */
+	Events.prototype = {
+		/**
+		 * Add custom event listener
+		 * @param  {String} event Event type
+		 * @param  {Function} func   Callback
+		 * @return {Void}
+		 */
+		on: function(event, func) {
+			this._events = this._events || {};
+			this._events[event] = this._events[event] || [];
+			this._events[event].push(func);
+		},
+
+		/**
+		 * Remove custom event listener
+		 * @param  {String} event Event type
+		 * @param  {Function} func   Callback
+		 * @return {Void}
+		 */
+		off: function(event, func) {
+			this._events = this._events || {};
+			if (event in this._events === false) return;
+			this._events[event].splice(this._events[event].indexOf(func), 1);
+		},
+
+		/**
+		 * Fire a custom event
+		 * @param  {String} event Event type
+		 * @return {Void}
+		 */
+		emit: function(event /* , args... */ ) {
+			this._events = this._events || {};
+			if (event in this._events === false) return;
+			for (var i = 0; i < this._events[event].length; i++) {
+				this._events[event][i].apply(this, Array.prototype.slice.call(arguments, 1));
+			}
+		}
+	};
+
+	/**
+	 * Event mixin
+	 * @param  {Object} obj
+	 * @return {Object}
+	 */
+	Events.mixin = function(obj) {
+		var props = ['on', 'off', 'emit'];
+		for (var i = 0; i < props.length; i++) {
+			if (typeof obj === 'function') {
+				obj.prototype[props[i]] = Events.prototype[props[i]];
+			} else {
+				obj[props[i]] = Events.prototype[props[i]];
+			}
+		}
+		return obj;
+	};
+
+	/**
+	 * Helpers
+	 * @type {Object}
+	 */
 	var util = {
 		extend: function(src, props) {
 			props = props || {};
 			var p;
 			for (p in src) {
-				if (!props.hasOwnProperty(p)) {
-					props[p] = src[p];
-				}
+        if (src.hasOwnProperty(p)) {
+          if (!props.hasOwnProperty(p)) {
+            props[p] = src[p];
+          }
+        }
 			}
 			return props;
 		},
@@ -69,27 +212,15 @@
 		closest: function(el, fn) {
 			return el && el !== document.body && ( fn(el) ? el : util.closest(el.parentNode, fn) );
 		},
-		on: function(e, type, callback, capture) {
-			e.addEventListener(type, callback, capture || false);
+		on: function(e, type, callback, scope) {
+			e.addEventListener(type, function(e) {
+				scope = scope || this;
+				callback.call(scope, e);
+			}, false);
 		},
-		off: function(e, type, callback) {
-			e.removeEventListener(type, callback);
-		},
-		attr: function(el, attr, val) {
-			if ( util.isObject(attr) ) {
-				util.each(attr, function(a,v) {
-					el.setAttribute(a,v);
-				});
-			} else {
-				el.setAttribute(attr, val);
-			}
-		},
-		isObject: function(a) {
-			return "[object Object]" === Object.prototype.toString.call(a);
-		},
-		isArray: function(a) {
-			return "[object Array]" === Object.prototype.toString.call(a);
-		},
+		off: function(e, type, callback) { e.removeEventListener(type, callback); },
+		isObject: function(a) { return "[object Object]" === Object.prototype.toString.call(a); },
+		isArray: function(a) { return "[object Array]" === Object.prototype.toString.call(a); },
 		isInt: function(val) {
 			return !isNaN(val) && (function(x) {
 				return (x || 0) === x;
@@ -126,9 +257,7 @@
 		},
 		preventDefault: function(e) {
 			e = e || window.event;
-			if (e.preventDefault) {
-				return e.preventDefault();
-			}
+			if (e.preventDefault) { return e.preventDefault(); }
 		},
 		includes: function(a,b) {
 			return a.indexOf(b) > -1;
@@ -136,899 +265,70 @@
 	};
 
 	/**
+	 * HELPER FUNCTIONS
+	 */
+
+	/**
+	 * Search for an element (faster than querySelector)
+	 * @param  {[type]} selector [description]
+	 * @return {[type]}          [description]
+	 */
+	var querySelect = function(a) {
+		var b = !1;
+		if (a && "string" == typeof a) {
+			var c = document,
+				e = a.charAt(0);
+			switch (e) {
+				case ".":
+					b = c.getElementsByClassName(a.substr(1))[0];
+					break;
+				case "#":
+					b = c.getElementById(a.substr(1));
+					break;
+				default:
+					b = c.getElementsByTagName(a)[0];
+			}
+		}
+		return b;
+	};
+
+	var set = function(obj, prop) {
+		return obj.hasOwnProperty(prop) && (obj[prop] === true || obj[prop].length);
+	};
+
+	/**
 	 * Check for selected options
 	 * @param {bool} reset
 	 */
 	var setSelected = function(reset) {
-		var o = this.settings;
-		var ops = this.el.options;
 
-		if ( o.selectedValue ) {
-			var val = o.selectedValue.toString();
-			util.each(ops, function(i, op) {
-				if ( util.includes(val, op.value) )  {
-					op.selected = true;
-					op.defaultSelected = true;
-				}
-			});
+		// Select first option as with native select - #21, #24
+		if ( !this.el.multiple ) {
+			if ( this.config.data && this.el.selectedIndex < 0 ) {
+				select.call(this, this.items[0]);
+			}
+
+			if ( this.el.selectedIndex > -1 ) {
+				select.call(this, this.items[this.el.selectedIndex]);
+			}
 		}
 
-		if ( !ops[0].defaultSelected && ops[0].selected ) {
-			this.el.selectedIndex = -1;
+		if ( this.config.selectedValue ) {
+			this.setValue(this.config.selectedValue);
 		}
 
 		// Check the original data for selected options on form.reset()
 		if ( reset ) {
-			if ( o.data ) {
-				util.each(o.data, function(idx, itm) {
-					var selected = itm.hasOwnProperty('selected') && itm.selected === true;
-					util.each(ops, function(i, op) {
-						if ( op.value === itm.value && selected ) {
-							op.selected = true;
-							op.defaultSelected = true;
+			if ( this.config.data ) {
+				util.each(this.config.data, function(idx, item) {
+					util.each(this.options, function(i, option) {
+						if ( option.value === item.value && set(item, "selected") ) {
+							option.selected = true;
+							option.setAttribute("selected", "");
 						}
-					});
-				});
+					}, this);
+				}, this);
 			}
-		}
-	};
-
-	/**
-	 * Set the custom width
-	 */
-	var setWidth = function() {
-		var o = this.settings;
-		var w = o.width;
-
-		if (w) {
-			if (util.isInt(w)) {
-				w += "px";
-			} else {
-				if (w === "auto") {
-					w = "100%";
-				} else if (util.includes(o.width, "%")) {
-					w = o.width;
-				}
-			}
-
-			this.width = w;
-		}
-	};
-
-	/**
-	 * Render the containers
-	 * @return {void}
-	 */
-	var build = function() {
-		var _ = this;
-		var o = _.settings;
-
-		util.addClass(_.el, "hidden-input");
-
-		// Check for data
-		_.data = [];
-		if ( o.data ) {
-			_.pageIndex = 1;
-			var data = o.pagination ? o.data.slice(0, o.pagination) : o.data;
-			var firstSelected = false;
-
-			var dataToOption = function (idx, obj) {
-				var selected = obj.hasOwnProperty('selected') && obj.selected === true;
-				var option = new Option(obj.text, obj.value, selected, selected);
-
-				if ( obj.disabled ) {
-					option.disabled = true;
-				}
-
-				if ( idx === 0 && selected ) {
-					firstSelected = true;
-				}
-
-				return option;
-			};
-
-			var i = 0;
-
-			util.each(data, function(idx, itm) {
-				if ( itm.hasOwnProperty('children') ) {
-					var g = util.createElement("optgroup", {
-						label: itm.text
-					});
-
-					util.each(itm.children, function(k,c) {
-						g.appendChild(dataToOption(i, c));
-						i++;
-					});
-
-					_.el.appendChild(g);
-				} else {
-					_.el.appendChild(dataToOption(i, itm));
-					i++;
-				}
-			});
-
-			if ( !firstSelected ) {
-				_.el.selectedIndex = -1;
-			}
-
-			if ( o.pagination ) {
-				_.pages = o.data.map( function(v, i) {
-					return i % o.pagination === 0 ? o.data.slice(i, i+o.pagination) : null;
-				}).filter(function(pages){ return pages; });
-			}
-
-			_.data = o.data;
-		}
-
-		setSelected.call(_);
-
-		util.each(_.data, function(i,o) {
-			o.idx = i;
-		});
-
-		_.customOption = o.hasOwnProperty("renderOption") && typeof o.renderOption === "function";
-		_.customSelected = o.hasOwnProperty("renderSelection") && typeof o.renderSelection === "function";
-
-		_.container = util.createElement("div", {
-			class: "selectr-container"
-		});
-
-		// Custom className
-		if (o.customClass) {
-			util.addClass(_.container, o.customClass);
-		}
-
-		setWidth.call(_);
-
-		this.container.style.width = this.width;
-
-		_.selected = util.createElement("div", {
-			class: "selectr-selected",
-			disabled: _.disabled,
-			tabIndex: _.el.tabIndex, // enable tabIndex (#9)
-			"aria-expanded": false
-		});
-
-		_.label = util.createElement(_.el.multiple ? "ul" : "span", {
-			class: "selectr-label"
-		});
-
-		var optsContainer = util.createElement("div", {
-			class: "selectr-options-container"
-		});
-
-		_.tree = util.createElement("ul", {
-			class: "selectr-options",
-			role: "tree",
-			"aria-hidden": true,
-			"aria-expanded": false
-		});
-
-		_.notice = util.createElement("div", {
-			class: "selectr-notice"
-		});
-
-		// We don't want to focus on the native select box
-		_.el.tabIndex = -1;
-
-		util.attr(_.el, {
-			"aria-hidden": true
-		});
-
-		if ( _.disabled ) {
-			_.el.disabled = true;
-		}
-
-		if (_.el.multiple) {
-			util.addClass(_.label, "selectr-tags");
-			util.addClass(_.container, "multiple");
-
-			// Collection of tags
-			this.tags = [];
-
-			// Collection of selected values
-			this.selectedValues = [];
-
-			// Collection of selected indexes
-			this.selectedIndexes = [];
-		}
-
-
-		_.selected.appendChild(_.label);
-
-		if ( _.el.multiple && o.clearable || !_.el.multiple && o.allowDeselect ) {
-			_.selectClear = util.createElement("button", {
-				class: "selectr-clear",
-				type: "button"
-			});
-
-			_.selected.appendChild(_.selectClear);
-		}
-
-		if ( o.taggable ) {
-			var li = util.createElement('li', { class: 'input-tag' });
-			_.input = util.createElement("input", {
-				class: "selectr-tag-input",
-				placeholder: "Enter a tag...",
-				tagIndex: 0,
-				autocomplete: "off",
-				autocorrect: "off",
-				autocapitalize: "off",
-				spellcheck: "false",
-				role: "textbox",
-				type: "search"
-			});
-
-			li.appendChild(_.input);
-			_.label.appendChild( li);
-			util.addClass(_.container, "taggable");
-
-			this.tagSeperators = [","];
-			if ( _.settings.tagSeperators ) {
-				this.tagSeperators = this.tagSeperators.concat(_.settings.tagSeperators);
-			}
-		}
-
-		if (o.searchable) {
-			_.input = util.createElement("input", {
-				class: "selectr-input",
-				tagIndex: -1,
-				autocomplete: "off",
-				autocorrect: "off",
-				autocapitalize: "off",
-				spellcheck: "false",
-				role: "textbox",
-				type: "search"
-			});
-			_.inputClear = util.createElement("button", {
-				class: "selectr-clear",
-				type: "button"
-			});
-			_.inputContainer = util.createElement("div", {
-				class: "selectr-input-container"
-			});
-
-			_.inputContainer.appendChild(_.input);
-			_.inputContainer.appendChild(_.inputClear);
-			optsContainer.appendChild(_.inputContainer);
-		}
-
-		var j = 0;
-
-		// Check for optgroups
-		if (_.hasOptGroups) {
-			var x = 0;
-			util.addClass(_.tree, "optgroups");
-		}
-
-		util.each(_.el.children, function(idx, opt) {
-			if (opt.nodeName === "OPTGROUP") {
-				var group = util.createElement("ul", {
-					class: "selectr-optgroup",
-					role: "group"
-				});
-				group.appendChild(util.createElement("li", {
-					class: "selectr-optgroup--label",
-					text: opt.label
-				}));
-				_.tree.appendChild(group);
-
-				if (opt.children) {
-					util.each(opt.children, function(i, option) {
-						if ( o.pagination && o.data && x >= o.pagination ) return;
-						buildOption.call(_, x, option, group);
-						x++;
-					});
-				}
-			} else {
-				if ( o.pagination && o.data && j >= o.pagination ) return;
-				buildOption.call(_, j, opt);
-				j++;
-			}
-		});
-
-		util.addClass(_.list[_.activeIdx], "active");
-
-		optsContainer.appendChild(_.notice);
-		optsContainer.appendChild(_.tree);
-
-		_.container.appendChild(_.selected);
-		_.container.appendChild(optsContainer);
-
-		// Set the placeholder
-		var placeholder = o.placeholder || _.el.getAttribute("placeholder") || "Choose...";
-		_.placeEl = util.createElement("div", {
-			class: "selectr-placeholder",
-			html: placeholder
-		});
-		_.selected.appendChild(_.placeEl);
-
-		_.el.parentNode.insertBefore(_.container, _.el);
-		_.container.appendChild(_.el);
-
-		addListeners.call(this);
-	};
-
-	/**
-	 * Build an list item from the HTMLOptionElement
-	 * @param  {int} i      HTMLOptionElement index
-	 * @param  {HTMLOptionElement} option
-	 * @param  {bool} group  Has parent optgroup
-	 * @return {void}
-	 */
-	var buildOption = function(i, option, group) {
-		if (option.nodeName !== "OPTION" || !option.value) return;
-
-		var content = this.customOption ? this.settings.renderOption(option) : option.textContent.trim();
-		var opt = util.createElement("li", {
-			class: "selectr-option",
-			html: content,
-			role: "treeitem",
-			"aria-selected": false
-		});
-
-		// Store the index for later
-		opt.idx = i;
-
-		this.items.push(opt);
-
-		if (option.defaultSelected) {
-			change.call(this, i, true);
-		}
-
-		if (option.disabled) {
-			opt.disabled = true;
-			util.addClass(opt, "disabled");
-		}
-
-		if (group) {
-			group.appendChild(opt);
-		} else {
-			this.tree.appendChild(opt);
-		}
-
-		if (!option.disabled) {
-			this.list.push(opt);
-		}
-	};
-
-	/**
-	 * Add the required event listeners
-	 */
-	var addListeners = function() {
-		var _ = this, o = _.settings;
-
-		this.events = {};
-
-		this.events.keyup = keyup.bind(_);
-		this.events.navigate = navigate.bind(_);
-		this.events.dismiss = dismiss.bind(_);
-		this.events.reset = this.reset.bind(_);
-
-		_.requiresPagination = o.data && o.data.length > o.pagination;
-
-		// Global listener
-		util.on(_.container, "click", function(e) {
-
-			if ( _.disabled ) return false;
-
-			e = e || window.event;
-
-			var t = e.target;
-
-			var isSelected = util.closest(t, function(el) {
-				return (el && el == _.selected);
-			});
-
-			if ( t === _.input ) {
-				return;
-			}
-
-
-			// Clear
-			if ( o.clearable && t === _.selectClear ) {
-				_.clear();
-				return;
-			}
-
-			// Remove tag button
-			if (util.hasClass(t, "selectr-tag-remove")) {
-				deselect.call(_, t.parentNode.idx);
-			}
-
-			// Click on placeholder or selected text
-			if (t === _.label || t === _.placeEl) {
-				t = _.placeEl.parentNode;
-			}
-
-			// Open / close dropdown
-			if (isSelected || t === _.selected) {
-				_.toggle();
-			}
-
-			// Select option
-			if (util.hasClass(t, "selectr-option")) {
-				var index = _.items.indexOf(t);
-				change.call(_, index);
-			}
-
-
-			util.preventDefault(e);
-		});
-
-		// Prevent text selection
-		util.on(_.tree, "mousedown", function(e) { util.preventDefault(e); });
-
-		// Mouseover list items
-		util.on(_.tree, "mouseover", function(e) {
-			var t = e.target;
-
-			var option = util.closest(t, function(el) {
-				return el && util.hasClass(el, "selectr-option");
-			});
-
-			if ( option ) {
-				util.removeClass(_.items[_.activeIdx], "active");
-				util.addClass(t, "active");
-				_.activeIdx = [].slice.call(_.items).indexOf(t);
-			}
-		});
-
-		if (o.searchable) {
-			util.on(_.inputClear, "click", function(e) {
-				clearSearch.call(_);
-			});
-		}
-
-		util.on(document, "click", this.events.dismiss);
-		util.on(document, "keydown", this.events.navigate);
-		util.on(document, "keyup", this.events.keyup);
-
-		_.update = util.debounce(function() {
-			// Optionally close dropdown on scroll / resize (#11)
-			if (_.opened && o.closeOnScroll) {
-				_.close();
-			}
-			if ( this.width ) {
-				this.container.style.width = this.width;
-			}
-			checkInvert.call(_);
-		}, 50);
-
-		util.on(window, "resize", _.update);
-		util.on(window, "scroll", _.update);
-
-		if (_.requiresPagination) {
-			_.paginateItems = util.debounce(function() {
-				paginate.call(_);
-			}, 50);
-
-			util.on(_.tree, "scroll", _.paginateItems);
-		}
-
-		// Listen for form.reset() (#13)
-		var form = _.el.form;
-		if ( form ) {
-			util.on(form, "reset", this.events.reset);
-		}
-	};
-
-	/**
-	 * Trigger a change
-	 * @param  {int} index
-	 * @param  {bool} init
-	 * @return {void}
-	 */
-	var change = function(index, init) {
-		var _ = this;
-		var opt = _.items[index];
-		var option = _.el.options[index];
-
-		if (option.disabled) {
-			return;
-		}
-
-		if (init) {
-			select.call(_, index);
-			return;
-		}
-
-		if (util.hasClass(opt, "selected")) {
-			deselect.call(_, index);
-		} else {
-			select.call(_, index);
-		}
-
-		if (_.opened && !_.el.multiple) {
-			_.close();
-		}
-	};
-
-	/**
-	 * Select an option
-	 * @param  {int} index
-	 * @return {void}
-	 */
-	var select = function(index) {
-		var option = this.el.options[index];
-
-		if ( this.el.multiple ) {
-			if (util.includes(this.selectedIndexes, index) ) {
-				return false;
-			}
-
-			var max = this.settings.maxSelections;
-			if ( max && this.tags.length == max ) {
-				this.setMessage("A maximum of " + max + " items can be selected.", true);
-				return false;
-			}
-
-			this.selectedValues.push(option.value);
-			this.selectedIndexes.push(index);
-
-			addTag.call(this, index);
-		} else {
-			this.label.innerHTML = this.customSelected ? this.settings.renderSelection(option) : option.textContent;
-
-			this.selectedValue = option.value;
-			this.selectedIndex = index;
-
-			util.each(this.el.options, function(i, o) {
-				var opt = this.items[i];
-
-				if ( i !== index ) {
-					if ( opt ) {
-						util.removeClass(opt, "selected");
-					}
-					o.selected = false;
-					o.defaultSelected = false;
-				}
-			}, this);
-		}
-
-		util.attr(this.items[index], {
-			"aria-selected": true
-		});
-
-		util.addClass(this.items[index], "selected");
-		util.addClass(this.container, "has-selected");
-
-		option.selected = true;
-		option.defaultSelected = true;
-
-		this.emit("selectr.select", option);
-		this.emit("selectr.change", option);
-	};
-
-	/**
-	 * Deselect an options
-	 * @param  {int} index
-	 * @return {void}
-	 */
-	var deselect = function(index) {
-		var option = this.el.options[index];
-
-		if ( this.el.multiple ) {
-			var selIndex = this.selectedIndexes.indexOf(index);
-			this.selectedIndexes.splice(selIndex, 1);
-
-			var valIndex = this.selectedValues.indexOf(option.value);
-			this.selectedValues.splice(valIndex, 1);
-
-			removeTag.call(this, index);
-
-			if ( !this.tags.length ) {
-				util.removeClass(this.container, "has-selected");
-			}
-		} else {
-			if ( !this.settings.allowDeselect ) {
-				return false;
-			}
-
-			this.label.innerHTML = "";
-			this.selectedValue = null;
-
-			this.el.selectedIndex = -1;
-
-			util.removeClass(this.container, "has-selected");
-		}
-
-		util.attr(this.items[index], {
-			"aria-selected": false
-		});
-
-		util.removeClass(this.items[index], "selected");
-
-		option.selected = false;
-		option.defaultSelected = false;
-
-		this.emit("selectr.deselect", option);
-		this.emit("selectr.change", option);
-	};
-
-	/**
-	 * Add a tag
-	 * @param {int} index
-	 */
-	var addTag = function(index) {
-		var _ = this;
-
-		var docFrag = document.createDocumentFragment();
-		var option = _.el.options[index];
-		var content = _.customSelected ? _.settings.renderSelection(option) : option.textContent;
-
-		var tag = util.createElement("li", {
-			class: "selectr-tag",
-			html: content
-		});
-		var btn = util.createElement("button", {
-			class: "selectr-tag-remove",
-			type: "button"
-		});
-
-		tag.appendChild(btn);
-
-		// Set property to check against later
-		tag.idx = index;
-		tag.tag = option.value;
-
-		_.tags.push(tag);
-
-		if ( _.settings.sortSelected ) {
-
-			var tags = _.tags.slice();
-
-			tags.sort(function(a, b) {
-				var x = [], y = [], ac, bc;
-				if ( _.settings.sortSelected === true ) {
-					ac = a.tag;
-					bc = b.tag;
-				} else if ( _.settings.sortSelected === 'text' ) {
-					ac = a.textContent;
-					bc = b.textContent;
-				}
-
-				// Deal with values that contain numbers
-				ac.replace(/(\d+)|(\D+)/g, function(_, $1, $2) { x.push([$1 || Infinity, $2 || ""]); });
-				bc.replace(/(\d+)|(\D+)/g, function(_, $1, $2) { y.push([$1 || Infinity, $2 || ""]); });
-
-				while(x.length && y.length) {
-					var ax = x.shift();
-					var by = y.shift();
-					var nn = (ax[0] - by[0]) || ax[1].localeCompare(by[1]);
-					if(nn) return nn;
-				}
-
-				return x.length - y.length;
-			});
-
-			util.each(tags, function(i,tg) {
-				docFrag.appendChild(tg);
-			});
-
-			_.label.innerHTML = "";
-
-		} else {
-			docFrag.appendChild(tag);
-		}
-
-		if ( _.settings.taggable ) {
-			_.label.insertBefore(docFrag, _.input.parentNode);
-		} else {
-			_.label.appendChild(docFrag);
-		}
-	};
-
-	/**
-	 * Remove a tag
-	 * @param  {int}
-	 * @return {void}
-	 */
-	var removeTag = function(index) {
-		var tag = false;
-
-
-		util.each(this.tags, function(i, t) {
-			if (t.idx === index) {
-				tag = t;
-			}
-		});
-
-		if (tag) {
-			this.label.removeChild(tag);
-
-			var tagIdx = this.tags.indexOf(tag);
-			this.tags.splice(tagIdx, 1);
-		}
-	};
-
-	/**
-	 * Clear a search
-	 * @return {void}
-	 */
-	var clearSearch = function() {
-		var _  = this;
-
-		if ( _.settings.searchable || _.settings.taggable ) {
-			_.input.value = null;
-			_.searching = false;
-			if ( _.settings.searchable ) {
-				util.removeClass(_.inputContainer, "active");
-			}
-
-			if ( util.hasClass(_.container, "notice") ) {
-				util.removeClass(_.container, "notice");
-				util.addClass(_.container, "open");
-				_.input.focus();
-			}
-
-			util.each(_.list, function(i, el) {
-				util.removeClass(el, "match");
-				util.removeClass(el, "excluded");
-
-				if ( !_.customOption ) {
-					el.innerHTML = el.textContent;
-				}
-			});
-		}
-	};
-
-	/**
-	 * keyup listener
-	 * @param  {obj} e
-	 * @return {void}
-	 */
-	var keyup = function(e) {
-		var _ = this;
-		if ( e.target === _.input ) {
-			_.search(_.input.value, true);
-		}
-		if (_.navigating && e.keyCode !== 13) {
-			_.navigating = false;
-		}
-
-		if ( _.settings.taggable && _.input.value.length ) {
-			var val = _.input.value.trim();
-
-			if ( _.searchItems.length ) {
-				return false;
-			}
-
-			if ( e.which === 13 || util.includes(_.tagSeperators, e.key) ) {
-
-				util.each(_.tagSeperators, function(i,k) {
-					val = val.replace(k, '');
-				});
-
-				var option = _.addOption({
-					value: val,
-					text: val,
-					selected: true
-				});
-
-				if ( !option ) {
-					_.input.value = '';
-					_.setMessage('That tag is already in use.');
-				} else {
-					_.close();
-					clearSearch.call(_);
-				}
-			}
-
-		}
-	};
-
-	/**
-	 * Navigate through the dropdown
-	 * @param  {obj} e
-	 * @return {void}
-	 */
-	var navigate = function(e) {
-		e = e || window.event;
-
-		var _ = this,
-			key = e.which,
-			keys = [13, 38, 40];
-
-		// Filter out the keys we don"t want
-		if (!_.opened || !util.includes(keys, key)) return;
-
-		util.preventDefault(e);
-
-		var list = this.searching ? this.searchItems : this.list,
-			dir;
-
-		if ( !list.length ) return;
-
-		switch (key) {
-			case 13:
-				if ( _.settings.taggable && _.input === document.activeElement ) {
-					_.input.value = "";
-				}
-				var opt = _.tree.querySelector(".active");
-				var index = _.items.indexOf(opt);
-
-				return void change.call(_, index);
-			case 38:
-				dir = 1;
-				if ( _.activeIdx > 0 ) { _.activeIdx--; }
-				break;
-			case 40:
-				dir = -1;
-				if ( _.activeIdx < list.length - 1 ) { _.activeIdx++; }
-		}
-
-		this.navigating = true;
-
-		var nxtEl = list[_.activeIdx];
-		var nxtRct = util.getRect(nxtEl);
-		var opsTop = _.tree.scrollTop;
-		var offset = _.optsRect.top;
-		var curOffset, nxtOffset;
-
-		if (dir > 0) {
-			var nxtTp = nxtRct.top;
-			curOffset = offset;
-			nxtOffset = opsTop + (nxtTp - curOffset);
-
-			if (_.activeIdx === 0) {
-				_.tree.scrollTop = 0;
-			} else if (nxtTp - curOffset < 0) {
-				_.tree.scrollTop = nxtOffset;
-			}
-		} else {
-			var nxtBottom = nxtRct.top + nxtRct.height;
-			curOffset = offset + _.optsRect.height;
-			nxtOffset = opsTop + (nxtBottom - curOffset);
-
-			if (_.activeIdx === 0) {
-				_.tree.scrollTop = 0;
-			} else if (nxtBottom > curOffset) {
-				_.tree.scrollTop = nxtOffset;
-			}
-
-			if ( _.requiresPagination ) {
-				paginate.call(_);
-			}
-		}
-
-		util.removeClass(_.tree.querySelector(".active"), "active");
-		util.addClass(list[_.activeIdx], "active");
-	};
-
-	/**
-	 * Paginate the dataset
-	 * @return {void}
-	 */
-	var paginate = function() {
-		var _ = this;
-		var opts = _.tree;
-		var scrollTop = opts.scrollTop;
-		var scrollHeight = opts.scrollHeight;
-		var offsetHeight = opts.offsetHeight;
-		var atBottom = scrollTop >= (scrollHeight - offsetHeight);
-
-		if ( (atBottom && _.pageIndex < _.pages.length) || _.activeIdx === _.list.length - 1 ) {
-			var selectFrag = document.createDocumentFragment();
-			var optsFrag = document.createDocumentFragment();
-
-			util.each(_.pages[_.pageIndex], function(i, item) {
-				var option = util.createElement("option", { value: item.value, text: item.text });
-				selectFrag.appendChild(option);
-				buildOption.call(_, i, option, optsFrag);
-			});
-
-			_.el.appendChild(selectFrag);
-			opts.appendChild(optsFrag);
-
-			_.pageIndex++;
-
-			_.emit("selectr.paginate", {
-				items: _.items.length,
-				total: _.settings.data.length,
-				page: _.pageIndex,
-				pages: _.pages.length
-			});
 		}
 	};
 
@@ -1036,11 +336,9 @@
 	 * Keep the dropdown within the window
 	 * @return {void}
 	 */
-	var checkInvert = function() {
-		var s = util.getRect(this.selected);
-		var o = this.tree.parentNode.offsetHeight;
-		var wh = window.innerHeight;
-		var doInvert =  s.top + s.height + o > wh;
+	var invert = function() {
+		var rt = util.getRect(this.selected), oh = this.tree.parentNode.offsetHeight,
+			wh = window.innerHeight, doInvert =  rt.top + rt.height + oh > wh;
 
 		if (doInvert) {
 			util.addClass(this.container, "inverted");
@@ -1051,6 +349,64 @@
 		}
 
 		this.optsRect = util.getRect(this.tree);
+	};
+
+	/**
+	 * Render the item list
+	 * @return {Void}
+	 */
+	var render = function() {
+		if ( this.items.length ) {
+
+			var f = document.createDocumentFragment();
+
+			if ( this.config.pagination ) {
+				var pages = this.pages.slice(0, this.pageIndex);
+
+				util.each(pages, function(i, items) {
+					util.each(items, function(j, item) {
+						if ( item.parentNode ) {
+							if ( !item.parentNode.parentNode ) {
+								f.appendChild(item.parentNode);
+							}
+						} else {
+							f.appendChild(item);
+						}
+
+						util.removeClass(item, "excluded");
+						if ( !this.customOption ) {
+							item.innerHTML = item.textContent;
+						}
+					}, this);
+				}, this);
+			} else {
+				util.each(this.items, function(i, item) {
+					if ( item.parentNode ) {
+						if ( !item.parentNode.parentNode ) {
+							f.appendChild(item.parentNode);
+						}
+					} else {
+						f.appendChild(item);
+					}
+					util.removeClass(item, "excluded");
+					if ( !this.customOption ) {
+						item.innerHTML = item.textContent;
+					}
+				}, this);
+			}
+
+			this.tree.appendChild(f);
+		}
+	};
+
+	/**
+	 * Truncate the dropdown
+	 * @return {Void}
+	 */
+	var flush = function() {
+		while (this.tree.firstChild) {
+			this.tree.removeChild(this.tree.firstChild);
+		}
 	};
 
 	/**
@@ -1066,86 +422,971 @@
 	};
 
 	/**
+	 * Build the container
+	 * @return {Void}
+	 */
+	var build = function() {
+
+		this.requiresPagination = this.config.pagination && this.config.pagination > 0;
+
+		// Set width
+		if (set(this.config, "width")) {
+			var width = 0;
+			if (util.isInt(this.config.width)) {
+				width = this.config.width + "px";
+			} else {
+				if (this.config.width === "auto") {
+					width = "100%";
+				} else if (util.includes(this.config.width, "%")) {
+					width = this.config.width;
+				}
+			}
+			this.width = width;
+		}
+
+		this.container = util.createElement("div", {
+			class: "selectr-container"
+		});
+
+		// Custom className
+		if (this.config.customClass) {
+			util.addClass(this.container, this.config.customClass);
+		}
+
+		// Mobile device
+		if (this.mobileDevice) {
+			util.addClass(this.container, "selectr-mobile");
+		}
+
+		// Hide the HTMLSelectElement and prevent focus
+		this.el.tabIndex = -1;
+
+		// Native dropdown
+		if ( this.config.nativeDropdown || this.mobileDevice ) {
+			this.el.classList.add("selectr-visible");
+		} else {
+			this.el.classList.add("selectr-hidden");
+		}
+
+		this.selected = util.createElement("div", {
+			class: "selectr-selected",
+			disabled: this.disabled,
+			tabIndex: this.el.tabIndex, // enable tabIndex (#9)
+			"aria-expanded": false
+		});
+
+		this.label = util.createElement(this.el.multiple ? "ul" : "span", {
+			class: "selectr-label"
+		});
+
+		var optsContainer = util.createElement("div", {
+			class: "selectr-options-container"
+		});
+
+		this.tree = util.createElement("ul", {
+			class: "selectr-options",
+			role: "tree",
+			"aria-hidden": true,
+			"aria-expanded": false
+		});
+
+		this.notice = util.createElement("div", {
+			class: "selectr-notice"
+		});
+
+		this.el.setAttribute( "aria-hidden", true );
+
+		if ( this.disabled ) {
+			this.el.disabled = true;
+		}
+
+		if (this.el.multiple) {
+			util.addClass(this.label, "selectr-tags");
+			util.addClass(this.container, "multiple");
+
+			// Collection of tags
+			this.tags = [];
+
+			// Collection of selected values
+			this.selectedValues = [];
+
+			// Collection of selected indexes
+			this.selectedIndexes = [];
+		}
+
+		this.selected.appendChild(this.label);
+
+		if ( this.el.multiple && this.config.clearable || !this.el.multiple && this.config.allowDeselect ) {
+			this.selectClear = util.createElement("button", {
+				class: "selectr-clear",
+				type: "button"
+			});
+
+			this.container.appendChild(this.selectClear);
+
+			util.addClass(this.container, "clearable");
+		}
+
+		if ( this.config.taggable ) {
+			var li = util.createElement('li', { class: 'input-tag' });
+			this.input = util.createElement("input", {
+				class: "selectr-tag-input",
+				placeholder: this.config.tagPlaceholder,
+				tagIndex: 0,
+				autocomplete: "off",
+				autocorrect: "off",
+				autocapitalize: "off",
+				spellcheck: "false",
+				role: "textbox",
+				type: "search"
+			});
+
+			li.appendChild(this.input);
+			this.label.appendChild(li);
+			util.addClass(this.container, "taggable");
+
+			this.tagSeperators = [","];
+			if ( this.config.tagSeperators ) {
+				this.tagSeperators = this.tagSeperators.concat(this.config.tagSeperators);
+			}
+		}
+
+		if (this.config.searchable) {
+			this.input = util.createElement("input", {
+				class: "selectr-input",
+				tagIndex: -1,
+				autocomplete: "off",
+				autocorrect: "off",
+				autocapitalize: "off",
+				spellcheck: "false",
+				role: "textbox",
+				type: "search"
+			});
+			this.inputClear = util.createElement("button", {
+				class: "selectr-input-clear",
+				type: "button"
+			});
+			this.inputContainer = util.createElement("div", {
+				class: "selectr-input-container"
+			});
+
+			this.inputContainer.appendChild(this.input);
+			this.inputContainer.appendChild(this.inputClear);
+			optsContainer.appendChild(this.inputContainer);
+		}
+
+		optsContainer.appendChild(this.notice);
+		optsContainer.appendChild(this.tree);
+
+		// List of items for the dropdown
+		this.items = [];
+
+		// Establish options
+		this.options = [];
+
+		// Check for options in the element
+		if ( this.el.options.length ) {
+			this.options = [].slice.call(this.el.options);
+		}
+
+		// Element may have optgroups so
+		// iterate element.children instead of element.options
+    var group = false, j = 0;
+		if ( this.el.children.length ) {
+			util.each(this.el.children, function(i, element) {
+				if ( element.nodeName === "OPTGROUP" ) {
+
+					group = util.createElement("ul", {
+						class: "selectr-optgroup",
+						role: "group",
+						html: "<li class='selectr-optgroup--label'>"+element.label+"</li>"
+					});
+
+					util.each(element.children, function(x, el) {
+						el.idx = j;
+						group.appendChild(buildOption.call(this, el, group));
+						j++;
+					}, this);
+				} else {
+					element.idx = j;
+					buildOption.call(this, element);
+					j++;
+				}
+			}, this);
+		}
+
+		// Options defined by the data option
+		if ( this.config.data && util.isArray(this.config.data) ) {
+			this.data = [];
+			var optgroup = false, option;
+
+      group = false; j = 0;
+
+			util.each(this.config.data, function(i, opt) {
+				// Check for group options
+				if ( set(opt, "children") ) {
+					optgroup = util.createElement("optgroup", { label: opt.text });
+
+					group = util.createElement("ul", {
+						class: "selectr-optgroup",
+						role: "group",
+						html: "<li class='selectr-optgroup--label'>"+opt.text+"</li>"
+					});
+
+					util.each(opt.children, function(x, data) {
+						option = new Option(data.text, data.value, false, set(data, "selected"));
+
+						option.disabled = set(data, "disabled");
+
+						this.options.push(option);
+
+						optgroup.appendChild(option);
+
+						option.idx = j;
+
+						group.appendChild(buildOption.call(this, option, data));
+
+						this.data[j] = data;
+
+						j++;
+					}, this);
+				} else {
+					option = new Option(opt.text, opt.value, false, set(opt, "selected"));
+
+					option.disabled = set(opt, "disabled");
+
+					this.options.push(option);
+
+					option.idx = j;
+
+					buildOption.call(this, option, opt);
+
+					this.data[j] = opt;
+
+					j++;
+				}
+			}, this);
+		}
+
+		setSelected.call(this, true);
+
+		var first;
+		this.navIndex = 0;
+		for ( var i = 0; i < this.items.length; i++ ) {
+			first = this.items[i];
+
+			if ( !util.hasClass(first, "disabled") ) {
+
+				util.addClass(first, "active");
+				this.navIndex = i;
+				break;
+			}
+		}
+
+		// Check for pagination / infinite scroll
+		if ( this.requiresPagination ) {
+			var that = this;
+			this.pageIndex = 1;
+
+			// Create the pages
+			this.pages = this.items.map( function(v, i) {
+				return i % that.config.pagination === 0 ? that.items.slice(i, i+that.config.pagination) : null;
+			}).filter(function(pages){ return pages; });
+		}
+
+		this.container.appendChild(this.selected);
+		this.container.appendChild(optsContainer);
+
+		this.placeEl = util.createElement("div", {
+			class: "selectr-placeholder"
+		});
+
+		// Set the placeholder
+		this.setPlaceholder();
+
+		this.selected.appendChild(this.placeEl);
+
+		// Disable if required
+		if ( this.disabled ) {
+			this.disable();
+		}
+
+		this.el.parentNode.insertBefore(this.container, this.el);
+		this.container.appendChild(this.el);
+
+		// Attach the event listeners
+		addListeners.call(this);
+	};
+
+
+	/**
+	 * Attach the required event listeners
+	 */
+	var addListeners = function() {
+
+		var that = this;
+
+		this.events = {};
+
+		this.events.dismiss = dismiss.bind(this);
+		this.events.navigate = navigate.bind(this);
+		this.events.reset = this.reset.bind(this);
+
+		if ( this.config.nativeDropdown || this.mobileDevice ) {
+			this.ctrlDown = false;
+
+			// Listen for change event on mobile devices
+			if ( this.mobileDevice ) {
+				util.on(this.el, 'change', function(e) {
+					if ( this.el.multiple ) {
+
+						var values = [];
+						util.each(this.options, function(i, option) {
+							if ( option.selected ) {
+								values.push(option.idx);
+							}
+							deselect.call(this, this.items[option.idx]);
+						}, this);
+
+						util.each(values, function(i, idx) {
+							select.call(this, this.items[idx]);
+						}, this);
+
+					}
+				}, this);
+			} else {
+
+				// Emulate CTRL + Select
+				util.on(document, "keydown", function(e) {
+					this.ctrlDown = e.key === "Control";
+				}, this);
+
+				util.on(document, "keyup", function(e) {
+					this.ctrlDown = false;
+				}, this);
+
+				util.on(this.el, "click", function(e) {
+					if ( this.el.multiple ) {
+						if ( e.target.nodeName === "OPTION" ) {
+
+							if ( !this.ctrlDown ) {
+								this.clear();
+							}
+
+							console.log(e.target, e.target.idx, this.items[e.target.idx]);
+
+							change.call(this, this.items[e.target.idx]);
+
+							e.preventDefault();
+						}
+					}
+				}, this);
+			}
+
+			util.on(this.el, "change", function(e) {
+				if ( !this.el.multiple ) {
+					if ( this.el.selectedIndex > -1 ) {
+						select.call(this, this.items[this.el.selectedIndex]);
+					}
+				}
+			}, this);
+		}
+
+		util.on(this.container, "click", function(e) {
+			if ( e.target === this.el ) {
+					this.toggle();
+			}
+		}, this);
+
+		util.on(this.selected, "click", function(e) {
+
+			if (!this.disabled) {
+				this.toggle();
+			}
+
+			util.preventDefault(e);
+		}, this);
+
+		util.on(this.label, "click", function(e) {
+			var target = e.target;
+			// Remove tag button
+			if (util.hasClass(target, "selectr-tag-remove")) {
+				deselect.call(this, this.items[target.parentNode.idx]);
+			}
+		}, this);
+
+		if ( this.el.multiple && this.config.clearable || !this.el.multiple && this.config.allowDeselect ) {
+			util.on(this.selectClear, "click", this.clear.bind(this));
+		}
+
+		// Prevent text selection
+		util.on(this.tree, "mousedown", function(e) { util.preventDefault(e); });
+
+		util.on(this.tree, "click", function(e) {
+			var item = util.closest(e.target, function(el) {
+				return el && util.hasClass(el, "selectr-option");
+			});
+
+			if ( item ) {
+				if ( !util.hasClass(item, "disabled") ) {
+					if ( util.hasClass(item, "selected") ) {
+						deselect.call(this, item);
+					} else {
+						select.call(this, item);
+					}
+
+					if (this.opened && !this.el.multiple) {
+						this.close();
+					}
+				}
+			}
+		}, this);
+
+
+
+		// Dismiss when clicking outside the container
+		util.on(document, "click", this.events.dismiss);
+		util.on(document, "keydown", this.events.navigate);
+		// util.on(document, "keyup", this.events.keyup);
+
+		// Mouseover list items
+		util.on(this.tree, "mouseover", function(e) {
+			var target = e.target;
+			if ( target.classList.contains("selectr-option") ) {
+				if ( !target.classList.contains("disabled") ) {
+					this.items[this.navIndex].classList.remove("active");
+
+					target.classList.add("active");
+
+					this.navIndex = [].slice.call(this.items).indexOf(target);
+				}
+			}
+		}, this);
+
+		// Searchable
+
+		if ( this.config.searchable ) {
+			// Show / hide the search input clear button
+			util.on(this.input, "keyup", function(e) {
+				this.search();
+
+				if ( !this.config.taggable ) {
+					// Show / hide the search input clear button
+					if ( this.input.value.length ) {
+						util.addClass(this.input.parentNode, "active");
+					} else {
+						util.removeClass(this.input.parentNode, "active");
+					}
+				}
+			}, this);
+
+			// Clear the search input
+			util.on(this.inputClear, "click", function(e) {
+				this.input.value = null;
+				clearSearch.call(this);
+
+				if ( !this.tree.childElementCount ) {
+						render.call(this);
+				}
+			}, this);
+		}
+
+		if ( this.config.taggable ) {
+			util.on(this.input, "keyup", function(e) {
+
+				this.search();
+
+				if ( this.config.taggable && this.input.value.length ) {
+					var val = this.input.value.trim();
+
+					if ( e.which === 13 || util.includes(this.tagSeperators, e.key) ) {
+
+						util.each(this.tagSeperators, function(i,k) {
+							val = val.replace(k, '');
+						});
+
+						var option = this.addOption({
+							value: val,
+							text: val,
+							selected: true
+						}, true);
+
+						if ( !option ) {
+							this.input.value = '';
+							this.setMessage('That tag is already in use.');
+						} else {
+							this.close();
+							clearSearch.call(this);
+						}
+					}
+				}
+			}, this);
+		}
+
+		this.update = util.debounce(function() {
+			// Optionally close dropdown on scroll / resize (#11)
+			if (that.opened && that.config.closeOnScroll) {
+				that.close();
+			}
+			if ( that.width ) {
+				that.container.style.width = that.width;
+			}
+			invert.call(that);
+		}, 50);
+
+		util.on(window, "resize", this.update);
+		util.on(window, "scroll", this.update);
+
+		if (this.requiresPagination) {
+			this.paginateItems = util.debounce(function() {
+				load.call(this);
+			}, 50);
+
+			util.on(this.tree, "scroll", this.paginateItems.bind(this));
+		}
+
+
+		// Listen for form.reset() (@ambrooks, #13)
+		if ( this.el.form ) {
+			util.on(this.el.form, "reset", this.events.reset);
+		}
+	};
+
+	/**
+	 * Build a list item from the HTMLOptionElement
+	 * @param  {int} i      HTMLOptionElement index
+	 * @param  {HTMLOptionElement} option
+	 * @param  {bool} group  Has parent optgroup
+	 * @return {void}
+	 */
+	var buildOption = function(option, data) {
+		data = data || option;
+		var content = this.customOption ? this.config.renderOption(data) : option.textContent;
+		var opt = util.createElement("li", {
+			class: "selectr-option",
+			html: content,
+			role: "treeitem",
+			"aria-selected": false
+		});
+
+		opt.idx = option.idx;
+
+		this.items.push(opt);
+
+		if (option.selected && option.defaultSelected) {
+			util.addClass(opt, "selected");
+		}
+
+		if (option.disabled) {
+			opt.disabled = true;
+			util.addClass(opt, "disabled");
+		}
+
+		return opt;
+	};
+
+	/**
+	 * Navigate through the dropdown
+	 * @param  {obj} e
+	 * @return {void}
+	 */
+	var navigate = function(e) {
+		e = e || window.event;
+
+		var key = e.which,
+			keys = [13, 38, 40];
+
+		// Filter out the keys we don"t want
+		if (!this.items.length || !this.opened || !util.includes(keys, key)) return;
+
+		util.preventDefault(e);
+
+		if ( key === 13 ) {
+			return void change.call(this, this.items[this.navIndex]);
+		}
+
+		var direction, prevEl = this.items[this.navIndex];
+
+		switch (key) {
+			case 38:
+				direction = 0;
+				if ( this.navIndex > 0 ) { this.navIndex--; }
+				break;
+			case 40:
+				direction = 1;
+				if ( this.navIndex < this.items.length - 1 ) { this.navIndex++; }
+		}
+
+		this.navigating = true;
+
+
+		// Instead of wasting memory holding a copy of this.items
+		// with disabled / excluded options omitted, skip them instead
+		if (this.items[this.navIndex].classList.contains("disabled") || this.items[this.navIndex].classList.contains("excluded") ) {
+				while(this.items[this.navIndex].classList.contains("disabled") || this.items[this.navIndex].classList.contains("excluded") ) {
+					if ( direction ) { this.navIndex++; } else { this.navIndex--; }
+				}
+		}
+
+
+		// Autoscroll the dropdown during navigation
+		var nxtEl = this.items[this.navIndex];
+		var nxtRct = util.getRect(this.items[this.navIndex]);
+		var opsTop = this.tree.scrollTop;
+		var offset = this.optsRect.top;
+		var curOffset, nxtOffset;
+
+		if (!direction) {
+			var nxtTp = nxtRct.top;
+			curOffset = offset;
+			nxtOffset = opsTop + (nxtTp - curOffset);
+
+			if (this.navIndex === 0) {
+				this.tree.scrollTop = 0;
+			} else if (nxtTp - curOffset < 0) {
+				this.tree.scrollTop = nxtOffset;
+			}
+		} else {
+			var nxtBottom = nxtRct.top + nxtRct.height;
+			curOffset = offset + this.optsRect.height;
+			nxtOffset = opsTop + (nxtBottom - curOffset);
+
+			if (this.navIndex === 0) {
+				this.tree.scrollTop = 0;
+			} else if (nxtBottom > curOffset) {
+				this.tree.scrollTop = nxtOffset;
+			}
+
+			if ( this.navIndex === this.tree.childElementCount - 1 && this.requiresPagination ) {
+				load.call(this);
+			}
+		}
+
+		if ( prevEl ) {
+			util.removeClass(prevEl, "active");
+		}
+		util.addClass(nxtEl, "active");
+	};
+
+	/**
+	 * Trigger a change
+	 * @param  {HTMLElement} item
+	 * @return {void}
+	 */
+	var change = function(item) {
+		var option = this.options[item.idx];
+
+		if (option.disabled) {
+			return;
+		}
+
+		if (util.hasClass(item, "selected")) {
+			deselect.call(this, item);
+		} else {
+			select.call(this, item);
+		}
+
+		if (this.opened && !this.el.multiple) {
+			this.close();
+		}
+	};
+
+	/**
+	 * Select an item
+	 * @param  {HTMLElement} item
+	 * @return {void}
+	 */
+	var select = function(item) {
+
+		var options = [].slice.call(this.el.options),
+				option = this.options[item.idx];
+
+		if ( this.el.multiple ) {
+			if (util.includes(this.selectedIndexes, item.idx) ) {
+				return false;
+			}
+
+			var max = this.config.maxSelections;
+			if ( max && this.tags.length == max ) {
+				this.setMessage("A maximum of " + max + " items can be selected.", true);
+				return false;
+			}
+
+			this.selectedValues.push(option.value);
+			this.selectedIndexes.push(item.idx);
+
+			addTag.call(this, item);
+		} else {
+			var data = this.data ? this.data[item.idx] : option;
+			this.label.innerHTML = this.customSelected ? this.config.renderSelection(data) : option.textContent;
+
+			this.selectedValue = option.value;
+			this.selectedIndex = item.idx;
+
+			util.each(this.options, function(i, o) {
+				var opt = this.items[i];
+
+				if ( i !== item.idx ) {
+					if ( opt ) {
+						util.removeClass(opt, "selected");
+					}
+					o.selected = false;
+					o.removeAttribute("selected");
+				}
+			}, this);
+		}
+
+		if ( !util.includes(options, option) ) {
+			this.el.add(option);
+		}
+
+		item.setAttribute( "aria-selected", true );
+
+		util.addClass(item, "selected");
+		util.addClass(this.container, "has-selected");
+
+		option.selected = true;
+		option.setAttribute("selected", "");
+
+		this.emit("selectr.select", option);
+		this.emit("selectr.change", option);
+	};
+
+	/**
+	 * Deselect an item
+	 * @param  {HTMLElement} item
+	 * @return {void}
+	 */
+	var deselect = function(item) {
+		var option = this.options[item.idx];
+
+		if ( this.el.multiple ) {
+			var selIndex = this.selectedIndexes.indexOf(item.idx);
+			this.selectedIndexes.splice(selIndex, 1);
+
+			var valIndex = this.selectedValues.indexOf(option.value);
+			this.selectedValues.splice(valIndex, 1);
+
+			removeTag.call(this, item);
+
+			if ( !this.tags.length ) {
+				util.removeClass(this.container, "has-selected");
+			}
+		} else {
+			if ( !this.config.allowDeselect ) {
+				return false;
+			}
+
+			this.label.innerHTML = "";
+			this.selectedValue = null;
+
+			this.el.selectedIndex = -1;
+
+			util.removeClass(this.container, "has-selected");
+		}
+
+
+		this.items[item.idx].setAttribute( "aria-selected", false );
+
+		util.removeClass(this.items[item.idx], "selected");
+
+		option.selected = false;
+
+		option.removeAttribute("selected");
+
+		this.emit("selectr.deselect", option);
+		this.emit("selectr.change", option);
+	};
+
+	/**
+	 * Add a tag
+	 * @param  {HTMLElement} item
+	 */
+	var addTag = function(item) {
+		var that = this;
+
+		var docFrag = document.createDocumentFragment();
+		var option = this.options[item.idx];
+		var data = this.data ? this.data[item.idx] : option;
+		var content = this.customSelected ? this.config.renderSelection(data) : option.textContent;
+
+		var tag = util.createElement("li", {
+			class: "selectr-tag",
+			html: content
+		});
+		var btn = util.createElement("button", {
+			class: "selectr-tag-remove",
+			type: "button"
+		});
+
+		tag.appendChild(btn);
+
+		// Set property to check against later
+		tag.idx = item.idx;
+		tag.tag = option.value;
+
+		this.tags.push(tag);
+
+		if ( this.config.sortSelected ) {
+
+			var tags = this.tags.slice();
+
+			tags.sort(function(a, b) {
+				var x = [], y = [], ac, bc;
+				if ( that.config.sortSelected === true ) {
+					ac = a.tag;
+					bc = b.tag;
+				} else if ( that.config.sortSelected === 'text' ) {
+					ac = a.textContent;
+					bc = b.textContent;
+				}
+
+				// Deal with values that contain numbers
+				ac.replace(/(\d+)|(\D+)/g, function(that, $1, $2) { x.push([$1 || Infinity, $2 || ""]); });
+				bc.replace(/(\d+)|(\D+)/g, function(that, $1, $2) { y.push([$1 || Infinity, $2 || ""]); });
+
+				while(x.length && y.length) {
+					var ax = x.shift();
+					var by = y.shift();
+					var nn = (ax[0] - by[0]) || ax[1].localeCompare(by[1]);
+					if(nn) return nn;
+				}
+
+				return x.length - y.length;
+			});
+
+			util.each(tags, function(i,tg) {
+				docFrag.appendChild(tg);
+			});
+
+			this.label.innerHTML = "";
+
+		} else {
+			docFrag.appendChild(tag);
+		}
+
+		if ( this.config.taggable ) {
+			this.label.insertBefore(docFrag, this.input.parentNode);
+		} else {
+			this.label.appendChild(docFrag);
+		}
+	};
+
+	/**
+	 * Remove a tag
+	 * @param  {HTMLElement} item
+	 * @return {void}
+	 */
+	var removeTag = function(item) {
+		var tag = false;
+
+		util.each(this.tags, function(i, t) {
+			if (t.idx === item.idx) {
+				tag = t;
+			}
+		}, this);
+
+		if (tag) {
+			this.label.removeChild(tag);
+			this.tags.splice(this.tags.indexOf(tag), 1);
+		}
+	};
+
+	/**
+	 * Load the next page of items
+	 * @return {void}
+	 */
+	var load = function() {
+		var tree = this.tree;
+		var scrollTop = tree.scrollTop;
+		var scrollHeight = tree.scrollHeight;
+		var offsetHeight = tree.offsetHeight;
+		var atBottom = scrollTop >= (scrollHeight - offsetHeight);
+
+		if ( (atBottom && this.pageIndex < this.pages.length) ) {
+			var f = document.createDocumentFragment();
+
+			util.each(this.pages[this.pageIndex], function(i, item) {
+					if ( item.parentNode ) {
+						if ( !item.parentNode.parentNode ) {
+							f.appendChild(item.parentNode);
+						}
+					} else {
+						f.appendChild(item);
+					}
+			}, this);
+
+			tree.appendChild(f);
+
+			this.pageIndex++;
+
+			this.emit("selectr.paginate", {
+				items: this.items.length,
+				total: this.data.length,
+				page: this.pageIndex,
+				pages: this.pages.length
+			});
+		}
+	};
+
+	/**
+	 * Clear a search
+	 * @return {void}
+	 */
+	var clearSearch = function() {
+		if ( this.config.searchable || this.config.taggable ) {
+			this.input.value = null;
+			this.searching = false;
+			if ( this.config.searchable ) {
+				util.removeClass(this.inputContainer, "active");
+			}
+
+			if ( util.hasClass(this.container, "notice") ) {
+				util.removeClass(this.container, "notice");
+				util.addClass(this.container, "open");
+				this.input.focus();
+			}
+
+			util.each(this.items, function(i, item) {
+				// Items that didn't match need the class
+				// removing to make them visible again
+				util.removeClass(item, "excluded");
+				// Remove the span element for underling matched items
+				if ( !this.customOption ) {
+					item.innerHTML = item.textContent;
+				}
+			}, this);
+		}
+	};
+
+	/**
 	 * Query matching for searches
 	 * @param  {string} query
-	 * @param  {HTMLOptionElement} opt
-	 * @param  {string} text
+	 * @param  {HTMLOptionElement} option
 	 * @return {bool}
 	 */
-	var match = function(query, opt, text) {
-		var result = new RegExp(query, "i").exec(text);
+	var match = function(query, option) {
+		var result = new RegExp(query, "i").exec(option.textContent);
 		if ( result ) {
-			return opt.textContent.replace(result[0], "<span>"+result[0]+"</span>");
+			return option.textContent.replace(result[0], "<span class='selectr-match'>"+result[0]+"</span>");
 		}
 		return false;
 	};
 
-	/* EMITTER */
-	var Emitter = function() {};
-	Emitter.prototype = {
-		on: function(event, fct){
-			this._events = this._events || {};
-			this._events[event] = this._events[event]	|| [];
-			this._events[event].push(fct);
-		},
-		off: function(event, fct){
-			this._events = this._events || {};
-			if( event in this._events === false  )	return;
-			this._events[event].splice(this._events[event].indexOf(fct), 1);
-		},
-		emit: function(event /* , args... */){
-			this._events = this._events || {};
-			if( event in this._events === false  )	return;
-			for(var i = 0; i < this._events[event].length; i++){
-				this._events[event][i].apply(this, Array.prototype.slice.call(arguments, 1));
-			}
-		}
-	};
+	// Main Lib
+	var Selectr = function(el, config) {
 
-	Emitter.mixin = function(obj) {
-		var props	= ['on', 'off', 'emit'];
-		for(var i = 0; i < props.length; i ++){
-			if( typeof obj === 'function' ){
-				obj.prototype[props[i]]	= Emitter.prototype[props[i]];
-			}else{
-				obj[props[i]] = Emitter.prototype[props[i]];
-			}
-		}
-		return obj;
-	};
+		config = config || {};
 
-	/**
-	 * Plugin defaults
-	 * @type {Object}
-	 */
-	var defaults = {
-		width: "auto",
-		disabled: false,
-		searchable: true,
-		clearable: false,
-		sortSelected: false,
-		allowDeselect: false,
-		closeOnScroll: false
-	};
-
-	/**
-	 * Selectr
-	 * @param {mixed} el      The element (HTMLSelectElement or CSS3 selector string)
-	 * @param {obj} options User defined options
-	 */
-	function Selectr(el, options) {
-
-		options = options || {};
-
-		// Checks
-		if (el === null) {
-			throw new Error("Selectr requires an element to work.");
+		if ( !el ) {
+			throw new Error("You must supply either a HTMLSelectElement or a CSS3 selector string.");
 		}
 
 		this.el = el;
 
-		if (typeof this.el === "string") {
-			this.el = document.querySelector(el);
+		// CSS3 selector string
+		if ( typeof el === "string" ) {
+			this.el = querySelect(el);
 		}
 
 		if ( this.el === null ) {
@@ -1156,58 +1397,55 @@
 			throw new Error("The element you passed to Selectr is not a HTMLSelectElement.");
 		}
 
-		if (!this.el.options.length && !options.data && !options.taggable) {
-			throw new Error("You don't have any options in your select!");
-		}
-
-		this.sortDirection = "asc";
-		this.originalType = this.el.type;
-		this.originalIndex = this.el.tabIndex;
-
-		this.render(options);
-	}
+		this.render(config);
+	};
 
 	/**
 	 * Render the instance
-	 * @param  {object} options
+	 * @param  {object} config
 	 * @return {void}
 	 */
-	Selectr.prototype.render = function(options) {
+	Selectr.prototype.render = function(config) {
 
 		if ( this.rendered ) return;
 
-		this.disabled = false;
+		// Merge defaults with user set config
+		this.config = util.extend(defaultConfig, config);
 
-		this.settings = util.extend(defaults, options);
+		// Store type
+		this.originalType = this.el.type;
 
-		if (this.settings.multiple || this.settings.taggable) {
+		// Store tabIndex
+		this.originalIndex = this.el.tabIndex;
+
+		// Store the original option count
+		this.originalOptionCount = this.el.options.length;
+
+		if (this.config.multiple || this.config.taggable) {
 			this.el.multiple = true;
 		}
 
-		if ( this.settings.taggable ) {
-			this.settings.searchable = false;
+		// Disabled?
+		this.disabled = set(this.config, "disabled");
+
+		this.opened = false;
+
+		if ( this.config.taggable ) {
+			this.config.searchable = false;
 		}
 
-		if ( this.settings.disabled ) {
-			this.disabled = true;
-		}
-
-		// Check for optgroupd
-		this.hasOptGroups = false;
-		if (this.el.getElementsByTagName("optgroup").length) {
-			this.hasOptGroups = true;
-		}
-
-		// Contains all the options in the dropdown
-		this.items = [];
-
-		// List of valid items, i.e. not disabled and non-empty values
-		this.list = [];
-
-		this.activeIdx = 0;
 		this.navigating = false;
 
-		Emitter.mixin(this);
+		this.mobileDevice = false;
+		if (/Android|webOS|iPhone|iPad|BlackBerry|Windows Phone|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent)) {
+			this.mobileDevice = true;
+		}
+
+		this.customOption = this.config.hasOwnProperty("renderOption") && typeof this.config.renderOption === "function";
+		this.customSelected = this.config.hasOwnProperty("renderSelection") && typeof this.config.renderSelection === "function";
+
+		// Enable event emitter
+		Events.mixin(this);
 
 		build.call(this);
 
@@ -1233,31 +1471,26 @@
 
 		this.emit("selectr.destroy");
 
-		// Remove custom options set with the data option
-		if ( this.settings.data ) {
-			while(this.el.hasChildNodes()) {
-				this.el.removeChild(this.el.lastChild);
-			}
-		}
-
 		// Revert to select-single if programtically set to multiple
 		if ( this.originalType === 'select-one' ) {
 			this.el.multiple = false;
 		}
 
+		if ( this.config.data ) {
+			this.el.innerHTML = "";
+		}
+
 		// Remove the className from select element
-		util.removeClass(this.el, 'hidden-input');
+		util.removeClass(this.el, 'selectr-hidden');
 
 		// Remove reset listener from parent form
-		var form = this.el.form;
-		if ( form ) {
-			util.off(form, "reset", this.events.reset);
+		if ( this.el.form ) {
+			util.off(this.el.form, "reset", this.events.reset);
 		}
 
 		// Remove event listeners attached to doc and win
 		util.off(document, "click", this.events.dismiss);
 		util.off(document, "keydown", this.events.navigate);
-		util.off(document, "keyup", this.events.keyup);
 		util.off(window, "resize", this.update);
 		util.off(window, "scroll", this.update);
 
@@ -1272,23 +1505,22 @@
 	 * @param {mixed} value A string or an array of strings
 	 */
 	Selectr.prototype.setValue = function(value) {
-		var _ = this,
-			isArray = util.isArray(value);
+		var isArray = util.isArray(value);
 
 		if (!isArray) {
 			value = value.toString().trim();
 		}
 
 		// Can't pass array to select-one
-		if ( !_.el.multiple && isArray ) {
+		if ( !this.el.multiple && isArray ) {
 			return false;
 		}
 
-		util.each(this.el.options, function(i, opt) {
-			if (isArray && util.includes(value.toString(), opt.value) || opt.value === value) {
-				change.call(_, i);
+		util.each(this.options, function(i, option) {
+			if (isArray && util.includes(value.toString(), option.value) || option.value === value) {
+				change.call(this, this.items[option.idx]);
 			}
-		});
+		}, this);
 	};
 
 	/**
@@ -1298,33 +1530,33 @@
 	 * @return {mixed}         Array or String
 	 */
 	Selectr.prototype.getValue = function(toObject, toJson) {
-		var _ = this, value;
+		var value;
 
-		if ( _.el.multiple ) {
+		if ( this.el.multiple ) {
 			if ( toObject) {
-				if ( _.selectedIndexes.length ) {
+				if ( this.selectedIndexes.length ) {
 					value = {};
 					value.values = [];
-					util.each(_.selectedIndexes, function(i,index) {
-						var option = _.el.options[index];
+					util.each(this.selectedIndexes, function(i,index) {
+						var option = this.options[index];
 						value.values[i] = {
 							value: option.value,
 							text: option.textContent
 						};
-					});
+					}, this);
 				}
 			} else {
-				value = _.selectedValues.slice();
+				value = this.selectedValues.slice();
 			}
 		} else {
 			if ( toObject) {
-				var option = _.el.options[_.selectedIndex];
+				var option = this.options[this.selectedIndex];
 				value = {
 					value: option.value,
 					text: option.textContent
 				};
 			} else {
-				value = _.selectedValue;
+				value = this.selectedValue;
 			}
 		}
 
@@ -1339,135 +1571,134 @@
 	 * Add a new option
 	 * @param {object} data
 	 */
-	Selectr.prototype.addOption = function(data) {
-		var _ = this;
-		if ( data && util.isObject(data) && data.value ) {
+	Selectr.prototype.addOption = function(data, checkDuplicate) {
+		if ( data ) {
+			if ( util.isArray(data) ) {
+				// We have an array on items
+				util.each(data, function(i, obj) {
+					this.addOption(obj);
+				}, this);
+			}
+			// User passed a single object to the method
+			// or Selectr passed an object from an array
+			else if ( util.isObject(data) ) {
 
-			// Don't add if already there
-			var options = _.settings.data ? _.settings.data : _.el.options;
+				if ( checkDuplicate ) {
+					var dupe = false;
 
-			var dupe = false;
+					util.each(this.options, function(i, option) {
+						if ( option.value.toLowerCase() === data.value.toLowerCase() ) {
+							dupe = true;
+						}
+					});
 
-			util.each(options, function(i,option) {
-				if ( option.value.toLowerCase() === data.value.toLowerCase() ) {
-					dupe = true;
+					if ( dupe ) {
+						return false;
+					}
 				}
-			});
 
-			if ( dupe ) {
-				if ( !_.settings.taggable ) {
-					throw new Error('That value is already in use.');
+				var option = util.createElement('option', data);
+
+				if ( this.data ) {
+					this.data.push(data);
 				}
-				return false;
+
+				// Add the new option to the list
+				this.options.push(option);
+
+				// Add the index for later use
+				option.idx = this.options.length - 1;
+
+				// Create a new item
+				var item = buildOption.call(this, option);
+
+				// Select the item if required
+				if ( data.selected ) {
+					select.call(this, item);
+				}
+
+				return option;
 			}
 
-			var option = util.createElement('option', data);
+			// We may have had an empty select so update
+			// the placeholder to reflect the changes.
+			this.setPlaceholder();
 
-			if ( _.settings.data ) {
-				_.settings.data.push({
-					value: data.value,
-					text: data.text
-				});
+			// Recount the pages
+			if ( this.requiresPagination ) {
+				var that = this;
+				this.pages = this.items.map( function(v, i) {
+					return i % that.config.pagination === 0 ? that.items.slice(i, i+that.config.pagination) : null;
+				}).filter(function(pages){ return pages; });
 			}
 
-			if ( data.selected ) {
-				option.selected = true;
-				option.defaultSelected = true;
-			}
-
-			option.innerHTML = _.customOption ? _.settings.renderOption(option) : option.textContent;
-
-			if ( !_.settings.pagination ) {
-				_.el.add(option);
-				buildOption.call(_, _.el.options.length - 1, option);
-			}
-
-			return option;
+			return true;
 		}
-
-		return false;
 	};
 
 	/**
 	 * Perform a search
 	 * @param  {string} query The query string
 	 */
-	Selectr.prototype.search = function(query, open) {
+	Selectr.prototype.search = function(string) {
+		string = string || this.input.value;
 
-		query = query.trim();
+		var f = document.createDocumentFragment();
 
-		var _ = this;
+		// Remove message
+		this.removeMessage();
 
-		if (_.navigating) return;
+		// Clear the dropdown
+		flush.call(this);
 
-		if (!util.hasClass(_.container, "notice")) {
-			if ( _.settings.searchable ) {
-				if (query.length > 0) {
-					util.addClass(_.inputContainer, "active");
-				} else {
-					util.removeClass(_.inputContainer, "active");
-				}
-			}
-		}
-		_.searching = true;
-		_.searchItems = [];
-		_.searchQuery = query;
+		if ( string.length > 1 ) {
+			// Check the options for the matching string
+			util.each(this.options, function(i, option) {
+				var item = this.items[option.idx];
+				var includes = util.includes(option.textContent.toLowerCase(), string.toLowerCase());
 
-		util.each(_.items, function(i, opt) {
-			var text = opt.textContent.trim();
-			var includes = util.includes(text.toLowerCase(), query.toLowerCase());
-			if ( opt.disabled || !includes ) {
-				util.addClass(opt, "excluded");
-				util.removeClass(opt, "match");
-			} else {
+				if ( includes && !option.disabled ) {
 
-				_.searchItems.push(opt);
-
-				if ( open ) {
-					if ( !_.customOption ) {
-						opt.innerHTML = match(query, opt, text);
+					if ( item.parentNode ) {
+						if ( !item.parentNode.parentNode ) {
+							f.appendChild(item.parentNode);
+						}
+					} else {
+						f.appendChild(item);
 					}
 
-					util.addClass(opt, "match");
-					util.removeClass(opt, "excluded");
+					util.removeClass(item, "excluded");
+
+					// Underline the matching results
+					if ( !this.customOption ) {
+						item.innerHTML = match(string, option);
+					}
+				} else {
+					util.addClass(item, "excluded");
 				}
-			}
-		});
+			}, this);
 
-		if ( open ) {
-			if (!_.searchItems.length && !_.settings.taggable) {
-				_.setMessage("No results.");
-				_.input.focus();
-			} else {
-				_.open();
+
+			if ( !f.childElementCount ) {
+				this.setMessage("no results.");
 			}
+
 		} else {
-			if ( _.searchItems.length ) {
-				var arr = {};
-				arr.values = [];
-				util.each(_.searchItems, function(i, item) {
-					var option = _.el.options[item.idx];
-					arr.values[i] = {
-						value: option.value,
-						text: option.textContent
-					};
-				});
-
-				return arr;
-			}
+			render.call(this);
 		}
 
-		_.emit("selectr.search", query, _.searchItems);
+		this.tree.appendChild(f);
+
 	};
 
+	// Selectr proto
 	/**
 	 * Toggle the dropdown
 	 * @return {void}
 	 */
 	Selectr.prototype.toggle = function() {
 		if (!this.disabled) {
-			var open = util.hasClass(this.container, "open");
-			if (open) {
+			if (this.opened) {
 				this.close();
 			} else {
 				this.open();
@@ -1480,41 +1711,58 @@
 	 * @return {void}
 	 */
 	Selectr.prototype.open = function() {
-		var _ = this;
 
-		util.addClass(_.container, "open");
+		var that = this;
 
-		checkInvert.call(_);
+		if ( !this.opened ) {
+			this.emit("selectr.open");
+		}
+
+		this.opened = true;
+
+		if (this.mobileDevice || this.config.nativeDropdown) {
+			util.addClass(this.container, "native-open");
+
+			if ( this.config.data ) {
+				// Dump the options into the select
+				// otherwise the native dropdown will be empty
+				util.each(this.options, function(i, option) {
+					this.el.add(option);
+				}, this);
+			}
+
+			return;
+		}
+
+		util.addClass(this.container, "open");
+
+		render.call(this);
+
+		invert.call(this);
 
 		var scrollHeight = this.tree.scrollHeight;
 
-		if ( scrollHeight <= _.optsRect.height ) {
-			if ( _.requiresPagination ) {
-				paginate.call(_);
+		if ( scrollHeight <= this.optsRect.height ) {
+			if ( this.requiresPagination ) {
+				load.call(this);
 			}
 		}
 
-		util.removeClass(_.container, "notice");
+		util.removeClass(this.container, "notice");
 
-		util.attr(_.selected, "aria-expanded", true);
-		util.attr(_.tree, {
-			"aria-hidden": false,
-			"aria-expanded": true
-		});
+		this.selected.setAttribute( "aria-expanded", true );
 
-		if (_.settings.searchable && !_.settings.taggable) {
+		this.tree.setAttribute( "aria-hidden", false );
+		this.tree.setAttribute( "aria-expanded", true );
+
+
+		if (this.config.searchable && !this.config.taggable) {
 			setTimeout(function() {
-				_.input.focus();
+				that.input.focus();
 				// Allow tab focus
-				_.input.tabIndex = 0;
+				that.input.tabIndex = 0;
 			}, 10);
 		}
-
-		if ( !this.opened ) {
-			_.emit("selectr.open");
-		}
-
-		_.opened = true;
 	};
 
 	/**
@@ -1522,9 +1770,21 @@
 	 * @return {void}
 	 */
 	Selectr.prototype.close = function() {
+
+		if ( this.opened ) {
+			this.emit("selectr.close");
+		}
+
+		this.opened = false;
+
+		if (this.mobileDevice || this.config.nativeDropdown) {
+			util.removeClass(this.container, "native-open");
+			return;
+		}
+
 		var notice = util.hasClass(this.container, "notice");
 
-		if (this.settings.searchable && !notice) {
+		if (this.config.searchable && !notice) {
 			this.input.blur();
 			// Disable tab focus
 			this.input.tabIndex = -1;
@@ -1537,21 +1797,55 @@
 		}
 
 		util.removeClass(this.container, "open");
+		util.removeClass(this.container, "native-open");
 
-		util.attr(this.selected, "aria-expanded", false);
-		util.attr(this.tree, {
-			"aria-hidden": true,
-			"aria-expanded": false
+		this.selected.setAttribute( "aria-expanded", false );
+
+		this.tree.setAttribute( "aria-hidden", true );
+		this.tree.setAttribute( "aria-expanded", false );
+
+		flush.call(this);
+		clearSearch.call(this);
+	};
+
+
+	/**
+	 * Enable the element
+	 * @return {void}
+	 */
+	Selectr.prototype.enable = function() {
+		this.disabled = false;
+		this.el.disabled = false;
+
+		this.selected.tabIndex = this.originalIndex;
+
+		util.each(this.tags, function(i,t) {
+			t.lastElementChild.tabIndex = 0;
 		});
 
-		clearSearch.call(this);
+		util.removeClass(this.container, "selectr-disabled");
+	};
 
-		if ( this.opened ) {
-			this.emit("selectr.close");
+	/**
+	 * Disable the element
+	 * @param  {boolean} container Disable the container only (allow value submit with form)
+	 * @return {void}
+	 */
+	Selectr.prototype.disable = function(container) {
+		if ( !container ) {
+			this.el.disabled = true;
 		}
 
-		this.opened = false;
+		this.selected.tabIndex = -1;
+
+		util.each(this.tags, function(i,t) {
+			t.lastElementChild.tabIndex = -1;
+		});
+
+		this.disabled = true;
+		util.addClass(this.container, "selectr-disabled");
 	};
+
 
 	/**
 	 * Reset to initial state
@@ -1564,8 +1858,8 @@
 			setSelected.call(this, true);
 
 			util.each(this.el.options, function(i,opt) {
-				if ( opt.defaultSelected ) {
-					change.call(this, i);
+				if ( opt.selected ) {
+					select.call(this, this.items[opt.idx]);
 				}
 			}, this);
 
@@ -1578,14 +1872,19 @@
 	 * @return {void}
 	 */
 	Selectr.prototype.clear = function() {
+
 		if ( this.el.multiple ) {
-			// Copy the array for reference otherwise it'll chuck an error
+			// Loop over the selectedIndexes so we don't have to loop over all the options
+			// which can be costly if there are a lot of them
+
+			// Copy the array or we'll get an error
 			var indexes = this.selectedIndexes.slice();
-			util.each(indexes, function(i, index) {
-				deselect.call(this, index);
+
+			util.each(indexes, function(i, idx) {
+				deselect.call(this, this.items[idx]);
 			}, this);
 		} else {
-			deselect.call(this, this.selectedIndex);
+			deselect.call(this, this.items[this.el.selectedIndex]);
 		}
 
 		this.emit("selectr.clear");
@@ -1598,13 +1897,13 @@
 	 */
 	Selectr.prototype.serialise = function(toJson) {
 		var data = [];
-		util.each(this.el.options, function(i, option) {
+		util.each(this.options, function(i, option) {
 			var obj = {
 				value: option.value,
 				text: option.textContent
 			};
 
-			if ( option.defaultSelected ) {
+			if ( option.selected ) {
 				obj.selected = true;
 			}
 			if ( option.disabled ) {
@@ -1624,44 +1923,18 @@
 	};
 
 	/**
-	 * Enable the element
-	 * @return {void}
+	 * Sets the placeholder
+	 * @param {String} placeholder
 	 */
-	Selectr.prototype.enable = function() {
-		if ( this.disabled ) {
-			this.disabled = false;
-			this.el.disabled = false;
+	Selectr.prototype.setPlaceholder = function(placeholder) {
+		// Set the placeholder
+		placeholder = placeholder || this.config.placeholder || this.el.getAttribute("placeholder");
 
-			this.selected.tabIndex = this.originalIndex;
-
-			util.each(this.tags, function(i,t) {
-				t.lastElementChild.tabIndex = 0;
-			});
-
-			util.removeClass(this.container, "disabled");
+		if ( !this.options.length ) {
+			placeholder = "No options available";
 		}
-	};
 
-	/**
-	 * Disable the element
-	 * @param  {boolean} container Disable the container only (allow value submit with form)
-	 * @return {void}
-	 */
-	Selectr.prototype.disable = function(container) {
-		if ( !this.disabled ) {
-			if ( !container ) {
-				this.el.disabled = true;
-			}
-
-			this.selected.tabIndex = -1;
-
-			util.each(this.tags, function(i,t) {
-				t.lastElementChild.tabIndex = -1;
-			});
-
-			this.disabled = true;
-			util.addClass(this.container, "disabled");
-		}
+		this.placeEl.innerHTML = placeholder;
 	};
 
 	/**
@@ -1676,5 +1949,14 @@
 		this.notice.textContent = message;
 	};
 
+	/**
+	 * Dismiss the current message
+	 */
+	Selectr.prototype.removeMessage = function() {
+		util.removeClass(this.container, "notice");
+		this.notice.innerHTML = "";
+	};
+
 	return Selectr;
+
 }));

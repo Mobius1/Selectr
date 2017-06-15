@@ -7,13 +7,15 @@ Features:
 
 * Supports single and multiple select boxes
 * Supports optgroups
+* Custom datasets
 * Searchable options
 * Tagging support
 * Custom events
 * Custom styling
+* Native select for mobile devices
 * Much more...
 
-[Demos](http://mobius.ovh/docs/selectr/pages/demos) | [Documentation](http://mobius.ovh/docs/selectr) | [Playground](http://codepen.io/Mobius1/full/jBqpze/)
+[Documentation](https://github.com/Mobius1/Selectr/wiki) | [Demo](http://codepen.io/Mobius1/full/jBqpze/)
 
 ---
 
@@ -67,7 +69,7 @@ You can then instantiate Selectr by passing a reference to your select box as th
 ```javascript
 new Selectr(document.getElementById('#mySelect'));
 
-// or 
+// or
 
 new Selectr('#mySelect');
 ```
@@ -85,6 +87,18 @@ new Selectr('#mySelect', {
 
 ## Change Log
 
+### 2.2.0
+* Empty select elements can now be used ([#23](https://github.com/Mobius1/Selectr/issues/23))
+* Improved IE9 compatibility (removed pointer-events usage)
+* Allow the use of native dropdown
+* Native select is now triggered on mobile devices (single and multiple) ([#14](https://github.com/Mobius1/Selectr/issues/14), [#19](https://github.com/Mobius1/Selectr/issues/19), [#25](https://github.com/Mobius1/Selectr/issues/25))
+* Pagination can be applied to options already defined in the DOM (previously only possible with the `data` option)
+* Searching with pagination active will now return results from entire set instead of the loaded set ([#15](https://github.com/Mobius1/Selectr/issues/15))
+* Custom renderers (`renderOption`, `renderSelection`) can now be used along with the `data` option.
+* The tag input placeholder can now be customised ([#21](https://github.com/Mobius1/Selectr/issues/21), [#22](https://github.com/Mobius1/Selectr/issues/22))
+* Reduced memory usaged
+* Various other fixes
+
 ### v2.1.5
 * Improved accessibility
 * New methods `disable()` and `enable()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
@@ -95,39 +109,6 @@ new Selectr('#mySelect', {
 * Fixed autocomplete bug in Chrome ([#12](https://github.com/Mobius1/Selectr/issues/12))
 * Fixed pagination not incrementing when navigating with the down key
 * Fixed `reset()` method not checking `data`
-
-### v2.1.3
-* Fixed bug with tagging system
-
-### v2.1.2
-
-* New option `closeOnScroll` ([#11](https://github.com/Mobius1/Selectr/issues/11)) (see [docs](http://mobius.ovh/docs/selectr/pages/options))
-* Fixed bug with checking dropdown is on-screen ([#10](https://github.com/Mobius1/Selectr/issues/10))
-* Fixed navigation bug ([70168f2](/Mobius1/Selectr/commit/70168f2df967881818116a81ac4edbaa98588381))
-
-### v2.1.1
-
-* new option `allowDeselect` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
-* tabIndex enabled on th main container
-* tabIndex disabled on search input when closed
-
-### v2.1.0
-
-* New tagging feature (see [docs](http://mobius.ovh/docs/selectr/pages/options))
-
-New functions:
-* `addOption()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
-* `serialize()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
-* `destroy()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
-* `render()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
-
-New options:
-* `taggable` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
-* `tagSeperators` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
-
-Updated options:
-* `sortSelected` (see [docs](http://mobius.ovh/docs/selectr/pages/options))
-
 
 # License
 
