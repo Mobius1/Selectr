@@ -6,7 +6,7 @@ Supports most modern browsers including IE9.
 
 ---
 
-[![Build Status](https://travis-ci.org/Mobius1/Selectr.svg?branch=master)](https://travis-ci.org/Mobius1/Selectr) [![npm version](https://badge.fury.io/js/mobius1-selectr.svg)](https://badge.fury.io/js/mobius1-selectr) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Mobius1/Selectr/blob/master/LICENSE) [![Browser Status](https://badges.herokuapp.com/browsers?firefox=26&iexplore=9&microsoftedge=12&opera=12&safari=5.1&googlechrome=53)](https://saucelabs.com/u/wml-little-loader) [![Code Climate](https://codeclimate.com/github/Mobius1/Selectr/badges/gpa.svg)](https://codeclimate.com/github/Mobius1/Selectr)
+[![Build Status](https://travis-ci.org/Mobius1/Selectr.svg?branch=master)](https://travis-ci.org/Mobius1/Selectr) [![npm version](https://badge.fury.io/js/mobius1-selectr.svg)](https://badge.fury.io/js/mobius1-selectr) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Mobius1/Selectr/blob/master/LICENSE) [![Browser Status](https://badges.herokuapp.com/browsers?firefox=26&iexplore=9&microsoftedge=12&opera=12&safari=5.1&googlechrome=53)](https://saucelabs.com/u/wml-little-loader)
 
 ---
 
