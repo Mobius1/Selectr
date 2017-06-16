@@ -972,7 +972,7 @@
 		this.items.push(opt);
 
 		if (option.selected || option.hasAttribute("selected")) {
-			select.call(this, opt)
+			select.call(this, opt);
 		}
 
 		if ( option.defaultSelected ) {
