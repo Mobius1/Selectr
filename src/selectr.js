@@ -1217,6 +1217,11 @@
 
 			var tags = this.tags.slice();
 
+			// Deal with values that contain numbers
+			function replace(val, arr) {
+				val.replace(/(\d+)|(\D+)/g, function(that, $1, $2) { arr.push([$1 || Infinity, $2 || ""]); });
+			}
+
 			tags.sort(function(a, b) {
 				var x = [], y = [], ac, bc;
 				if ( that.config.sortSelected === true ) {
@@ -1227,9 +1232,8 @@
 					bc = b.textContent;
 				}
 
-				// Deal with values that contain numbers
-				ac.replace(/(\d+)|(\D+)/g, function(that, $1, $2) { x.push([$1 || Infinity, $2 || ""]); });
-				bc.replace(/(\d+)|(\D+)/g, function(that, $1, $2) { y.push([$1 || Infinity, $2 || ""]); });
+				replace(ac, x);
+				replace(bc, y);
 
 				while(x.length && y.length) {
 					var ax = x.shift();
