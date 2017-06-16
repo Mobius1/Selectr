@@ -377,10 +377,6 @@
 	font-size: inherit;
 }
 
-.selectr-tag-input:focus {
-	outline: 0;
-}
-
 .selectr-input-container.loading::after {
 	position: absolute;
 	top: 50%;
