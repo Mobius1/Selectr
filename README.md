@@ -88,9 +88,6 @@ new Selectr('#mySelect', {
 
 ## Change Log
 
-### 2.2.1
-* Hotfix
-
 ### 2.2.0
 * Empty select elements can now be used ([#23](https://github.com/Mobius1/Selectr/issues/23))
 * Improved IE9 compatibility (removed pointer-events usage)

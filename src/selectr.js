@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.2.1
+ * Selectr 2.2.2
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -591,7 +591,7 @@
 
 		// Element may have optgroups so
 		// iterate element.children instead of element.options
-	var group = false, j = 0;
+		var group = false, j = 0;
 		if ( this.el.children.length ) {
 			util.each(this.el.children, function(i, element) {
 				if ( element.nodeName === "OPTGROUP" ) {
@@ -971,8 +971,8 @@
 
 		this.items.push(opt);
 
-		if (option.selected) {
-			util.addClass(opt, "selected");
+		if (option.selected || option.hasAttribute("selected")) {
+			select.call(this, opt)
 		}
 
 		if (option.disabled) {
