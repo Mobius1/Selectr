@@ -275,7 +275,7 @@
 	 */
 	var querySelect = function(a) {
 		var b = !1;
-		if (a && "string" == typeof a) {
+		if (a && "string" === typeof a) {
 			var c = document,
 				e = a.charAt(0);
 			switch (e) {
@@ -431,17 +431,15 @@
 
 		// Set width
 		if (set(this.config, "width")) {
-			var width = 0;
 			if (util.isInt(this.config.width)) {
-				width = this.config.width + "px";
+				this.width = this.config.width + "px";
 			} else {
 				if (this.config.width === "auto") {
-					width = "100%";
+					this.width = "100%";
 				} else if (util.includes(this.config.width, "%")) {
-					width = this.config.width;
+					this.width = this.config.width;
 				}
 			}
-			this.width = width;
 		}
 
 		this.container = util.createElement("div", {
@@ -685,13 +683,10 @@
 
 		// Check for pagination / infinite scroll
 		if ( this.requiresPagination ) {
-			var that = this;
 			this.pageIndex = 1;
 
 			// Create the pages
-			this.pages = this.items.map( function(v, i) {
-				return i % that.config.pagination === 0 ? that.items.slice(i, i+that.config.pagination) : null;
-			}).filter(function(pages){ return pages; });
+			this.paginate();
 		}
 
 		this.container.appendChild(this.selected);
@@ -806,10 +801,9 @@
 		}, this);
 
 		util.on(this.label, "click", function(e) {
-			var target = e.target;
 			// Remove tag button
-			if (util.hasClass(target, "selectr-tag-remove")) {
-				deselect.call(this, this.items[target.parentNode.idx]);
+			if (util.hasClass(e.target, "selectr-tag-remove")) {
+				deselect.call(this, this.items[e.target.parentNode.idx]);
 			}
 		}, this);
 
@@ -849,14 +843,13 @@
 
 		// Mouseover list items
 		util.on(this.tree, "mouseover", function(e) {
-			var target = e.target;
-			if ( target.classList.contains("selectr-option") ) {
-				if ( !target.classList.contains("disabled") ) {
+			if ( e.target.classList.contains("selectr-option") ) {
+				if ( !e.target.classList.contains("disabled") ) {
 					this.items[this.navIndex].classList.remove("active");
 
-					target.classList.add("active");
+					e.target.classList.add("active");
 
-					this.navIndex = [].slice.call(this.items).indexOf(target);
+					this.navIndex = [].slice.call(this.items).indexOf(e.target);
 				}
 			}
 		}, this);
@@ -1004,7 +997,7 @@
 		util.preventDefault(e);
 
 		if ( key === 13 ) {
-			return void change.call(this, this.items[this.navIndex]);
+			return change.call(this, this.items[this.navIndex]);
 		}
 
 		var direction, prevEl = this.items[this.navIndex];
@@ -1108,9 +1101,8 @@
 				return false;
 			}
 
-			var max = this.config.maxSelections;
-			if ( max && this.tags.length == max ) {
-				this.setMessage("A maximum of " + max + " items can be selected.", true);
+			if ( this.config.maxSelections && this.tags.length == this.config.maxSelections ) {
+				this.setMessage("A maximum of " + this.config.maxSelections + " items can be selected.", true);
 				return false;
 			}
 
@@ -1631,10 +1623,7 @@
 
 			// Recount the pages
 			if ( this.requiresPagination ) {
-				var that = this;
-				this.pages = this.items.map( function(v, i) {
-					return i % that.config.pagination === 0 ? that.items.slice(i, i+that.config.pagination) : null;
-				}).filter(function(pages){ return pages; });
+				this.paginate();
 			}
 
 			return true;
@@ -1938,6 +1927,22 @@
 		}
 
 		this.placeEl.innerHTML = placeholder;
+	};
+
+	/**
+	 * Paginate the option list
+	 * @return {Array}
+	 */
+	Selectr.prototype.paginate = function() {
+		if ( this.items.length ) {
+			var that = this;
+
+			this.pages = this.items.map( function(v, i) {
+				return i % that.config.pagination === 0 ? that.items.slice(i, i+that.config.pagination) : null;
+			}).filter(function(pages){ return pages; });
+
+			return this.pages;
+		}
 	};
 
 	/**
