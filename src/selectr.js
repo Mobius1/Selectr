@@ -163,11 +163,11 @@
 			props = props || {};
 			var p;
 			for (p in src) {
-		if (src.hasOwnProperty(p)) {
-			if (!props.hasOwnProperty(p)) {
-				props[p] = src[p];
-			}
-		}
+				if (src.hasOwnProperty(p)) {
+					if (!props.hasOwnProperty(p)) {
+						props[p] = src[p];
+					}
+				}
 			}
 			return props;
 		},
@@ -183,6 +183,24 @@
 					b.call(c, e, a[e], a);
 				}
 			}
+		},
+		querySelect: function(a) {
+			var b = !1;
+			if (a && "string" === typeof a) {
+				var c = document,
+					e = a.charAt(0);
+				switch (e) {
+					case ".":
+						b = c.getElementsByClassName(a.substr(1))[0];
+						break;
+					case "#":
+						b = c.getElementById(a.substr(1));
+						break;
+					default:
+						b = c.getElementsByTagName(a)[0];
+				}
+			}
+			return b;
 		},
 		createElement: function(e, a) {
 			var d = document,
@@ -222,9 +240,7 @@
 		isObject: function(a) { return "[object Object]" === Object.prototype.toString.call(a); },
 		isArray: function(a) { return "[object Array]" === Object.prototype.toString.call(a); },
 		isInt: function(val) {
-			return !isNaN(val) && (function(x) {
-				return (x || 0) === x;
-			})(parseFloat(val));
+			return typeof val === 'number' && isFinite(val) && Math.floor(val) === val;
 		},
 		debounce: function(a, b, c) {
 			var d;
@@ -268,29 +284,6 @@
 	 * HELPER FUNCTIONS
 	 */
 
-	/**
-	 * Search for an element (faster than querySelector)
-	 * @param  {[type]} selector [description]
-	 * @return {[type]}          [description]
-	 */
-	var querySelect = function(a) {
-		var b = !1;
-		if (a && "string" === typeof a) {
-			var c = document,
-				e = a.charAt(0);
-			switch (e) {
-				case ".":
-					b = c.getElementsByClassName(a.substr(1))[0];
-					break;
-				case "#":
-					b = c.getElementById(a.substr(1));
-					break;
-				default:
-					b = c.getElementsByTagName(a)[0];
-			}
-		}
-		return b;
-	};
 
 	var set = function(obj, prop) {
 		return obj.hasOwnProperty(prop) && (obj[prop] === true || obj[prop].length);
@@ -358,6 +351,21 @@
 	var render = function() {
 		if ( this.items.length ) {
 
+			function appendItem(item, custom) {
+				if ( item.parentNode ) {
+					if ( !item.parentNode.parentNode ) {
+						f.appendChild(item.parentNode);
+					}
+				} else {
+					f.appendChild(item);
+				}
+
+				util.removeClass(item, "excluded");
+				if ( !custom ) {
+					item.innerHTML = item.textContent;
+				}
+			}
+
 			var f = document.createDocumentFragment();
 
 			if ( this.config.pagination ) {
@@ -365,33 +373,12 @@
 
 				util.each(pages, function(i, items) {
 					util.each(items, function(j, item) {
-						if ( item.parentNode ) {
-							if ( !item.parentNode.parentNode ) {
-								f.appendChild(item.parentNode);
-							}
-						} else {
-							f.appendChild(item);
-						}
-
-						util.removeClass(item, "excluded");
-						if ( !this.customOption ) {
-							item.innerHTML = item.textContent;
-						}
+						appendItem(item, this.customOption);
 					}, this);
 				}, this);
 			} else {
 				util.each(this.items, function(i, item) {
-					if ( item.parentNode ) {
-						if ( !item.parentNode.parentNode ) {
-							f.appendChild(item.parentNode);
-						}
-					} else {
-						f.appendChild(item);
-					}
-					util.removeClass(item, "excluded");
-					if ( !this.customOption ) {
-						item.innerHTML = item.textContent;
-					}
+					appendItem(item, this.customOption);
 				}, this);
 			}
 
@@ -1075,7 +1062,7 @@
 			return;
 		}
 
-		if (util.hasClass(item, "selected")) {
+		if (option.selected && util.hasClass(item, "selected")) {
 			deselect.call(this, item);
 		} else {
 			select.call(this, item);
@@ -1101,7 +1088,7 @@
 				return false;
 			}
 
-			if ( this.config.maxSelections && this.tags.length == this.config.maxSelections ) {
+			if ( this.config.maxSelections && this.tags.length === this.config.maxSelections ) {
 				this.setMessage("A maximum of " + this.config.maxSelections + " items can be selected.", true);
 				return false;
 			}
@@ -1380,7 +1367,7 @@
 
 		// CSS3 selector string
 		if ( typeof el === "string" ) {
-			this.el = querySelect(el);
+			this.el = util.querySelect(el);
 		}
 
 		if ( this.el === null ) {
