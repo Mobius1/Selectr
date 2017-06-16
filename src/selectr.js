@@ -980,21 +980,18 @@
 	var navigate = function(e) {
 		e = e || window.event;
 
-		var key = e.which,
-			keys = [13, 38, 40];
-
 		// Filter out the keys we don"t want
-		if (!this.items.length || !this.opened || !util.includes(keys, key)) return;
+		if (!this.items.length || !this.opened || !util.includes([13, 38, 40], e.which)) return;
 
 		util.preventDefault(e);
 
-		if ( key === 13 ) {
+		if ( e.which === 13 ) {
 			return change.call(this, this.items[this.navIndex]);
 		}
 
 		var direction, prevEl = this.items[this.navIndex];
 
-		switch (key) {
+		switch (e.which) {
 			case 38:
 				direction = 0;
 				if ( this.navIndex > 0 ) { this.navIndex--; }
@@ -1010,38 +1007,26 @@
 		// Instead of wasting memory holding a copy of this.items
 		// with disabled / excluded options omitted, skip them instead
 		if (this.items[this.navIndex].classList.contains("disabled") || this.items[this.navIndex].classList.contains("excluded") ) {
-				while(this.items[this.navIndex].classList.contains("disabled") || this.items[this.navIndex].classList.contains("excluded") ) {
-					if ( direction ) { this.navIndex++; } else { this.navIndex--; }
-				}
+			while(this.items[this.navIndex].classList.contains("disabled") || this.items[this.navIndex].classList.contains("excluded") ) {
+				if ( direction ) { this.navIndex++; } else { this.navIndex--; }
+			}
 		}
 
 
 		// Autoscroll the dropdown during navigation
-		var nxtEl = this.items[this.navIndex];
 		var nxtRct = util.getRect(this.items[this.navIndex]);
-		var opsTop = this.tree.scrollTop;
-		var offset = this.optsRect.top;
-		var curOffset, nxtOffset;
 
 		if (!direction) {
-			var nxtTp = nxtRct.top;
-			curOffset = offset;
-			nxtOffset = opsTop + (nxtTp - curOffset);
-
 			if (this.navIndex === 0) {
 				this.tree.scrollTop = 0;
-			} else if (nxtTp - curOffset < 0) {
-				this.tree.scrollTop = nxtOffset;
+			} else if (nxtRct.top - this.optsRect.top < 0) {
+				this.tree.scrollTop = this.tree.scrollTop + (nxtRct.top - this.optsRect.top);
 			}
 		} else {
-			var nxtBottom = nxtRct.top + nxtRct.height;
-			curOffset = offset + this.optsRect.height;
-			nxtOffset = opsTop + (nxtBottom - curOffset);
-
 			if (this.navIndex === 0) {
 				this.tree.scrollTop = 0;
-			} else if (nxtBottom > curOffset) {
-				this.tree.scrollTop = nxtOffset;
+			} else if ((nxtRct.top + nxtRct.height) > (this.optsRect.top + this.optsRect.height)) {
+				this.tree.scrollTop = this.tree.scrollTop + ((nxtRct.top + nxtRct.height) - (this.optsRect.top + this.optsRect.height));
 			}
 
 			if ( this.navIndex === this.tree.childElementCount - 1 && this.requiresPagination ) {
@@ -1052,7 +1037,7 @@
 		if ( prevEl ) {
 			util.removeClass(prevEl, "active");
 		}
-		util.addClass(nxtEl, "active");
+		util.addClass(this.items[this.navIndex], "active");
 	};
 
 	/**
@@ -1086,7 +1071,7 @@
 	var select = function(item) {
 
 		var options = [].slice.call(this.el.options),
-				option = this.options[item.idx];
+			option = this.options[item.idx];
 
 		if ( this.el.multiple ) {
 			if (util.includes(this.selectedIndexes, item.idx) ) {
@@ -1189,7 +1174,7 @@
 	 * @param  {HTMLElement} item
 	 */
 	var addTag = function(item) {
-		var that = this;
+		var that = this, replace;
 
 		var docFrag = document.createDocumentFragment();
 		var option = this.options[item.idx];
@@ -1218,7 +1203,7 @@
 			var tags = this.tags.slice();
 
 			// Deal with values that contain numbers
-			function replace(val, arr) {
+			replace = function(val, arr) {
 				val.replace(/(\d+)|(\D+)/g, function(that, $1, $2) { arr.push([$1 || Infinity, $2 || ""]); });
 			}
 
@@ -1720,10 +1705,8 @@
 
 		var scrollHeight = this.tree.scrollHeight;
 
-		if ( scrollHeight <= this.optsRect.height ) {
-			if ( this.requiresPagination ) {
-				load.call(this);
-			}
+		if ( scrollHeight <= this.optsRect.height && this.requiresPagination ) {
+			load.call(this);
 		}
 
 		util.removeClass(this.container, "notice");
