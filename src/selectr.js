@@ -350,13 +350,13 @@
 	 * @param  {[type]} custom [description]
 	 * @return {[type]}        [description]
 	 */
-	var appendItem = function(item, custom) {
+	var appendItem = function(item, parent, custom) {
 		if ( item.parentNode ) {
 			if ( !item.parentNode.parentNode ) {
-				f.appendChild(item.parentNode);
+				parent.appendChild(item.parentNode);
 			}
 		} else {
-			f.appendChild(item);
+			parent.appendChild(item);
 		}
 
 		util.removeClass(item, "excluded");
@@ -378,12 +378,12 @@
 
 				util.each(pages, function(i, items) {
 					util.each(items, function(j, item) {
-						appendItem(item, this.customOption);
+						appendItem(item, f, this.customOption);
 					}, this);
 				}, this);
 			} else {
 				util.each(this.items, function(i, item) {
-					appendItem(item, this.customOption);
+					appendItem(item, f, this.customOption);
 				}, this);
 			}
 
@@ -1293,7 +1293,7 @@
 			var f = document.createDocumentFragment();
 
 			util.each(this.pages[this.pageIndex], function(i, item) {
-				appendItem(item, this.customOption);
+				appendItem(item, f, this.customOption);
 			}, this);
 
 			tree.appendChild(f);
@@ -1639,7 +1639,7 @@
 
 				if ( includes && !option.disabled ) {
 
-					appendItem(item, this.customOption);
+					appendItem(item, f, this.customOption);
 
 					util.removeClass(item, "excluded");
 
