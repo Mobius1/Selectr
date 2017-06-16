@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.2.2
+ * Selectr 2.2.3
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -975,6 +975,10 @@
 			select.call(this, opt)
 		}
 
+		if ( option.defaultSelected ) {
+			this.defaultSelected.push(option.idx);
+		}
+
 		if (option.disabled) {
 			opt.disabled = true;
 			util.addClass(opt, "disabled");
@@ -1416,6 +1420,9 @@
 		// Store tabIndex
 		this.originalIndex = this.el.tabIndex;
 
+		// Store defaultSelected options for form reset
+		this.defaultSelected = [];
+
 		// Store the original option count
 		this.originalOptionCount = this.el.options.length;
 
@@ -1855,10 +1862,8 @@
 
 			setSelected.call(this, true);
 
-			util.each(this.el.options, function(i,opt) {
-				if ( opt.selected ) {
-					select.call(this, this.items[opt.idx]);
-				}
+			util.each(this.defaultSelected, function(i,idx) {
+				select.call(this, this.items[idx]);
 			}, this);
 
 			this.emit("selectr.reset");
