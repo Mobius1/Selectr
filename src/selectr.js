@@ -345,27 +345,32 @@
 	};
 
 	/**
+	 * Append an item to the list
+	 * @param  {[type]} item   [description]
+	 * @param  {[type]} custom [description]
+	 * @return {[type]}        [description]
+	 */
+	var appendItem = function(item, custom) {
+		if ( item.parentNode ) {
+			if ( !item.parentNode.parentNode ) {
+				f.appendChild(item.parentNode);
+			}
+		} else {
+			f.appendChild(item);
+		}
+
+		util.removeClass(item, "excluded");
+		if ( !custom ) {
+			item.innerHTML = item.textContent;
+		}
+	};
+
+	/**
 	 * Render the item list
 	 * @return {Void}
 	 */
 	var render = function() {
 		if ( this.items.length ) {
-
-			function appendItem(item, custom) {
-				if ( item.parentNode ) {
-					if ( !item.parentNode.parentNode ) {
-						f.appendChild(item.parentNode);
-					}
-				} else {
-					f.appendChild(item);
-				}
-
-				util.removeClass(item, "excluded");
-				if ( !custom ) {
-					item.innerHTML = item.textContent;
-				}
-			}
-
 			var f = document.createDocumentFragment();
 
 			if ( this.config.pagination ) {
@@ -1288,13 +1293,7 @@
 			var f = document.createDocumentFragment();
 
 			util.each(this.pages[this.pageIndex], function(i, item) {
-					if ( item.parentNode ) {
-						if ( !item.parentNode.parentNode ) {
-							f.appendChild(item.parentNode);
-						}
-					} else {
-						f.appendChild(item);
-					}
+				appendItem(item, this.customOption);
 			}, this);
 
 			tree.appendChild(f);
@@ -1640,13 +1639,7 @@
 
 				if ( includes && !option.disabled ) {
 
-					if ( item.parentNode ) {
-						if ( !item.parentNode.parentNode ) {
-							f.appendChild(item.parentNode);
-						}
-					} else {
-						f.appendChild(item);
-					}
+					appendItem(item, this.customOption);
 
 					util.removeClass(item, "excluded");
 
