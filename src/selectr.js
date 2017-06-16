@@ -1174,7 +1174,7 @@
 	 * @param  {HTMLElement} item
 	 */
 	var addTag = function(item) {
-		var that = this, replace;
+		var that = this, r;
 
 		var docFrag = document.createDocumentFragment();
 		var option = this.options[item.idx];
@@ -1203,9 +1203,9 @@
 			var tags = this.tags.slice();
 
 			// Deal with values that contain numbers
-			replace = function(val, arr) {
+			r = function(val, arr) {
 				val.replace(/(\d+)|(\D+)/g, function(that, $1, $2) { arr.push([$1 || Infinity, $2 || ""]); });
-			}
+			};
 
 			tags.sort(function(a, b) {
 				var x = [], y = [], ac, bc;
@@ -1217,8 +1217,8 @@
 					bc = b.textContent;
 				}
 
-				replace(ac, x);
-				replace(bc, y);
+				r(ac, x);
+				r(bc, y);
 
 				while(x.length && y.length) {
 					var ax = x.shift();
