@@ -408,7 +408,7 @@
 	 */
 	var dismiss = function(e) {
 		var target = e.target;
-		if (!this.container.contains(target) && (this.opened || this.container.classList.contains("notice"))) {
+		if (!this.container.contains(target) && (this.opened || util.hasClass(this.container, "notice"))) {
 			this.close();
 		}
 	};
@@ -453,9 +453,9 @@
 
 		// Native dropdown
 		if ( this.config.nativeDropdown || this.mobileDevice ) {
-			this.el.classList.add("selectr-visible");
+			util.addClass(this.el, "selectr-visible");
 		} else {
-			this.el.classList.add("selectr-hidden");
+			util.addClass(this.el, "selectr-hidden");
 		}
 
 		this.selected = util.createElement("div", {
@@ -835,11 +835,11 @@
 
 		// Mouseover list items
 		util.on(this.tree, "mouseover", function(e) {
-			if ( e.target.classList.contains("selectr-option") ) {
-				if ( !e.target.classList.contains("disabled") ) {
-					this.items[this.navIndex].classList.remove("active");
+			if ( util.hassClass(e.target, "selectr-option") ) {
+				if ( !util.hassClass(e.target, "disabled") ) {
+					util.removeClass(this.items[this.navIndex], "active");
 
-					e.target.classList.add("active");
+					util.addClass(e.target, "active");
 
 					this.navIndex = [].slice.call(this.items).indexOf(e.target);
 				}
@@ -1006,29 +1006,30 @@
 
 		// Instead of wasting memory holding a copy of this.items
 		// with disabled / excluded options omitted, skip them instead
-		if (this.items[this.navIndex].classList.contains("disabled") || this.items[this.navIndex].classList.contains("excluded") ) {
-			while(this.items[this.navIndex].classList.contains("disabled") || this.items[this.navIndex].classList.contains("excluded") ) {
+		if ( util.hasClass(this.items[this.navIndex], "disabled") || util.hasClass(this.items[this.navIndex], "excluded") ) {
+			while(util.hasClass(this.items[this.navIndex], "disabled") || util.hasClass(this.items[this.navIndex], "excluded") ) {
 				if ( direction ) { this.navIndex++; } else { this.navIndex--; }
 			}
 		}
 
 
 		// Autoscroll the dropdown during navigation
-		var nxtRct = util.getRect(this.items[this.navIndex]);
+		var r = util.getRect(this.items[this.navIndex]);
 
 		if (!direction) {
 			if (this.navIndex === 0) {
 				this.tree.scrollTop = 0;
-			} else if (nxtRct.top - this.optsRect.top < 0) {
-				this.tree.scrollTop = this.tree.scrollTop + (nxtRct.top - this.optsRect.top);
+			} else if (r.top - this.optsRect.top < 0) {
+				this.tree.scrollTop = this.tree.scrollTop + (r.top - this.optsRect.top);
 			}
 		} else {
 			if (this.navIndex === 0) {
 				this.tree.scrollTop = 0;
-			} else if ((nxtRct.top + nxtRct.height) > (this.optsRect.top + this.optsRect.height)) {
-				this.tree.scrollTop = this.tree.scrollTop + ((nxtRct.top + nxtRct.height) - (this.optsRect.top + this.optsRect.height));
+			} else if ((r.top + r.height) > (this.optsRect.top + this.optsRect.height)) {
+				this.tree.scrollTop = this.tree.scrollTop + ((r.top + r.height) - (this.optsRect.top + this.optsRect.height));
 			}
 
+			// Load another page if needed
 			if ( this.navIndex === this.tree.childElementCount - 1 && this.requiresPagination ) {
 				load.call(this);
 			}
