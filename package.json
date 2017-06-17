@@ -1,7 +1,7 @@
 {
   "name": "mobius1-selectr",
-  "version": "2.2.3",
-  "description": "A lightweight dependency-free javascript select box replacement.",
+  "version": "2.2.4",
+  "description": "A lightweight, dependency-free, mobile-friendly javascript select box replacement.",
   "main": "dist/selectr.min.js",
   "scripts": {
     "test": "grunt test"

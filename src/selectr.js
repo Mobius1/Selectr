@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.2.3
+ * Selectr 2.2.4
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -446,6 +446,8 @@
 		// Mobile device
 		if (this.mobileDevice) {
 			util.addClass(this.container, "selectr-mobile");
+		} else {
+			util.addClass(this.container, "selectr-desktop");
 		}
 
 		// Hide the HTMLSelectElement and prevent focus
@@ -461,7 +463,7 @@
 		this.selected = util.createElement("div", {
 			class: "selectr-selected",
 			disabled: this.disabled,
-			tabIndex: this.el.tabIndex, // enable tabIndex (#9)
+			tabIndex: 1, // enable tabIndex (#9)
 			"aria-expanded": false
 		});
 
@@ -720,69 +722,59 @@
 		this.events.reset = this.reset.bind(this);
 
 		if ( this.config.nativeDropdown || this.mobileDevice ) {
-			this.ctrlDown = false;
 
-			// Listen for change event on mobile devices
-			if ( this.mobileDevice ) {
-				util.on(this.el, 'change', function(e) {
-					if ( this.el.multiple ) {
+			util.on(this.container, "touchstart", function(e) {
+				if ( e.changedTouches[0].target === this.el ) {
+					this.toggle();
+				}
+			}, this);
 
-						var values = [];
-						util.each(this.options, function(i, option) {
-							if ( option.selected ) {
-								values.push(option.idx);
+			if ( this.config.nativeDropdown || this.mobileDevice ) {
+					util.on(this.container, "click", function(e) {
+
+							if ( e.target === this.el ) {
+									this.toggle();
 							}
-							deselect.call(this, this.items[option.idx]);
-						}, this);
-
-						util.each(values, function(i, idx) {
-							select.call(this, this.items[idx]);
-						}, this);
-
-					}
-				}, this);
-			} else {
-
-				// Emulate CTRL + Select
-				util.on(document, "keydown", function(e) {
-					this.ctrlDown = e.key === "Control";
-				}, this);
-
-				util.on(document, "keyup", function(e) {
-					this.ctrlDown = false;
-				}, this);
-
-				util.on(this.el, "click", function(e) {
-					if ( this.el.multiple ) {
-						if ( e.target.nodeName === "OPTION" ) {
-
-							if ( !this.ctrlDown ) {
-								this.clear();
-							}
-
-							change.call(this, this.items[e.target.idx]);
-
-							e.preventDefault();
-						}
-					}
-				}, this);
+					}, this);
 			}
 
+			// Listen for the change on the native select
+			// and update accordingly
 			util.on(this.el, "change", function(e) {
-				if ( !this.el.multiple ) {
+				if ( this.el.multiple ) {
+					var selected = this.el.querySelectorAll('option:checked');
+
+					this.clear();
+
+					util.each(values, function(i, idx) {
+						select.call(this, this.items[idx]);
+					}, this);
+
+				} else {
 					if ( this.el.selectedIndex > -1 ) {
 						select.call(this, this.items[this.el.selectedIndex]);
 					}
 				}
 			}, this);
+
 		}
 
-		util.on(this.container, "click", function(e) {
-			if ( e.target === this.el ) {
+		// Open the dropdown with Enter key if focused
+		if ( this.config.nativeDropdown ) {
+			util.on(this.container, "keydown", function(e) {
+				if ( e.key === "Enter" && this.selected === document.activeElement ) {
+					// Show the native
 					this.toggle();
-			}
-		}, this);
 
+					// Focus on the native multiselect
+					setTimeout(function() {
+						that.el.focus();
+					}, 200);
+				}
+			}, this);
+		}
+
+		// Non-native dropdown
 		util.on(this.selected, "click", function(e) {
 
 			if (!this.disabled) {
@@ -792,20 +784,22 @@
 			util.preventDefault(e);
 		}, this);
 
+		// Remove tag
 		util.on(this.label, "click", function(e) {
-			// Remove tag button
 			if (util.hasClass(e.target, "selectr-tag-remove")) {
 				deselect.call(this, this.items[e.target.parentNode.idx]);
 			}
 		}, this);
 
-		if ( this.el.multiple && this.config.clearable || !this.el.multiple && this.config.allowDeselect ) {
+		// Clear input
+		if ( this.selectClear ) {
 			util.on(this.selectClear, "click", this.clear.bind(this));
 		}
 
 		// Prevent text selection
 		util.on(this.tree, "mousedown", function(e) { util.preventDefault(e); });
 
+		// Select / deselect items
 		util.on(this.tree, "click", function(e) {
 			var item = util.closest(e.target, function(el) {
 				return el && util.hasClass(el, "selectr-option");
@@ -826,17 +820,10 @@
 			}
 		}, this);
 
-
-
-		// Dismiss when clicking outside the container
-		util.on(document, "click", this.events.dismiss);
-		util.on(document, "keydown", this.events.navigate);
-		// util.on(document, "keyup", this.events.keyup);
-
 		// Mouseover list items
 		util.on(this.tree, "mouseover", function(e) {
-			if ( util.hassClass(e.target, "selectr-option") ) {
-				if ( !util.hassClass(e.target, "disabled") ) {
+			if ( util.hasClass(e.target, "selectr-option") ) {
+				if ( !util.hasClass(e.target, "disabled") ) {
 					util.removeClass(this.items[this.navIndex], "active");
 
 					util.addClass(e.target, "active");
@@ -847,9 +834,17 @@
 		}, this);
 
 		// Searchable
-
 		if ( this.config.searchable ) {
 			// Show / hide the search input clear button
+
+			util.on(this.input, "focus", function(e) {
+				this.searching  = true;
+			}, this);
+
+			util.on(this.input, "blur", function(e) {
+				this.searching  = false;
+			}, this);
+
 			util.on(this.input, "keyup", function(e) {
 				this.search();
 
@@ -917,9 +912,6 @@
 			invert.call(that);
 		}, 50);
 
-		util.on(window, "resize", this.update);
-		util.on(window, "scroll", this.update);
-
 		if (this.requiresPagination) {
 			this.paginateItems = util.debounce(function() {
 				load.call(this);
@@ -928,6 +920,12 @@
 			util.on(this.tree, "scroll", this.paginateItems.bind(this));
 		}
 
+		// Dismiss when clicking outside the container
+		util.on(document, "click", this.events.dismiss);
+		util.on(window, "keydown", this.events.navigate);
+
+		util.on(window, "resize", this.update);
+		util.on(window, "scroll", this.update);
 
 		// Listen for form.reset() (@ambrooks, #13)
 		if ( this.el.form ) {

@@ -96,6 +96,17 @@ new Selectr('#mySelect', {
 
 ## Change Log
 
+### 2.2.4
+* DESKTOP: Fixed incorrect tabIndex on container
+* MOBILE: Improved accessibility
+* MOBILE: Fixed multiselect requiring more than one click to open
+
+
+### 2.2.3
+* Fixed `defaultSelected` options not selecting
+* Fixed form reset bug
+
+
 ### 2.2.0
 * Empty select elements can now be used ([#23](https://github.com/Mobius1/Selectr/issues/23))
 * Improved IE9 compatibility (removed pointer-events usage)
