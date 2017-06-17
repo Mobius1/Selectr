@@ -33,12 +33,13 @@
 	z-index: 11;
 }
 
-.selectr-container.selectr-desktop.multiple .selectr-visible {
+.selectr-desktop.multiple .selectr-visible {
 	display: none;
 }
 
-.selectr-container.selectr-desktop.multiple.native-open .selectr-visible {
+.selectr-desktop.multiple.native-open .selectr-visible {
 	top: 100%;
+	min-height: 200px !important;
 	height: auto;
 	opacity: 1;
 	display: block;
