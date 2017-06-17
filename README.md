@@ -1,8 +1,8 @@
 # Selectr
 
-A lightweight dependency-free select box replacement written in vanilla javascript. Just 6KB minified and gzipped. Similar to Select2 and Chosen without the dependencies.
+A lightweight, dependency-free, mobile-friendly select box replacement written in vanilla javascript. Just 6.5KB minified and gzipped. Similar to Select2 and Chosen, but without the dependencies.
 
-Supports most modern browsers including IE9.
+Supports most modern mobile and desktop browsers including IE9.
 
 ---
 
@@ -20,7 +20,7 @@ Features:
 * Tagging support
 * Custom events
 * Custom styling
-* Native select for mobile devices
+* Native select UI for mobile devices
 * Dynamically add options
 * Much more...
 
