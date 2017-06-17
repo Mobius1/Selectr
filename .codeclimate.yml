@@ -1,6 +1,6 @@
 engines:
   csslint:
-    enabled: true
+    enabled: false
     checks:
       box-sizing:
         enabled: false
@@ -16,7 +16,7 @@ engines:
         enabled: false
       max-statements:
         enabled: false
-      Similar code:
+      similar-code:
         enabled: false
   fixme:
     enabled: true
