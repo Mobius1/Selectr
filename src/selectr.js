@@ -743,6 +743,7 @@
 			util.on(this.el, "change", function(e) {
 				if ( this.el.multiple ) {
 					var selected = this.el.querySelectorAll('option:checked');
+					var values = [].slice.call(selected).map(function(option) { return option.idx; });
 
 					this.clear();
 
