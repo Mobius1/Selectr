@@ -24,7 +24,7 @@ Features:
 * Dynamically add options
 * Much more...
 
-[Documentation](https://github.com/Mobius1/Selectr/wiki) | [Demo](http://codepen.io/Mobius1/full/jBqpze/)
+[Documentation](https://github.com/Mobius1/Selectr/wiki) | [Demo](https://s.codepen.io/Mobius1/debug/QgdpLN)
 
 ---
 
