@@ -218,7 +218,8 @@
 			return el;
 		},
 		hasClass: function(a, b) {
-			return a.classList ? a.classList.contains(b) : !!a.className && !!a.className.match(new RegExp("(\\s|^)" + b + "(\\s|$)"));
+			if ( a )
+				return a.classList ? a.classList.contains(b) : !!a.className && !!a.className.match(new RegExp("(\\s|^)" + b + "(\\s|$)"));
 		},
 		addClass: function(a, b) {
 			if (!util.hasClass(a, b)) {
@@ -385,6 +386,12 @@
 				util.each(this.items, function(i, item) {
 					appendItem(item, f, this.customOption);
 				}, this);
+			}
+
+			if ( f.childElementCount ) {
+				util.removeClass(this.items[this.navIndex], "active");
+				this.navIndex = f.firstElementChild.idx;
+				util.addClass(f.firstElementChild, "active");
 			}
 
 			this.tree.appendChild(f);
@@ -980,7 +987,10 @@
 		e = e || window.event;
 
 		// Filter out the keys we don"t want
-		if (!this.items.length || !this.opened || !util.includes([13, 38, 40], e.which)) return;
+		if (!this.items.length || !this.opened || !util.includes([13, 38, 40], e.which)) {
+			this.navigating = false;
+			return;
+		}
 
 		util.preventDefault(e);
 
@@ -1005,12 +1015,23 @@
 
 		// Instead of wasting memory holding a copy of this.items
 		// with disabled / excluded options omitted, skip them instead
-		if ( util.hasClass(this.items[this.navIndex], "disabled") || util.hasClass(this.items[this.navIndex], "excluded") ) {
-			while(util.hasClass(this.items[this.navIndex], "disabled") || util.hasClass(this.items[this.navIndex], "excluded") ) {
-				if ( direction ) { this.navIndex++; } else { this.navIndex--; }
+		while( util.hasClass(this.items[this.navIndex], "disabled") || util.hasClass(this.items[this.navIndex], "excluded") ) {
+			if ( direction ) {
+				this.navIndex++;
+			} else {
+				this.navIndex--;
+			}
+
+			if ( this.searching ) {
+				if ( this.navIndex > this.tree.lastElementChild.idx ) {
+					this.navIndex = this.tree.lastElementChild.idx;
+					break;
+				} else if ( this.navIndex < this.tree.firstElementChild.idx ) {
+					this.navIndex = this.tree.firstElementChild.idx;
+					break;
+				}
 			}
 		}
-
 
 		// Autoscroll the dropdown during navigation
 		var r = util.getRect(this.items[this.navIndex]);
@@ -1037,6 +1058,7 @@
 		if ( prevEl ) {
 			util.removeClass(prevEl, "active");
 		}
+
 		util.addClass(this.items[this.navIndex], "active");
 	};
 
@@ -1306,6 +1328,7 @@
 		if ( this.config.searchable || this.config.taggable ) {
 			this.input.value = null;
 			this.searching = false;
+			this.searchBegun = false;
 			if ( this.config.searchable ) {
 				util.removeClass(this.inputContainer, "active");
 			}
@@ -1610,6 +1633,9 @@
 	 * @param  {string} query The query string
 	 */
 	Selectr.prototype.search = function(string) {
+
+		if ( this.navigating ) return;
+
 		string = string || this.input.value;
 
 		var f = document.createDocumentFragment();
@@ -1644,6 +1670,15 @@
 
 			if ( !f.childElementCount ) {
 				this.setMessage("no results.");
+			} else {
+				var prevEl = this.items[this.navIndex];
+				var firstEl = f.firstElementChild;
+
+				util.removeClass(prevEl, "active");
+
+				this.navIndex = firstEl.idx;
+
+				util.addClass(firstEl, "active");
 			}
 
 		} else {
@@ -1651,7 +1686,6 @@
 		}
 
 		this.tree.appendChild(f);
-
 	};
 
 	// Selectr proto
@@ -1703,11 +1737,7 @@
 
 		invert.call(this);
 
-		var scrollHeight = this.tree.scrollHeight;
-
-		if ( scrollHeight <= this.optsRect.height && this.requiresPagination ) {
-			load.call(this);
-		}
+		this.tree.scrollTop = 0;
 
 		util.removeClass(this.container, "notice");
 
@@ -1715,7 +1745,6 @@
 
 		this.tree.setAttribute( "aria-hidden", false );
 		this.tree.setAttribute( "aria-expanded", true );
-
 
 		if (this.config.searchable && !this.config.taggable) {
 			setTimeout(function() {
