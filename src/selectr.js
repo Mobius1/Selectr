@@ -1956,9 +1956,11 @@
 
 		this.selected.tabIndex = this.originalIndex;
 
-		util.each(this.tags, function(i,t) {
-			t.lastElementChild.tabIndex = 0;
-		});
+		if ( this.el.multiple ) {
+			util.each(this.tags, function(i,t) {
+				t.lastElementChild.tabIndex = 0;
+			});
+		}
 
 		util.removeClass(this.container, "selectr-disabled");
 	};
@@ -1975,9 +1977,11 @@
 
 		this.selected.tabIndex = -1;
 
-		util.each(this.tags, function(i,t) {
-			t.lastElementChild.tabIndex = -1;
-		});
+		if ( this.el.multiple ) {
+			util.each(this.tags, function(i,t) {
+				t.lastElementChild.tabIndex = -1;
+			});
+		}
 
 		this.disabled = true;
 		util.addClass(this.container, "selectr-disabled");
