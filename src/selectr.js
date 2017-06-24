@@ -1035,11 +1035,11 @@
 		util.preventDefault(e);
 
 		if ( e.which === 13 ) {
-			
-			if ( this.config.taggable ) {
+
+			if ( this.config.taggable && this.input.value.length > 0 ) {
 				return false;
 			}
-			
+
 			return change.call(this, this.navIndex);
 		}
 
