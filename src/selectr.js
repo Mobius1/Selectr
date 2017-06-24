@@ -302,6 +302,7 @@
 
 		// Select first option as with native select - #21, #24
 		if ( !this.el.multiple ) {
+			this.selectedIndex = this.el.selectedIndex;
 			if ( this.config.data && this.el.selectedIndex < 0 ) {
 				select.call(this, this.items[0]);
 			}
@@ -387,12 +388,12 @@
 					appendItem(item, f, this.customOption);
 				}, this);
 			}
-
+			
 			if ( f.childElementCount ) {
 				util.removeClass(this.items[this.navIndex], "active");
 				this.navIndex = f.firstElementChild.idx;
 				util.addClass(f.firstElementChild, "active");
-			}
+			}			
 
 			this.tree.appendChild(f);
 		}
@@ -816,7 +817,9 @@
 			if ( item ) {
 				if ( !util.hasClass(item, "disabled") ) {
 					if ( util.hasClass(item, "selected") ) {
-						deselect.call(this, item);
+						if ( this.el.multiple || !this.el.multiple && this.config.allowDeselect ) {
+							deselect.call(this, item);
+						}
 					} else {
 						select.call(this, item);
 					}
@@ -891,7 +894,7 @@
 							val = val.replace(k, '');
 						});
 
-						var option = this.addOption({
+						var option = this.add({
 							value: val,
 							text: val,
 							selected: true
@@ -1021,7 +1024,7 @@
 			} else {
 				this.navIndex--;
 			}
-
+			
 			if ( this.searching ) {
 				if ( this.navIndex > this.tree.lastElementChild.idx ) {
 					this.navIndex = this.tree.lastElementChild.idx;
@@ -1166,14 +1169,10 @@
 				util.removeClass(this.container, "has-selected");
 			}
 		} else {
-			if ( !this.config.allowDeselect ) {
-				return false;
-			}
-
 			this.label.innerHTML = "";
 			this.selectedValue = null;
 
-			this.el.selectedIndex = -1;
+			this.el.selectedIndex = this.selectedIndex = -1;
 
 			util.removeClass(this.container, "has-selected");
 		}
@@ -1563,15 +1562,20 @@
 	};
 
 	/**
-	 * Add a new option
+	 * Add a new option or options
 	 * @param {object} data
 	 */
-	Selectr.prototype.addOption = function(data, checkDuplicate) {
+	Selectr.prototype.add = function(data, checkDuplicate) {
 		if ( data ) {
+			
+			this.data = this.data || [];
+			this.items = this.items || [];
+			this.options = this.options || [];
+			
 			if ( util.isArray(data) ) {
 				// We have an array on items
 				util.each(data, function(i, obj) {
-					this.addOption(obj);
+					this.add(obj, checkDuplicate);
 				}, this);
 			}
 			// User passed a single object to the method
@@ -1593,16 +1597,14 @@
 				}
 
 				var option = util.createElement('option', data);
-
-				if ( this.data ) {
-					this.data.push(data);
-				}
+				
+				this.data.push(data);
 
 				// Add the new option to the list
 				this.options.push(option);
 
 				// Add the index for later use
-				option.idx = this.options.length - 1;
+				option.idx = this.options.length > 0 ? this.options.length - 1 : 0;
 
 				// Create a new item
 				var item = buildOption.call(this, option);
@@ -1620,22 +1622,60 @@
 			this.setPlaceholder();
 
 			// Recount the pages
-			if ( this.requiresPagination ) {
+			if ( this.config.pagination ) {
 				this.paginate();
 			}
 
 			return true;
 		}
 	};
+	
+	Selectr.prototype.remove = function() {
+		//
+	};
 
+	/**
+	 * Remove all options
+	 */	
+	Selectr.prototype.removeAll = function() {
+		
+		// Clear any selected options
+		this.clear();
+		
+		// Remove the HTMLOptionElements
+		util.each(this.el.options, function(i, option) {
+			this.el.remove(option);
+		}, this);		
+		
+		// Empty the dropdown
+		flush.call(this);
+		
+		// Reset variables
+		this.items = [];
+		this.options = [];
+		this.data = [];	
+		
+		this.navIndex = 0;
+		
+		if ( this.requiresPagination ) {
+			this.requiresPagination = false;
+			
+			this.pageIndex = 1;
+			this.pages = [];
+		}		
+		
+		// Update the placeholder
+		this.setPlaceholder();
+	};	
+	
 	/**
 	 * Perform a search
 	 * @param  {string} query The query string
 	 */
 	Selectr.prototype.search = function(string) {
-
+		
 		if ( this.navigating ) return;
-
+		
 		string = string || this.input.value;
 
 		var f = document.createDocumentFragment();
@@ -1671,6 +1711,7 @@
 			if ( !f.childElementCount ) {
 				this.setMessage("no results.");
 			} else {
+				// Highlight top result (@binary-koan #26)
 				var prevEl = this.items[this.navIndex];
 				var firstEl = f.firstElementChild;
 
@@ -1688,7 +1729,6 @@
 		this.tree.appendChild(f);
 	};
 
-	// Selectr proto
 	/**
 	 * Toggle the dropdown
 	 * @return {void}
@@ -1710,6 +1750,10 @@
 	Selectr.prototype.open = function() {
 
 		var that = this;
+		
+		if ( !this.options.length ) {
+			return false;
+		}
 
 		if ( !this.opened ) {
 			this.emit("selectr.open");
@@ -1736,7 +1780,7 @@
 		render.call(this);
 
 		invert.call(this);
-
+		
 		this.tree.scrollTop = 0;
 
 		util.removeClass(this.container, "notice");
@@ -1865,14 +1909,18 @@
 			// Loop over the selectedIndexes so we don't have to loop over all the options
 			// which can be costly if there are a lot of them
 
-			// Copy the array or we'll get an error
-			var indexes = this.selectedIndexes.slice();
+			if ( this.selectedIndexes.length ) {
+				// Copy the array or we'll get an error
+				var indexes = this.selectedIndexes.slice();
 
-			util.each(indexes, function(i, idx) {
-				deselect.call(this, this.items[idx]);
-			}, this);
+				util.each(indexes, function(i, idx) {
+					deselect.call(this, this.items[idx]);
+				}, this);
+			}
 		} else {
-			deselect.call(this, this.items[this.el.selectedIndex]);
+			if ( this.selectedIndex > -1 ) {
+				deselect.call(this, this.items[this.selectedIndex]);
+			}
 		}
 
 		this.emit("selectr.clear");
