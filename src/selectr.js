@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.2.4
+ * Selectr 2.3.4
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -22,6 +22,12 @@
 	 * @type {Object}
 	 */
 	var defaultConfig = {
+		/**
+		 * Emulates browser behaviour by selecting the first option by default
+		 * @type {Boolean}
+		 */
+		defaultSelected: true,
+
 		/**
 		 * Sets the width of the container
 		 * @type {String}
@@ -240,6 +246,7 @@
 		off: function(e, type, callback) { e.removeEventListener(type, callback); },
 		isObject: function(a) { return "[object Object]" === Object.prototype.toString.call(a); },
 		isArray: function(a) { return "[object Array]" === Object.prototype.toString.call(a); },
+		isString: function(a) { return typeof a === "string"; },
 		isInt: function(val) {
 			return typeof val === 'number' && isFinite(val) && Math.floor(val) === val;
 		},
@@ -300,29 +307,63 @@
 	 */
 	var setSelected = function(reset) {
 
-		// Select first option as with native select - #21, #24
-		if ( !this.el.multiple ) {
-			this.selectedIndex = this.el.selectedIndex;
-			if ( this.config.data && this.el.selectedIndex < 0 ) {
-				select.call(this, this.items[0]);
+		// Select first option as with a native select-one element - #21, #24
+		if ( !this.config.data && !this.el.multiple && this.el.options.length ) {
+			// Browser has selected the first option by default
+			if ( this.el.options[0].selected ) {
+				if ( !this.el.options[0].defaultSelected ) {
+					if ( this.config.defaultSelected ) {
+						this.el.options[0].defaultSelected = true;
+					} else {
+						this.el.selectedIndex = -1;
+					}
+				}
 			}
 
-			if ( this.el.selectedIndex > -1 ) {
-				select.call(this, this.items[this.el.selectedIndex]);
+			this.selectedIndex = this.el.selectedIndex;
+		}
+
+		// If we're changing a select-one to select-multiple via the config
+		// and there are no selected options, the first option will be selected by the browser
+		// Let's prevent that here.
+		if ( this.config.multiple && this.originalType === "select-one" ) {
+			if ( this.el.options[0].selected && !this.el.options[0].defaultSelected ) {
+				this.el.options[0].selected = false;
 			}
 		}
+
+		util.each(this.options, function(i, option) {
+			if ( option.selected && option.defaultSelected ) {
+				select.call(this, option.idx);
+			}
+		}, this);
 
 		if ( this.config.selectedValue ) {
 			this.setValue(this.config.selectedValue);
 		}
 
 		if ( this.config.data ) {
-			util.each(this.config.data, function(idx, item) {
-				util.each(this.options, function(i, option) {
-					if ( option.value === item.value && selected(item) ) {
-						select.call(this, this.items[option.idx]);
+
+			if ( !this.el.multiple && this.config.defaultSelected && this.el.selectedIndex < 0 ) {
+				select.call(this, 0);
+			}
+
+			var j = 0;
+			util.each(this.config.data, function(i, opt) {
+				// Check for group options
+				if ( set(opt, "children") ) {
+					util.each(opt.children, function(x, item) {
+						if ( selected(item) ) {
+							select.call(this, j);
+						}
+						j++;
+					}, this);
+				} else {
+					if ( selected(opt) ) {
+						select.call(this, j);
 					}
-				}, this);
+					j++;
+				}
 			}, this);
 		}
 	};
@@ -388,12 +429,12 @@
 					appendItem(item, f, this.customOption);
 				}, this);
 			}
-			
+
 			if ( f.childElementCount ) {
 				util.removeClass(this.items[this.navIndex], "active");
-				this.navIndex = f.firstElementChild.idx;
-				util.addClass(f.firstElementChild, "active");
-			}			
+				this.navIndex = f.querySelector(".selectr-option").idx;
+				util.addClass(this.items[this.navIndex], "active");
+			}
 
 			this.tree.appendChild(f);
 		}
@@ -419,6 +460,39 @@
 		if (!this.container.contains(target) && (this.opened || util.hasClass(this.container, "notice"))) {
 			this.close();
 		}
+	};
+
+	/**
+	 * Build a list item from the HTMLOptionElement
+	 * @param  {int} i      HTMLOptionElement index
+	 * @param  {HTMLOptionElement} option
+	 * @param  {bool} group  Has parent optgroup
+	 * @return {void}
+	 */
+	var createItem = function(option, data) {
+		data = data || option;
+		var content = this.customOption ? this.config.renderOption(data) : option.textContent;
+		var opt = util.createElement("li", {
+			class: "selectr-option",
+			html: content,
+			role: "treeitem",
+			"aria-selected": false
+		});
+
+		opt.idx = option.idx;
+
+		this.items.push(opt);
+
+		if ( option.defaultSelected ) {
+			this.defaultSelected.push(option.idx);
+		}
+
+		if (option.disabled) {
+			opt.disabled = true;
+			util.addClass(opt, "disabled");
+		}
+
+		return opt;
 	};
 
 	/**
@@ -516,7 +590,7 @@
 
 		this.selected.appendChild(this.label);
 
-		if ( this.el.multiple && this.config.clearable || !this.el.multiple && this.config.allowDeselect ) {
+		if ( this.config.clearable ) {
 			this.selectClear = util.createElement("button", {
 				class: "selectr-clear",
 				type: "button"
@@ -604,12 +678,12 @@
 
 					util.each(element.children, function(x, el) {
 						el.idx = j;
-						group.appendChild(buildOption.call(this, el, group));
+						group.appendChild(createItem.call(this, el, group));
 						j++;
 					}, this);
 				} else {
 					element.idx = j;
-					buildOption.call(this, element);
+					createItem.call(this, element);
 					j++;
 				}
 			}, this);
@@ -644,7 +718,7 @@
 
 						option.idx = j;
 
-						group.appendChild(buildOption.call(this, option, data));
+						group.appendChild(createItem.call(this, option, data));
 
 						this.data[j] = data;
 
@@ -659,7 +733,7 @@
 
 					option.idx = j;
 
-					buildOption.call(this, option, opt);
+					createItem.call(this, option, opt);
 
 					this.data[j] = opt;
 
@@ -756,12 +830,12 @@
 					this.clear();
 
 					util.each(values, function(i, idx) {
-						select.call(this, this.items[idx]);
+						select.call(this, idx);
 					}, this);
 
 				} else {
 					if ( this.el.selectedIndex > -1 ) {
-						select.call(this, this.items[this.el.selectedIndex]);
+						select.call(this, this.el.selectedIndex);
 					}
 				}
 			}, this);
@@ -796,7 +870,7 @@
 		// Remove tag
 		util.on(this.label, "click", function(e) {
 			if (util.hasClass(e.target, "selectr-tag-remove")) {
-				deselect.call(this, this.items[e.target.parentNode.idx]);
+				deselect.call(this, e.target.parentNode.idx);
 			}
 		}, this);
 
@@ -818,10 +892,10 @@
 				if ( !util.hasClass(item, "disabled") ) {
 					if ( util.hasClass(item, "selected") ) {
 						if ( this.el.multiple || !this.el.multiple && this.config.allowDeselect ) {
-							deselect.call(this, item);
+							deselect.call(this, item.idx);
 						}
 					} else {
-						select.call(this, item);
+						select.call(this, item.idx);
 					}
 
 					if (this.opened && !this.el.multiple) {
@@ -945,43 +1019,6 @@
 	};
 
 	/**
-	 * Build a list item from the HTMLOptionElement
-	 * @param  {int} i      HTMLOptionElement index
-	 * @param  {HTMLOptionElement} option
-	 * @param  {bool} group  Has parent optgroup
-	 * @return {void}
-	 */
-	var buildOption = function(option, data) {
-		data = data || option;
-		var content = this.customOption ? this.config.renderOption(data) : option.textContent;
-		var opt = util.createElement("li", {
-			class: "selectr-option",
-			html: content,
-			role: "treeitem",
-			"aria-selected": false
-		});
-
-		opt.idx = option.idx;
-
-		this.items.push(opt);
-
-		if (option.selected || option.hasAttribute("selected")) {
-			select.call(this, opt);
-		}
-
-		if ( option.defaultSelected ) {
-			this.defaultSelected.push(option.idx);
-		}
-
-		if (option.disabled) {
-			opt.disabled = true;
-			util.addClass(opt, "disabled");
-		}
-
-		return opt;
-	};
-
-	/**
 	 * Navigate through the dropdown
 	 * @param  {obj} e
 	 * @return {void}
@@ -998,7 +1035,7 @@
 		util.preventDefault(e);
 
 		if ( e.which === 13 ) {
-			return change.call(this, this.items[this.navIndex]);
+			return change.call(this, this.navIndex);
 		}
 
 		var direction, prevEl = this.items[this.navIndex];
@@ -1024,7 +1061,7 @@
 			} else {
 				this.navIndex--;
 			}
-			
+
 			if ( this.searching ) {
 				if ( this.navIndex > this.tree.lastElementChild.idx ) {
 					this.navIndex = this.tree.lastElementChild.idx;
@@ -1070,17 +1107,18 @@
 	 * @param  {HTMLElement} item
 	 * @return {void}
 	 */
-	var change = function(item) {
-		var option = this.options[item.idx];
+	var change = function(index) {
+		var item = this.items[index],
+			option = this.options[index];
 
 		if (option.disabled) {
 			return;
 		}
 
 		if (option.selected && util.hasClass(item, "selected")) {
-			deselect.call(this, item);
+			deselect.call(this, index);
 		} else {
-			select.call(this, item);
+			select.call(this, index);
 		}
 
 		if (this.opened && !this.el.multiple) {
@@ -1093,13 +1131,14 @@
 	 * @param  {HTMLElement} item
 	 * @return {void}
 	 */
-	var select = function(item) {
+	var select = function(index) {
 
-		var options = [].slice.call(this.el.options),
-			option = this.options[item.idx];
+		var item = this.items[index],
+				options = [].slice.call(this.el.options),
+				option = this.options[index];
 
 		if ( this.el.multiple ) {
-			if (util.includes(this.selectedIndexes, item.idx) ) {
+			if (util.includes(this.selectedIndexes, index) ) {
 				return false;
 			}
 
@@ -1109,20 +1148,20 @@
 			}
 
 			this.selectedValues.push(option.value);
-			this.selectedIndexes.push(item.idx);
+			this.selectedIndexes.push(index);
 
 			addTag.call(this, item);
 		} else {
-			var data = this.data ? this.data[item.idx] : option;
+			var data = this.data ? this.data[index] : option;
 			this.label.innerHTML = this.customSelected ? this.config.renderSelection(data) : option.textContent;
 
 			this.selectedValue = option.value;
-			this.selectedIndex = item.idx;
+			this.selectedIndex = index;
 
 			util.each(this.options, function(i, o) {
 				var opt = this.items[i];
 
-				if ( i !== item.idx ) {
+				if ( i !== index ) {
 					if ( opt ) {
 						util.removeClass(opt, "selected");
 					}
@@ -1153,11 +1192,12 @@
 	 * @param  {HTMLElement} item
 	 * @return {void}
 	 */
-	var deselect = function(item) {
-		var option = this.options[item.idx];
+	var deselect = function(index, force) {
+		var item = this.items[index],
+				option = this.options[index];
 
 		if ( this.el.multiple ) {
-			var selIndex = this.selectedIndexes.indexOf(item.idx);
+			var selIndex = this.selectedIndexes.indexOf(index);
 			this.selectedIndexes.splice(selIndex, 1);
 
 			var valIndex = this.selectedValues.indexOf(option.value);
@@ -1169,6 +1209,11 @@
 				util.removeClass(this.container, "has-selected");
 			}
 		} else {
+
+			if ( !force && !this.config.clearable && !this.config.allowDeselect ) {
+				return false;
+			}
+
 			this.label.innerHTML = "";
 			this.selectedValue = null;
 
@@ -1178,9 +1223,9 @@
 		}
 
 
-		this.items[item.idx].setAttribute( "aria-selected", false );
+		this.items[index].setAttribute( "aria-selected", false );
 
-		util.removeClass(this.items[item.idx], "selected");
+		util.removeClass(this.items[index], "selected");
 
 		option.selected = false;
 
@@ -1512,7 +1557,7 @@
 
 		util.each(this.options, function(i, option) {
 			if (isArray && util.includes(value.toString(), option.value) || option.value === value) {
-				change.call(this, this.items[option.idx]);
+				change.call(this, option.idx);
 			}
 		}, this);
 	};
@@ -1567,11 +1612,11 @@
 	 */
 	Selectr.prototype.add = function(data, checkDuplicate) {
 		if ( data ) {
-			
+
 			this.data = this.data || [];
 			this.items = this.items || [];
 			this.options = this.options || [];
-			
+
 			if ( util.isArray(data) ) {
 				// We have an array on items
 				util.each(data, function(i, obj) {
@@ -1597,7 +1642,7 @@
 				}
 
 				var option = util.createElement('option', data);
-				
+
 				this.data.push(data);
 
 				// Add the new option to the list
@@ -1607,11 +1652,11 @@
 				option.idx = this.options.length > 0 ? this.options.length - 1 : 0;
 
 				// Create a new item
-				var item = buildOption.call(this, option);
+				createItem.call(this, option);
 
 				// Select the item if required
 				if ( data.selected ) {
-					select.call(this, item);
+					select.call(this, option.idx);
 				}
 
 				return option;
@@ -1629,53 +1674,111 @@
 			return true;
 		}
 	};
-	
-	Selectr.prototype.remove = function() {
-		//
+
+	/**
+	 * Remove an option or options
+	 * @param  {Mixed} o Array, integer (index) or string (value)
+	 * @return {Void}
+	 */
+	Selectr.prototype.remove = function(o) {
+		var options = [];
+		if ( util.isArray(o) ) {
+			util.each(o, function(i, opt) {
+				if ( util.isInt(opt) ) {
+					options.push(this.getOptionByIndex(opt));
+				} else if ( util.isString(o) ) {
+					options.push(this.getOptionByValue(opt));
+				}
+			}, this);
+
+		} else if ( util.isInt(o) ) {
+			options.push(this.getOptionByIndex(o));
+		} else if ( util.isString(o) ) {
+			options.push(this.getOptionByValue(o));
+		}
+
+		if ( options.length ) {
+			var index;
+			util.each(options, function(i, option) {
+				index = option.idx;
+
+				// Remove the HTMLOptionElement
+				this.el.remove(option);
+
+				// Remove the reference from the option array
+				this.options.splice(index, 1);
+
+				// If the item has a parentNode (group element) it needs to be removed
+				// otherwise the render function will still append it to the dropdown
+				var parentNode = this.items[index].parentNode;
+
+				if ( parentNode ) {
+					parentNode.removeChild(this.items[index]);
+				}
+
+				// Remove reference from the items array
+				this.items.splice(index, 1);
+
+				// Reset the indexes
+				util.each(this.options, function(i, opt) {
+					opt.idx = i;
+					this.items[i].idx = i;
+				}, this);
+			}, this);
+
+			// We may have had an empty select now so update
+			// the placeholder to reflect the changes.
+			this.setPlaceholder();
+
+			// Recount the pages
+			if ( this.config.pagination ) {
+				this.paginate();
+			}
+		}
 	};
 
 	/**
 	 * Remove all options
-	 */	
+	 */
 	Selectr.prototype.removeAll = function() {
-		
+
 		// Clear any selected options
-		this.clear();
-		
+		this.clear(true);
+
 		// Remove the HTMLOptionElements
 		util.each(this.el.options, function(i, option) {
 			this.el.remove(option);
-		}, this);		
-		
+		}, this);
+
 		// Empty the dropdown
 		flush.call(this);
-		
+
 		// Reset variables
 		this.items = [];
 		this.options = [];
-		this.data = [];	
-		
+		this.data = [];
+
 		this.navIndex = 0;
-		
+
 		if ( this.requiresPagination ) {
 			this.requiresPagination = false;
-			
+
 			this.pageIndex = 1;
 			this.pages = [];
-		}		
-		
+		}
+
 		// Update the placeholder
 		this.setPlaceholder();
-	};	
-	
+	};
+
 	/**
 	 * Perform a search
 	 * @param  {string} query The query string
 	 */
 	Selectr.prototype.search = function(string) {
-		
+
 		if ( this.navigating ) return;
-		
+
 		string = string || this.input.value;
 
 		var f = document.createDocumentFragment();
@@ -1750,7 +1853,7 @@
 	Selectr.prototype.open = function() {
 
 		var that = this;
-		
+
 		if ( !this.options.length ) {
 			return false;
 		}
@@ -1780,7 +1883,7 @@
 		render.call(this);
 
 		invert.call(this);
-		
+
 		this.tree.scrollTop = 0;
 
 		util.removeClass(this.container, "notice");
@@ -1892,7 +1995,7 @@
 			setSelected.call(this, true);
 
 			util.each(this.defaultSelected, function(i,idx) {
-				select.call(this, this.items[idx]);
+				select.call(this, idx);
 			}, this);
 
 			this.emit("selectr.reset");
@@ -1903,7 +2006,7 @@
 	 * Clear all selections
 	 * @return {void}
 	 */
-	Selectr.prototype.clear = function() {
+	Selectr.prototype.clear = function(force) {
 
 		if ( this.el.multiple ) {
 			// Loop over the selectedIndexes so we don't have to loop over all the options
@@ -1914,12 +2017,12 @@
 				var indexes = this.selectedIndexes.slice();
 
 				util.each(indexes, function(i, idx) {
-					deselect.call(this, this.items[idx]);
+					deselect.call(this, idx);
 				}, this);
 			}
 		} else {
 			if ( this.selectedIndex > -1 ) {
-				deselect.call(this, this.items[this.selectedIndex]);
+				deselect.call(this, this.selectedIndex, force);
 			}
 		}
 
@@ -1991,7 +2094,7 @@
 
 	/**
 	 * Display a message
-	 * @param  {string} message The message
+	 * @param  {String} message The message
 	 */
 	Selectr.prototype.setMessage = function(message, close) {
 		if ( close ) {
@@ -2009,6 +2112,32 @@
 		this.notice.innerHTML = "";
 	};
 
-	return Selectr;
+	/**
+	 * Get an option via it's index
+	 * @param  {Integer} index The index of the HTMLOptionElement required
+	 * @return {HTMLOptionElement}
+	 */
+	Selectr.prototype.getOptionByIndex = function(index) {
+		return this.options[index];
+	};
 
+	/**
+	 * Get an option via it's value
+	 * @param  {String} value The value of the HTMLOptionElement required
+	 * @return {HTMLOptionElement}
+	 */
+	Selectr.prototype.getOptionByValue = function(value) {
+		var option = false;
+
+		for ( var i = 0, l = this.options.length; i < l; i++ ) {
+			if ( this.options[i].value.trim() === value.toString().trim() ) {
+				option = this.options[i];
+				break;
+			}
+		}
+
+		return option;
+	};
+
+	return Selectr;
 }));

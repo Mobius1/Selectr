@@ -49,9 +49,9 @@ npm install mobius1-selectr --save
 Grab the files from the CDN and include them in your page:
 
 ```html
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/mobius1/selectr@2.2.3/dist/selectr.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/mobius1/selectr@2.3.4/dist/selectr.min.css">
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/mobius1/selectr@2.2.3/dist/selectr.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/mobius1/selectr@2.3.4/dist/selectr.min.js"></script>
 ```
 
 CDN courtesy of [jsDelivr](http://www.jsdelivr.com/)
@@ -98,6 +98,19 @@ new Selectr('#mySelect', {
 
 ## Change Log
 
+### 2.3.4
+
+* Added option `defaultSelected` to enable/disable selecting the first option in the list
+* Rename method `addOption` to `add`
+* Added new method `remove`
+* Added new method `removeAll`
+* Prevent opening if there aren't any options to display
+* Fixed top search result not highlighting ([#26](https://github.com/Mobius1/Selectr/issues/26))
+* Fixed `clear` method not clearing for select-one elements
+* Fixed pagination bug
+* Fixed `checkDuplicate` not being used recursively
+* Fixed first option in a select-multiple element being selected by default
+
 ### 2.2.4
 * DESKTOP: Fixed incorrect tabIndex on container
 * MOBILE: Improved accessibility
@@ -122,16 +135,6 @@ new Selectr('#mySelect', {
 * Public method `addOption` now accepts an array of objects for dynamically adding multiple options
 * Various other fixes
 
-### v2.1.5
-* Improved accessibility
-* New methods `disable()` and `enable()` (see [docs](http://mobius.ovh/docs/selectr/pages/functions))
-* Fixed navigation bug ([#5](https://github.com/Mobius1/Selectr/issues/5))
-
-### v2.1.4
-* Fixed form.reset() not resetting Selectr elements ([#13](https://github.com/Mobius1/Selectr/issues/13))
-* Fixed autocomplete bug in Chrome ([#12](https://github.com/Mobius1/Selectr/issues/12))
-* Fixed pagination not incrementing when navigating with the down key
-* Fixed `reset()` method not checking `data`
 
 # License
 

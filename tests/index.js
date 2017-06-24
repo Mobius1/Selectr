@@ -5,7 +5,7 @@
 
 	document.body.appendChild(s);
 
-	var st = new Selectr(s, {
+	var selector = new Selectr(s, {
 		data: [
 			{ value: 'value-1', text: 'Value 1' },
 			{ value: 'value-2', text: 'Value 2', selected: true },
@@ -23,6 +23,15 @@
 
 	QUnit.module('General');
 	QUnit.test( "init", function( assert ) {
-		assert.ok( Object.prototype.toString.call(st) === '[object Object]', "Passed!" );
+		assert.ok( Object.prototype.toString.call(selector) === '[object Object]', "Passed!" );
+	});
+	QUnit.test( "selected", function( assert ) {
+		assert.ok( selector.el.options[1].selected === true && selector.el.options[4].selected === true, "Passed!" );
+	});
+	QUnit.test( "not-selected", function( assert ) {
+		assert.ok( selector.el.options[0].selected === false && selector.el.options[2].selected === false, "Passed!" );
+	});
+	QUnit.test( "select-one", function( assert ) {
+		assert.ok( selector.originalType === "select-one", "Passed!" );
 	});
 })();
