@@ -26,10 +26,10 @@
 		assert.ok( Object.prototype.toString.call(selector) === '[object Object]', "Passed!" );
 	});
 	QUnit.test( "selected", function( assert ) {
-		assert.ok( selector.el.options[1].selected === true && selector.el.options[4].selected === true, "Passed!" );
+		assert.ok( selector.options[1].selected === true && selector.options[4].selected === true, "Passed!" );
 	});
 	QUnit.test( "not-selected", function( assert ) {
-		assert.ok( selector.el.options[0].selected === false && selector.el.options[2].selected === false, "Passed!" );
+		assert.ok( selector.options[0].selected === false && selector.options[2].selected === false, "Passed!" );
 	});
 	QUnit.test( "select-one", function( assert ) {
 		assert.ok( selector.originalType === "select-one", "Passed!" );
