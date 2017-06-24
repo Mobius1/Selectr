@@ -8,7 +8,7 @@ Don't forget to check the [wiki](https://github.com/Mobius1/Selectr/wiki) out an
 
 ---
 
-[![Build Status](https://travis-ci.org/Mobius1/Selectr.svg?branch=master)](https://travis-ci.org/Mobius1/Selectr) [![npm version](https://badge.fury.io/js/mobius1-selectr.svg)](https://badge.fury.io/js/mobius1-selectr) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Mobius1/Selectr/blob/master/LICENSE) [![Browser Status](https://badges.herokuapp.com/browsers?firefox=26&iexplore=9&microsoftedge=12&opera=12&safari=5.1&googlechrome=53)](https://saucelabs.com/u/wml-little-loader)
+[![Build Status](https://travis-ci.org/Mobius1/Selectr.svg?branch=master)](https://travis-ci.org/Mobius1/Selectr) [![release](http://github-release-version.herokuapp.com/github/Mobius1/Selectr/release.svg?style=flat)](https://github.com/Mobius1/Selectr/releases/tag/2.3.5) [![npm version](https://badge.fury.io/js/mobius1-selectr.svg)](https://badge.fury.io/js/mobius1-selectr) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Mobius1/Selectr/blob/master/LICENSE) [![Browser Status](https://badges.herokuapp.com/browsers?firefox=26&iexplore=9&microsoftedge=12&opera=12&safari=5.1&googlechrome=53)](https://saucelabs.com/u/wml-little-loader)
 
 ---
 
