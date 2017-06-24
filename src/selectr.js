@@ -326,7 +326,7 @@
 		// If we're changing a select-one to select-multiple via the config
 		// and there are no selected options, the first option will be selected by the browser
 		// Let's prevent that here.
-		if ( this.config.multiple && this.originalType === "select-one" ) {
+		if ( this.config.multiple && this.originalType === "select-one" && !this.config.data ) {
 			if ( this.el.options[0].selected && !this.el.options[0].defaultSelected ) {
 				this.el.options[0].selected = false;
 			}
