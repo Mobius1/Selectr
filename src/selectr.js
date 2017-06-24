@@ -1035,6 +1035,11 @@
 		util.preventDefault(e);
 
 		if ( e.which === 13 ) {
+			
+			if ( this.config.taggable ) {
+				return false;
+			}
+			
 			return change.call(this, this.navIndex);
 		}
 
@@ -1812,7 +1817,9 @@
 
 
 			if ( !f.childElementCount ) {
-				this.setMessage("no results.");
+				if ( !this.config.taggable ) {
+					this.setMessage("no results.");
+				}
 			} else {
 				// Highlight top result (@binary-koan #26)
 				var prevEl = this.items[this.navIndex];
