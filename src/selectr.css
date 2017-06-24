@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.2.4
+ * Selectr 2.3.5
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -73,9 +73,16 @@
 	-moz-transform: rotate(0deg) translate3d(0px, -50%, 0px);
 	-webkit-transform: rotate(0deg) translate3d(0px, -50%, 0px);
 			transform: rotate(0deg) translate3d(0px, -50%, 0px);
-	border-width: 4px 4px 0;
+	border-width: 4px 4px 0 4px;
 	border-style: solid;
 	border-color: #6c7a86 transparent transparent;
+}
+
+.selectr-container.open .selectr-selected::before,
+.selectr-container.native-open .selectr-selected::before {
+	border-width: 0 4px 4px 4px;
+	border-style: solid;
+	border-color: transparent transparent #6c7a86;
 }
 
 .selectr-label {
