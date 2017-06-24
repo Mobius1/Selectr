@@ -49,9 +49,9 @@ npm install mobius1-selectr --save
 Grab the files from the CDN and include them in your page:
 
 ```html
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/mobius1/selectr@2.3.4/dist/selectr.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/mobius1/selectr@2.3.5/dist/selectr.min.css">
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/mobius1/selectr@2.3.4/dist/selectr.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/mobius1/selectr@2.3.5/dist/selectr.min.js"></script>
 ```
 
 CDN courtesy of [jsDelivr](http://www.jsdelivr.com/)
@@ -98,8 +98,11 @@ new Selectr('#mySelect', {
 
 ## Change Log
 
-### 2.3.4
+### 2.3.5
+* Fixed bug causing first option to be selected when submitting new tag
+* Fixed `enable` and `disabled` methods throwing an exception when used on a `select-one` type element
 
+### 2.3.4
 * Added option `defaultSelected` to enable/disable selecting the first option in the list
 * Rename method `addOption` to `add`
 * Added new method `remove`
