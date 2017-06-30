@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.3.4
+ * Selectr 2.3.6
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -310,13 +310,9 @@
 		// Select first option as with a native select-one element - #21, #24
 		if ( !this.config.data && !this.el.multiple && this.el.options.length ) {
 			// Browser has selected the first option by default
-			if ( this.el.options[0].selected ) {
-				if ( !this.el.options[0].defaultSelected ) {
-					if ( this.config.defaultSelected ) {
-						this.el.options[0].defaultSelected = true;
-					} else {
-						this.el.selectedIndex = -1;
-					}
+			if ( this.el.selectedIndex === 0 ) {
+				if ( !this.el.options[0].defaultSelected && !this.config.defaultSelected ) {
+					this.el.selectedIndex = -1;
 				}
 			}
 
