@@ -262,7 +262,8 @@
 	position: relative;
 	top: calc(100% + 2px);
 	display: none;
-	overflow: auto;
+	overflow-x: auto;
+	overflow-y: scroll;
 	max-height: 200px;
 	margin: 0;
 	padding: 0;
