@@ -340,6 +340,7 @@
 
 		if ( this.config.data ) {
 
+
 			if ( !this.el.multiple && this.config.defaultSelected && this.el.selectedIndex < 0 ) {
 				select.call(this, 0);
 			}
@@ -1495,9 +1496,14 @@
 
 		this.rendered = true;
 
-		var _ = this;
+		// Fixes macOS Safari bug #28
+		if ( !this.el.multiple ) {
+			this.el.selectedIndex = this.selectedIndex;
+		}
+
+		var that = this;
 		setTimeout(function() {
-			_.emit("selectr.init");
+			that.emit("selectr.init");
 		}, 20);
 	};
 

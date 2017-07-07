@@ -100,6 +100,11 @@ new Selectr('#mySelect', {
 
 ## Change Log
 
+### 2.3.6
+* Fixed dropdown positioning bug in Safari on macOS [#28](https://github.com/Mobius1/Selectr/issues/28)
+* Fixed first option always being selected in Safari on macOS [#28](https://github.com/Mobius1/Selectr/issues/28)
+* Fixed endless dropdown height in IE [#29](https://github.com/Mobius1/Selectr/pull/29)
+
 ### 2.3.5
 * Fixed bug causing first option to be selected when submitting new tag
 * Fixed `enable` and `disabled` methods throwing an exception when used on a `select-one` type element
