@@ -820,6 +820,13 @@
 			// Listen for the change on the native select
 			// and update accordingly
 			util.on(this.el, "change", function(e) {
+
+				// Tapping on iPhone causes options to be selected instead of opening the dropdown
+				if ( !this.opened ) {
+					this.open();
+					return false;
+				}
+
 				if ( this.el.multiple ) {
 					var selected = this.el.querySelectorAll('option:checked');
 					var values = [].slice.call(selected).map(function(option) { return option.idx; });
