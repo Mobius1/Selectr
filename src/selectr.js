@@ -1092,14 +1092,14 @@
 			}
 
 			e.preventDefault();
-		}, this);
+		});
 
 		// Remove tag
 		this.label.addEventListener("click", function(e) {
 			if (util.hasClass(e.target, "selectr-tag-remove")) {
 				that.deselect(e.target.parentNode.idx);
 			}
-		}, this);
+		});
 
 		// Clear input
 		if ( this.selectClear ) {
