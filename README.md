@@ -48,15 +48,21 @@ npm install mobius1-selectr --save
 
 ## Browser
 
-Grab the files from the CDN and include them in your page:
+Grab the files from one of the CDNs and include them in your page:
 
 ```html
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/mobius1/selectr@2.3.6/dist/selectr.min.css">
+<link href="https://unpkg.com/mobius1-selectr@latest/dist/selectr.min.css" rel="stylesheet" type="text/css">
+<script src="https://unpkg.com/mobius1-selectr@latest/dist/selectr.min.js" type="text/javascript"></script>
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/mobius1/selectr@2.3.6/dist/selectr.min.js"></script>
+//or
+
+<link href="https://cdn.jsdelivr.net/gh/mobius1/selectr@latest/dist/selectr.min.css" rel="stylesheet" type="text/css">
+<script src="https://cdn.jsdelivr.net/gh/mobius1/selectr@latest/dist/selectr.min.js" type="text/javascript"></script>
 ```
 
-CDN courtesy of [jsDelivr](http://www.jsdelivr.com/)
+You can replace `latest` with the required release number if needed.
+
+CDNs courtesy of [unpkg](https://unpkg.com/#/) and [jsDelivr](http://www.jsdelivr.com/)
 
 ---
 
