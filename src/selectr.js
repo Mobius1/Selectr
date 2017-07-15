@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.3.7
+ * Selectr 2.3.8
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -1097,7 +1097,7 @@
 		// Remove tag
 		this.label.addEventListener("click", function(e) {
 			if (util.hasClass(e.target, "selectr-tag-remove")) {
-				this.deselect(e.target.parentNode.idx);
+				that.deselect(e.target.parentNode.idx);
 			}
 		}, this);
 
