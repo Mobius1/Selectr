@@ -98,53 +98,11 @@ new Selectr('#mySelect', {
 
 ---
 
-## Change Log
+If this project helps you then you can grab me a coffee or beer to say thanks.
 
-### 2.3.6
-* Fixed dropdown positioning bug in Safari on macOS [#28](https://github.com/Mobius1/Selectr/issues/28)
-* Fixed first option always being selected in Safari on macOS [#28](https://github.com/Mobius1/Selectr/issues/28)
-* Fixed endless dropdown height in IE [#29](https://github.com/Mobius1/Selectr/pull/29)
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9B9KD4X57X8V8)
 
-### 2.3.5
-* Fixed bug causing first option to be selected when submitting new tag
-* Fixed `enable` and `disabled` methods throwing an exception when used on a `select-one` type element
-
-### 2.3.4
-* Added option `defaultSelected` to enable/disable selecting the first option in the list
-* Rename method `addOption` to `add`
-* Added new method `remove`
-* Added new method `removeAll`
-* Prevent opening if there aren't any options to display
-* Fixed top search result not highlighting ([#26](https://github.com/Mobius1/Selectr/issues/26))
-* Fixed `clear` method not clearing for select-one elements
-* Fixed pagination bug
-* Fixed `checkDuplicate` not being used recursively
-* Fixed first option in a select-multiple element being selected by default
-
-### 2.2.4
-* DESKTOP: Fixed incorrect tabIndex on container
-* MOBILE: Improved accessibility
-* MOBILE: Fixed multiselect requiring more than one click to open
-
-
-### 2.2.3
-* Fixed `defaultSelected` options not selecting
-* Fixed form reset bug
-
-
-### 2.2.0
-* Empty select elements can now be used ([#23](https://github.com/Mobius1/Selectr/issues/23))
-* Improved IE9 compatibility (removed pointer-events usage)
-* Allow the use of native dropdown
-* Native select is now triggered on mobile devices (single and multiple) ([#14](https://github.com/Mobius1/Selectr/issues/14), [#19](https://github.com/Mobius1/Selectr/issues/19), [#25](https://github.com/Mobius1/Selectr/issues/25))
-* Pagination can be applied to options already defined in the DOM (previously only possible with the `data` option)
-* Searching with pagination active will now return results from entire set instead of the loaded set ([#15](https://github.com/Mobius1/Selectr/issues/15))
-* Custom renderers (`renderOption`, `renderSelection`) can now be used along with the `data` option.
-* The tag input placeholder can now be customised ([#21](https://github.com/Mobius1/Selectr/issues/21), [#22](https://github.com/Mobius1/Selectr/issues/22))
-* Reduced memory usage
-* Public method `addOption` now accepts an array of objects for dynamically adding multiple options
-* Various other fixes
-
+---
 
 # License
 
