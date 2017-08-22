@@ -1429,8 +1429,9 @@
 		option.selected = true;
 		option.setAttribute("selected", "");
 
-		this.emit("selectr.select", option);
 		this.emit("selectr.change", option);
+
+		this.emit("selectr.select", option);
 	};
 
 	/**
@@ -1477,8 +1478,9 @@
 
 		option.removeAttribute("selected");
 
+		this.emit("selectr.change", null);
+
 		this.emit("selectr.deselect", option);
-		this.emit("selectr.change", option);
 	};
 
 	/**
