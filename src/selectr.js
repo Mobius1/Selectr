@@ -8,7 +8,7 @@
     var plugin = "Selectr";
 
     if (typeof define === "function" && define.amd) {
-        define([], factory(plugin));
+        define([], factory);
     } else if (typeof exports === "object") {
         module.exports = factory(plugin);
     } else {
