@@ -1101,13 +1101,6 @@
             // Listen for the change on the native select
             // and update accordingly
             this.el.addEventListener("change", function(e) {
-
-                // // Tapping on iPhone causes options to be selected instead of opening the dropdown
-                // if (!that.opened) {
-                //     that.open();
-                //     return false;
-                // }
-
                 if (that.el.multiple) {
                     var indexes = that.getSelectedProperties('idx');
                     var changes = getChangedOptions(that.selectedIndexes, indexes);
