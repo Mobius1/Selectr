@@ -1074,6 +1074,29 @@
                 });
             }
 
+            function getSelected() {
+                var selected = that.el.querySelectorAll('option:checked');
+                var values = [].slice.call(selected).map(function(option) { return option.idx; });
+                return values;
+            }
+
+            function getChangedOptions(last, current) {
+                var added=[], removed=last.slice(0);
+                var idx;
+                for (var i=0; i<current.length; i++) {
+                    idx = removed.indexOf(current[i]);
+                    if (idx > -1)
+                        removed.splice(idx, 1);
+                    else
+                        added.push(current[i]);
+                }
+                return [added, removed];
+            }
+
+            if (!that.__selectedIdexes) {
+                that.__selectedIdexes = getSelected();
+            }
+
             // Listen for the change on the native select
             // and update accordingly
             this.el.addEventListener("change", function(e) {
@@ -1085,15 +1108,17 @@
                 }
 
                 if (that.el.multiple) {
-                    var selected = that.el.querySelectorAll('option:checked');
-                    var values = [].slice.call(selected).map(function(option) {
-                        return option.idx;
-                    });
+                    var values = getSelected();
+                    var changes = getChangedOptions(that.__selectedIdexes, values);
 
-                    that.clear();
+                    that.__selectedIdexes = values;
 
-                    util.each(values, function(i, idx) {
+                    util.each(changes[0], function(i, idx) {
                         that.select(idx);
+                    }, that);
+
+                    util.each(changes[1], function(i, idx) {
+                        that.deselect(idx);
                     }, that);
 
                 } else {
