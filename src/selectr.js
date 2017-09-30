@@ -465,10 +465,10 @@
             this.tags = [];
 
             // Collection of selected values
-            this.selectedValues = [];
+            this.selectedValues = this.getSelectedProperties('value');
 
             // Collection of selected indexes
-            this.selectedIndexes = [];
+            this.selectedIndexes = this.getSelectedProperties('idx');
         }
 
         this.selected.appendChild(this.label);
@@ -1045,6 +1045,17 @@
         }, 20);
     };
 
+    Selectr.prototype.getSelected = function () {
+        var selected = this.el.querySelectorAll('option:checked');
+        return selected;
+    };
+
+    Selectr.prototype.getSelectedProperties = function (prop) {
+        var selected = this.getSelected();
+        var values = [].slice.call(selected).map(function(option) { return option[prop]; }).filter(function(i) { return !!i; });
+        return values;
+    };
+
     /**
      * Attach the required event listeners
      */
@@ -1074,13 +1085,7 @@
                 });
             }
 
-            function getSelected() {
-                var selected = that.el.querySelectorAll('option:checked');
-                var values = [].slice.call(selected).map(function(option) { return option.idx; });
-                return values;
-            }
-
-            function getChangedOptions(last, current) {
+            var getChangedOptions = function(last, current) {
                 var added=[], removed=last.slice(0);
                 var idx;
                 for (var i=0; i<current.length; i++) {
@@ -1091,27 +1096,21 @@
                         added.push(current[i]);
                 }
                 return [added, removed];
-            }
-
-            if (!that.__selectedIdexes) {
-                that.__selectedIdexes = getSelected();
-            }
+            };
 
             // Listen for the change on the native select
             // and update accordingly
             this.el.addEventListener("change", function(e) {
 
-                // Tapping on iPhone causes options to be selected instead of opening the dropdown
-                if (!that.opened) {
-                    that.open();
-                    return false;
-                }
+                // // Tapping on iPhone causes options to be selected instead of opening the dropdown
+                // if (!that.opened) {
+                //     that.open();
+                //     return false;
+                // }
 
                 if (that.el.multiple) {
-                    var values = getSelected();
-                    var changes = getChangedOptions(that.__selectedIdexes, values);
-
-                    that.__selectedIdexes = values;
+                    var indexes = that.getSelectedProperties('idx');
+                    var changes = getChangedOptions(that.selectedIndexes, indexes);
 
                     util.each(changes[0], function(i, idx) {
                         that.select(idx);
