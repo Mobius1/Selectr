@@ -465,10 +465,10 @@
             this.tags = [];
 
             // Collection of selected values
-            this.selectedValues = [];
+            this.selectedValues = this.getSelectedProperties('value');
 
             // Collection of selected indexes
-            this.selectedIndexes = [];
+            this.selectedIndexes = this.getSelectedProperties('idx');
         }
 
         this.selected.appendChild(this.label);
@@ -1045,6 +1045,17 @@
         }, 20);
     };
 
+    Selectr.prototype.getSelected = function () {
+        var selected = this.el.querySelectorAll('option:checked');
+        return selected;
+    };
+
+    Selectr.prototype.getSelectedProperties = function (prop) {
+        var selected = this.getSelected();
+        var values = [].slice.call(selected).map(function(option) { return option[prop]; }).filter(function(i) { return !!i; });
+        return values;
+    };
+
     /**
      * Attach the required event listeners
      */
@@ -1074,19 +1085,32 @@
                 });
             }
 
+            var getChangedOptions = function(last, current) {
+                var added=[], removed=last.slice(0);
+                var idx;
+                for (var i=0; i<current.length; i++) {
+                    idx = removed.indexOf(current[i]);
+                    if (idx > -1)
+                        removed.splice(idx, 1);
+                    else
+                        added.push(current[i]);
+                }
+                return [added, removed];
+            };
+
             // Listen for the change on the native select
             // and update accordingly
             this.el.addEventListener("change", function(e) {
                 if (that.el.multiple) {
-                    var selected = that.el.querySelectorAll('option:checked');
-                    var values = [].slice.call(selected).map(function(option) {
-                        return option.idx;
-                    });
+                    var indexes = that.getSelectedProperties('idx');
+                    var changes = getChangedOptions(that.selectedIndexes, indexes);
 
-                    that.clear();
-
-                    util.each(values, function(i, idx) {
+                    util.each(changes[0], function(i, idx) {
                         that.select(idx);
+                    }, that);
+
+                    util.each(changes[1], function(i, idx) {
+                        that.deselect(idx);
                     }, that);
 
                 } else {
