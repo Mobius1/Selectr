@@ -1052,7 +1052,9 @@
 
     Selectr.prototype.getSelectedProperties = function (prop) {
         var selected = this.getSelected();
-        var values = [].slice.call(selected).map(function(option) { return option[prop]; }).filter(function(i) { return !!i; });
+        var values = [].slice.call(selected)
+        .map(function(option) { return option[prop]; })
+        .filter(function(i) { return i!==null && i!==undefined; });
         return values;
     };
 
