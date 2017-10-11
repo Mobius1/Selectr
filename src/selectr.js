@@ -77,6 +77,12 @@
         nativeDropdown: false,
 
         /**
+         * Allow the use of native typing behavior for toggling, searching, selecting
+         * @type {boolean}
+         */
+        nativeKeyboard: false,
+
+        /**
          * Set the main placeholder
          * @type {String}
          */
@@ -267,6 +273,9 @@
         },
         includes: function(a, b) {
             return a.indexOf(b) > -1;
+        },
+        startsWith: function(a, b) {
+            return a.substr( 0, b.length ) === b;
         },
         truncate: function(el) {
             while (el.firstChild) {
@@ -1149,6 +1158,74 @@
             e.preventDefault();
         });
 
+        if ( this.config.nativeKeyboard ) {
+            var typing = '';
+            var typingTimeout = null;
+
+            this.selected.addEventListener("keyup", function (e) {
+                // Do nothing if disabled, not focused, or modifier keys are pressed
+                if (
+                    that.disabled ||
+                    that.selected !== document.activeElement ||
+                    (e.altKey || e.ctrlKey || e.metaKey)
+                ) {
+                    return;
+                }
+
+                // Open the dropdown on [enter], [↓], and [↑] keys
+                if (
+                    e.key === " " ||
+                    (! that.opened && ["Enter", "ArrowUp", "ArrowDown"].indexOf(e.key) > -1)
+                ) {
+                    that.toggle();
+                    e.stopPropagation();
+                    return;
+                }
+
+                // Type to search if multiple; type to select otherwise
+                // make sure e.key is a single, printable character
+                // prefer "codePoint" methods; they work with the full range of unicode
+                if (
+                    String[(String.fromCodePoint ? "fromCodePoint" : "fromCharCode")](
+                        e.key[String.codePointAt ? "codePointAt" : "charCodeAt"]( 0 )
+                    ) === e.key
+                ) {
+                    if ( that.config.multiple ) {
+                        that.open();
+                        if ( that.config.searchable ) {
+                            that.input.value = e.key;
+                            that.input.focus();
+                            that.search( null, true );
+                        }
+                    } else {
+                        if ( typingTimeout ) {
+                            clearTimeout( typingTimeout );
+                        }
+                        typing += e.key;
+                        var found = that.search( typing, true );
+                        if ( found.length ) {
+                            that.clear();
+                            that.setValue( found[0].value );
+                        }
+                        setTimeout(function () { typing = ''; }, 1000);
+                    }
+                    e.stopPropagation();
+                    return;
+                }
+            });
+
+            // Close the dropdown on [esc] key
+            this.container.addEventListener("keyup", function (e) {
+                if ( that.opened && e.key === "Escape" ) {
+                    that.close();
+                    e.stopPropagation();
+
+                    // keep focus so we can re-open easily if desired
+                    that.selected.focus();
+                }
+            });
+        }
+
         // Remove tag
         this.label.addEventListener("click", function(e) {
             if (util.hasClass(e.target, "selectr-tag-remove")) {
@@ -1778,65 +1855,66 @@
 
     /**
      * Perform a search
-     * @param  {string} query The query string
+     * @param {string}|{null} query The query string (taken from user input if null)
+     * @param {boolean} anchor Anchor search to beginning of strings (defaults to false)?
      * @return {Array} Search results, as an array of {text, value} objects
      */
-    Selectr.prototype.search = function(string) {
-
-        if (this.navigating) return;
+    Selectr.prototype.search = function( string, anchor ) {
+        if ( this.navigating ) {
+            return;
+        }
 
         var live = false;
         if ( ! string ) {
             string = this.input.value;
             live = true;
         }
+        string = string.toLowerCase();
         var f = document.createDocumentFragment();
         var results = [];
 
-        // Remove message
+        // Remove message and clear dropdown
         this.removeMessage();
-
-        // Clear the dropdown
         util.truncate(this.tree);
 
-        if (string.length > 1) {
+        if ( string.length > 0 ) {
+            var compare = anchor ? util.startsWith : util.includes;
+
             // Check the options for the matching string
             util.each(this.options, function(i, option) {
                 var item = this.items[option.idx];
-                var includes = util.includes(option.textContent.toLowerCase(), string.toLowerCase());
+                var matches = compare( option.textContent.toLowerCase(), string );
 
-                if (includes && !option.disabled) {
+                if ( matches && !option.disabled ) {
 
-                    appendItem(item, f, this.customOption);
+                    appendItem( item, f, this.customOption );
 
-                    util.removeClass(item, "excluded");
+                    util.removeClass( item, "excluded" );
 
                     // Underline the matching results
-                    if (!this.customOption) {
-                        item.innerHTML = match(string, option);
+                    if ( !this.customOption ) {
+                        item.innerHTML = match( string, option );
                     }
                 } else {
-                    util.addClass(item, "excluded");
+                    util.addClass( item, "excluded" );
                 }
             }, this);
 
             // Only change Selectr if this is a "live" search (#42)
             if ( live ) {
                 // Append results
-                if (!f.childElementCount) {
-                    if (!this.config.taggable) {
-                        this.setMessage("no results.");
+                if ( !f.childElementCount ) {
+                    if ( !this.config.taggable ) {
+                        this.setMessage( "no results." );
                     }
                 } else {
                     // Highlight top result (@binary-koan #26)
                     var prevEl = this.items[this.navIndex];
                     var firstEl = f.firstElementChild;
 
-                    util.removeClass(prevEl, "active");
-
+                    util.removeClass( prevEl, "active" );
                     this.navIndex = firstEl.idx;
-
-                    util.addClass(firstEl, "active");
+                    util.addClass( firstEl, "active" );
                 }
             }
 
@@ -1844,11 +1922,11 @@
             util.each( f.childNodes, function ( i, option ) {
                 var opt = this.options[option.idx];
                 results.push( { text: opt.textContent, value: opt.value } );
-            }, this);
+            }, this );
         } else {
-            render.call(this);
+            render.call( this );
         }
-        this.tree.appendChild(f);
+        this.tree.appendChild( f );
         return results;
     };
 
