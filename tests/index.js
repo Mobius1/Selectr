@@ -157,8 +157,35 @@
             multiSelectr.__done__();
         });
 
+        QUnit.test( "search()", function ( assert ) {
+          var selectr = newSelectr();
+
+          assert.deepEqual(
+            selectr.search("one"),
+            [{value: "value-1", text: "one"}],
+            "matches values by display text"
+          );
+          assert.deepEqual(
+            selectr.search("tw"),
+            [{value: "value-2", text: "two"}],
+            "matches partial values by display text"
+          );
+
+          selectr.input.value = "five";
+          assert.deepEqual(
+            selectr.search(),
+            [{value: "value-5", text: "five"}],
+            "searches from user input"
+          );
+          assert.ok(
+            selectr.tree.querySelector( ".selectr-match" ).textContent.trim() === "five",
+            "live search results are displayed in tree"
+          );
+
+          selectr.__done__();
+        });
+
         // @todo tests for other public API methods:
-        // search
         // add
         // remove
         // removeAll

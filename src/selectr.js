@@ -1779,14 +1779,19 @@
     /**
      * Perform a search
      * @param  {string} query The query string
+     * @return {Array} Search results, as an array of {text, value} objects
      */
     Selectr.prototype.search = function(string) {
 
         if (this.navigating) return;
 
-        string = string || this.input.value;
-
+        var live = false;
+        if ( ! string ) {
+            string = this.input.value;
+            live = true;
+        }
         var f = document.createDocumentFragment();
+        var results = [];
 
         // Remove message
         this.removeMessage();
@@ -1815,28 +1820,36 @@
                 }
             }, this);
 
+            // Only change Selectr if this is a "live" search (#42)
+            if ( live ) {
+                // Append results
+                if (!f.childElementCount) {
+                    if (!this.config.taggable) {
+                        this.setMessage("no results.");
+                    }
+                } else {
+                    // Highlight top result (@binary-koan #26)
+                    var prevEl = this.items[this.navIndex];
+                    var firstEl = f.firstElementChild;
 
-            if (!f.childElementCount) {
-                if (!this.config.taggable) {
-                    this.setMessage("no results.");
+                    util.removeClass(prevEl, "active");
+
+                    this.navIndex = firstEl.idx;
+
+                    util.addClass(firstEl, "active");
                 }
-            } else {
-                // Highlight top result (@binary-koan #26)
-                var prevEl = this.items[this.navIndex];
-                var firstEl = f.firstElementChild;
-
-                util.removeClass(prevEl, "active");
-
-                this.navIndex = firstEl.idx;
-
-                util.addClass(firstEl, "active");
             }
 
+            // Compile and return search results object (#42)
+            util.each( f.childNodes, function ( i, option ) {
+                var opt = this.options[option.idx];
+                results.push( { text: opt.textContent, value: opt.value } );
+            }, this);
         } else {
             render.call(this);
         }
-
         this.tree.appendChild(f);
+        return results;
     };
 
     /**
