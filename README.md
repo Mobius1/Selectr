@@ -10,8 +10,6 @@ Don't forget to check the [wiki](https://github.com/Mobius1/Selectr/wiki) out an
 
 [![Build Status](https://travis-ci.org/Mobius1/Selectr.svg?branch=master)](https://travis-ci.org/Mobius1/Selectr) [![release](http://github-release-version.herokuapp.com/github/Mobius1/Selectr/release.svg?style=flat)](https://github.com/Mobius1/Selectr/releases/tag/2.4.1) [![npm version](https://badge.fury.io/js/mobius1-selectr.svg)](https://badge.fury.io/js/mobius1-selectr) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Mobius1/Selectr/blob/master/LICENSE) ![](http://img.badgesize.io/Mobius1/selectr/master/dist/selectr.min.js) ![](http://img.badgesize.io/Mobius1/selectr/master/dist/selectr.min.js?compression=gzip&label=gzipped) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/mobius1/selectr.svg)](http://isitmaintained.com/project/mobius1/selectr "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/mobius1/selectr.svg)](http://isitmaintained.com/project/mobius1/selectr "Percentage of issues still open")
 
-[![Sauce Test Status](https://saucelabs.com/browser-matrix/M0bius01.svg)](https://saucelabs.com/u/M0bius01)
-
 ---
 
 
