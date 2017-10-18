@@ -234,8 +234,22 @@
 
         QUnit.test( "nativeKeyboard", function ( assert ) {
             function doKeypress( target, character ) {
-                target.dispatchEvent( new KeyboardEvent( "keydown", { key: character } ) );
-                target.dispatchEvent( new KeyboardEvent( "keyup", { key: character } ) );
+
+                // phantomJS
+                if ( typeof KeyboardEvent !== "function" ) {
+                    ["keydown", "keypress", "keyup"].forEach( function (type) {
+                        var event = document.createEvent( "CustomEvent" );
+                        event.initCustomEvent( type, true, true );
+                        event.key = character;
+                        target.dispatchEvent( event );
+                    });
+                    return;
+                }
+
+                // modern browsers
+                ["keydown", "keypress", "keyup"].forEach( function (type) {
+                    target.dispatchEvent( new KeyboardEvent( type, { key: character } ) );
+                });
             }
 
             var singleSelectr = newSelectr( { nativeKeyboard: true } );

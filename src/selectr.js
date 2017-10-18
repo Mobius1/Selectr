@@ -1186,7 +1186,7 @@
                 // make sure e.key is a single, printable character
                 // prefer "codePoint" methods; they work with the full range of unicode
                 if (
-                    String[(String.fromCodePoint ? "fromCodePoint" : "fromCharCode")](
+                    String[String.fromCodePoint ? "fromCodePoint" : "fromCharCode"](
                         e.key[String.codePointAt ? "codePointAt" : "charCodeAt"]( 0 )
                     ) === e.key
                 ) {
