@@ -158,31 +158,32 @@
         });
 
         QUnit.test( "search()", function ( assert ) {
-          var selectr = newSelectr();
+            var selectr = newSelectr();
 
-          assert.deepEqual(
-            selectr.search("one"),
-            [{value: "value-1", text: "one"}],
-            "matches values by display text"
-          );
-          assert.deepEqual(
-            selectr.search("tw"),
-            [{value: "value-2", text: "two"}],
-            "matches partial values by display text"
-          );
+            assert.deepEqual(
+                selectr.search("one"),
+                [{value: "value-1", text: "one"}],
+                "matches values by display text"
+            );
+            assert.deepEqual(
+                selectr.search("tw"),
+                [{value: "value-2", text: "two"}],
+                "matches partial values by display text"
+            );
 
-          selectr.input.value = "five";
-          assert.deepEqual(
-            selectr.search(),
-            [{value: "value-5", text: "five"}],
-            "searches from user input"
-          );
-          assert.ok(
-            selectr.tree.querySelector( ".selectr-match" ).textContent.trim() === "five",
-            "live search results are displayed in tree"
-          );
+            selectr.input.value = "five";
+            assert.deepEqual(
+                selectr.search(),
+                [{value: "value-5", text: "five"}],
+                "searches from user input"
+            );
+            assert.ok( selectr.tree.querySelector( ".selectr-match" ), "tree is displayed" );
+            assert.ok(
+                selectr.tree.querySelector( ".selectr-match" ).textContent.trim() === "five",
+                "live search results are displayed in tree"
+            );
 
-          selectr.__done__();
+            selectr.__done__();
         });
 
         // @todo tests for other public API methods:
@@ -229,6 +230,111 @@
             );
 
             selectr.__done__();
+        });
+
+        QUnit.test( "nativeKeyboard", function ( assert ) {
+            function doKeypress( target, character ) {
+
+                // phantomJS
+                if ( typeof KeyboardEvent !== "function" ) {
+                    ["keydown", "keypress", "keyup"].forEach( function (type) {
+                        var event = document.createEvent( "CustomEvent" );
+                        event.initCustomEvent( type, true, true );
+                        event.key = character;
+                        target.dispatchEvent( event );
+                    });
+                    return;
+                }
+
+                // modern browsers
+                ["keydown", "keypress", "keyup"].forEach( function (type) {
+                    target.dispatchEvent( new KeyboardEvent( type, { key: character } ) );
+                });
+            }
+
+            var singleSelectr = newSelectr( { nativeKeyboard: true } );
+            var multiSelectr = newSelectr( { nativeKeyboard: true, multiple: true } );
+            [singleSelectr, multiSelectr].forEach( function( selectr ) {
+                var subject = (selectr === singleSelectr) ? "select-one" : "select-multi";
+
+                // when focused, [space] should toggle the dropdown.
+                selectr.close();
+                selectr.selected.focus();
+                doKeypress( selectr.selected, " " );
+                assert.ok(
+                    selectr.opened,
+                    subject + " toggles open on [Space] when focused and closed"
+                );
+
+                selectr.open();
+                selectr.selected.focus();
+                doKeypress( selectr.selected, " " );
+                assert.notOk(
+                    selectr.opened,
+                    subject + " toggles closed on [Space] when focused and open"
+                );
+
+                // when closed + focused, [enter], [↓], [↑] should open the dropdown
+                ["Enter", "ArrowDown", "ArrowUp"].forEach( function( key ) {
+                    selectr.close();
+                    document.activeElement.blur();
+                    doKeypress( selectr.selected, key );
+                    assert.notOk(
+                        selectr.opened,
+                        subject + " does not open on [" + key + "] when not focused"
+                    );
+
+                    selectr.close();
+                    selectr.selected.focus();
+                    doKeypress( selectr.selected, key );
+                    assert.ok( selectr.opened, subject + " opens on [" + key + "] when focused" );
+
+                    selectr.open();
+                    selectr.selected.focus();
+                    doKeypress( selectr.selected, key );
+                    assert.ok( selectr.opened, subject + " does not close on [" + key + "]" );
+                });
+
+                // when open, [esc] should close the dropdown
+                selectr.open();
+                doKeypress( selectr.container, "Escape" );
+                assert.notOk( selectr.opened, subject + " closes on [Esc] when open" );
+
+                selectr.close();
+                doKeypress( selectr.container, "Escape" );
+                assert.notOk( selectr.opened, subject + " does not open on [Esc]" );
+
+
+            });
+
+            // when focused and not multiple, typing should select first matching option
+            singleSelectr.selected.focus();
+            doKeypress( singleSelectr.selected, "t" );
+            assert.equal(
+                singleSelectr.getValue(),
+                "value-2",
+                "select-one selects the first matching option when focused and typing"
+            );
+
+            doKeypress( singleSelectr.selected, "h" );
+            assert.equal(
+                singleSelectr.getValue(),
+                "value-3",
+                "select-one builds on existing search on additional typing"
+            );
+
+            // when focused and multiple, typing should open the dropdown and use the search feature
+            multiSelectr.selected.focus();
+            doKeypress( multiSelectr.selected, "e" );
+            assert.ok( multiSelectr.opened, "select-multi opens when focused and typing" );
+            assert.equal(
+                multiSelectr.input.value,
+                "e",
+                "select-multi proxies search feature when focused and typing"
+            );
+
+            singleSelectr.__done__();
+            multiSelectr.__done__();
         });
 
         // @todo tests for other constructor options/settings:
