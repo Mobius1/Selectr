@@ -1172,7 +1172,7 @@
                     return;
                 }
 
-                // Open the dropdown on [enter], [↓], and [↑] keys
+                // Open the dropdown on [enter], [ ], [↓], and [↑] keys
                 if (
                     e.key === " " ||
                     (! that.opened && ["Enter", "ArrowUp", "ArrowDown"].indexOf(e.key) > -1)
@@ -1373,9 +1373,22 @@
         window.addEventListener("resize", this.update);
         window.addEventListener("scroll", this.update);
 
+        // remove event listeners on destroy()
+        this.on('selectr.destroy', function () {
+            document.removeEventListener("click", this.events.dismiss);
+            window.removeEventListener("keydown", this.events.navigate);
+            window.removeEventListener("resize", this.update);
+            window.removeEventListener("scroll", this.update);
+        });
+
         // Listen for form.reset() (@ambrooks, #13)
         if (this.el.form) {
             this.el.form.addEventListener("reset", this.events.reset);
+
+            // remove listener on destroy()
+            this.on('selectr.destroy', function () {
+                this.el.form.removeEventListener("reset", this.events.reset);
+            });
         }
     };
 
@@ -1468,17 +1481,6 @@
 
         // Remove the className from select element
         util.removeClass(this.el, 'selectr-hidden');
-
-        // Remove reset listener from parent form
-        if (this.el.form) {
-            util.off(this.el.form, "reset", this.events.reset);
-        }
-
-        // Remove event listeners attached to doc and win
-        util.off(document, "click", this.events.dismiss);
-        util.off(document, "keydown", this.events.navigate);
-        util.off(window, "resize", this.update);
-        util.off(window, "scroll", this.update);
 
         // Replace the container with the original select element
         this.container.parentNode.replaceChild(this.el, this.container);
@@ -1883,7 +1885,7 @@
             // Check the options for the matching string
             util.each(this.options, function(i, option) {
                 var item = this.items[option.idx];
-                var matches = compare( option.textContent.toLowerCase(), string );
+                var matches = compare( option.textContent.trim().toLowerCase(), string );
 
                 if ( matches && !option.disabled ) {
 
