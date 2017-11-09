@@ -1172,7 +1172,7 @@
                     return;
                 }
 
-                // Open the dropdown on [enter], [↓], and [↑] keys
+                // Open the dropdown on [enter], [ ], [↓], and [↑] keys
                 if (
                     e.key === " " ||
                     (! that.opened && ["Enter", "ArrowUp", "ArrowDown"].indexOf(e.key) > -1)
@@ -1885,7 +1885,7 @@
             // Check the options for the matching string
             util.each(this.options, function(i, option) {
                 var item = this.items[option.idx];
-                var matches = compare( option.textContent.toLowerCase(), string );
+                var matches = compare( option.textContent.trim().toLowerCase(), string );
 
                 if ( matches && !option.disabled ) {
 
