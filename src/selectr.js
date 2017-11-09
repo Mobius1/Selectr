@@ -1162,7 +1162,7 @@
             var typing = '';
             var typingTimeout = null;
 
-            this.selected.addEventListener("keyup", function (e) {
+            this.selected.addEventListener("keydown", function (e) {
                 // Do nothing if disabled, not focused, or modifier keys are pressed
                 if (
                     that.disabled ||
