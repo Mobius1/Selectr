@@ -1205,7 +1205,7 @@
                         }
                         typing += e.key;
                         var found = that.search( typing, true );
-                        if ( found.length ) {
+                        if ( found && found.length ) {
                             that.clear();
                             that.setValue( found[0].value );
                         }
