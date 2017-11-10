@@ -1162,6 +1162,7 @@
             var typing = '';
             var typingTimeout = null;
 
+            // Open the dropdown on [enter], [ ], [↓], and [↑] keys
             this.selected.addEventListener("keydown", function (e) {
                 // Do nothing if disabled, not focused, or modifier keys are pressed
                 if (
@@ -1172,7 +1173,6 @@
                     return;
                 }
 
-                // Open the dropdown on [enter], [ ], [↓], and [↑] keys
                 if (
                     e.key === " " ||
                     (! that.opened && ["Enter", "ArrowUp", "ArrowDown"].indexOf(e.key) > -1)
@@ -1181,8 +1181,19 @@
                     e.stopPropagation();
                     return;
                 }
+            });
 
-                // Type to search if multiple; type to select otherwise
+            // Type to search if multiple; type to select otherwise
+            this.selected.addEventListener("keyup", function (e) {
+                // Do nothing if disabled, not focused, or modifier keys are pressed
+                if (
+                    that.disabled ||
+                    that.selected !== document.activeElement ||
+                    (e.altKey || e.ctrlKey || e.metaKey)
+                ) {
+                    return;
+                }
+
                 // make sure e.key is a single, printable character
                 // prefer "codePoint" methods; they work with the full range of unicode
                 if (
