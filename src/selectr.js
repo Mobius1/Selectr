@@ -1178,6 +1178,7 @@
                     (! that.opened && ["Enter", "ArrowUp", "ArrowDown"].indexOf(e.key) > -1)
                 ) {
                     that.toggle();
+                    e.preventDefault();
                     e.stopPropagation();
                     return;
                 }
@@ -1209,6 +1210,7 @@
                         }
                         setTimeout(function () { typing = ''; }, 1000);
                     }
+                    e.preventDefault();
                     e.stopPropagation();
                     return;
                 }
