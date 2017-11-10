@@ -1155,6 +1155,7 @@
                 that.toggle();
             }
 
+            e.stopPropagation();
             e.preventDefault();
         });
 
@@ -1266,6 +1267,9 @@
                     }
                 }
             }
+
+            e.preventDefault();
+            e.stopPropagation();
         });
 
         // Mouseover list items
