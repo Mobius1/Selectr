@@ -332,9 +332,13 @@
                 }, this);
             }
 
+            // highlight first selected option if any; first option otherwise
             if (f.childElementCount) {
                 util.removeClass(this.items[this.navIndex], "active");
-                this.navIndex = f.querySelector(".selectr-option").idx;
+                this.navIndex = (
+                    f.querySelector(".selectr-option.selected") ||
+                    f.querySelector(".selectr-option")
+                ).idx;
                 util.addClass(this.items[this.navIndex], "active");
             }
 
@@ -1186,8 +1190,10 @@
 
                 // Type to search if multiple; type to select otherwise
                 // make sure e.key is a single, printable character
+                // .length check is a short-circut to skip checking keys like "ArrowDown", etc.
                 // prefer "codePoint" methods; they work with the full range of unicode
                 if (
+                    e.key.length <= 2 &&
                     String[String.fromCodePoint ? "fromCodePoint" : "fromCharCode"](
                         e.key[String.codePointAt ? "codePointAt" : "charCodeAt"]( 0 )
                     ) === e.key
@@ -1872,44 +1878,45 @@
             return;
         }
 
+        // we're only going to alter the DOM for "live" searches
         var live = false;
         if ( ! string ) {
             string = this.input.value;
             live = true;
         }
-        string = string.toLowerCase();
-        var f = document.createDocumentFragment();
         var results = [];
+        var f = document.createDocumentFragment();
 
-        // Remove message and clear dropdown
-        this.removeMessage();
-        util.truncate(this.tree);
+        string = string.trim().toLowerCase();
 
         if ( string.length > 0 ) {
             var compare = anchor ? util.startsWith : util.includes;
 
-            // Check the options for the matching string
-            util.each(this.options, function(i, option) {
+            util.each( this.options, function ( i, option ) {
                 var item = this.items[option.idx];
                 var matches = compare( option.textContent.trim().toLowerCase(), string );
 
                 if ( matches && !option.disabled ) {
+                    results.push( { text: option.textContent, value: option.value } );
+                    if ( live ) {
+                        appendItem( item, f, this.customOption );
+                        util.removeClass( item, "excluded" );
 
-                    appendItem( item, f, this.customOption );
-
-                    util.removeClass( item, "excluded" );
-
-                    // Underline the matching results
-                    if ( !this.customOption ) {
-                        item.innerHTML = match( string, option );
+                        // Underline the matching results
+                        if ( !this.customOption ) {
+                            item.innerHTML = match( string, option );
+                        }
                     }
-                } else {
+                } else if ( live ) {
                     util.addClass( item, "excluded" );
                 }
             }, this);
 
-            // Only change Selectr if this is a "live" search (#42)
             if ( live ) {
+                // Remove message and clear dropdown
+                this.removeMessage();
+                util.truncate(this.tree);
+
                 // Append results
                 if ( !f.childElementCount ) {
                     if ( !this.config.taggable ) {
@@ -1924,17 +1931,13 @@
                     this.navIndex = firstEl.idx;
                     util.addClass( firstEl, "active" );
                 }
-            }
 
-            // Compile and return search results object (#42)
-            util.each( f.childNodes, function ( i, option ) {
-                var opt = this.options[option.idx];
-                results.push( { text: opt.textContent, value: opt.value } );
-            }, this );
+                this.tree.appendChild( f );
+            }
         } else {
-            render.call( this );
+            render.call(this);
         }
-        this.tree.appendChild( f );
+
         return results;
     };
 
@@ -2019,6 +2022,7 @@
         }
 
         this.opened = false;
+        this.navigating = false;
 
         if (this.mobileDevice || this.config.nativeDropdown) {
             util.removeClass(this.container, "native-open");
