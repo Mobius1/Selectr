@@ -1133,20 +1133,30 @@
 
         }
 
-        // Open the dropdown with Enter key if focused
-        if (this.config.nativeDropdown) {
-            this.container.addEventListener("keydown", function(e) {
-                if (e.key === "Enter" && that.selected === document.activeElement) {
-                    // Show the native
-                    that.toggle();
+        // Keyboard Support
+        this.container.addEventListener("keydown", function(e) {
+            if (e.key === "Escape") {
+              that.close();
+            }
 
+            if (e.key === "Enter" && that.selected === document.activeElement) {
+                if (typeof that.el.form.submit !== 'undefined') that.el.form.submit();
+            }
+
+            if ((e.key === " " || e.key === "ArrowUp" || e.key === "ArrowDown") &&
+              that.selected === document.activeElement) {
+                setTimeout(function() {
+                    that.toggle();
+                }, 200);
+
+                if (that.config.nativeDropdown) {
                     // Focus on the native multiselect
                     setTimeout(function() {
                         that.el.focus();
                     }, 200);
                 }
-            });
-        }
+            }
+        });
 
         // Non-native dropdown
         this.selected.addEventListener("click", function(e) {
@@ -2043,6 +2053,7 @@
 
         util.truncate(this.tree);
         clearSearch.call(this);
+        this.selected.focus();
     };
 
 
