@@ -63,6 +63,9 @@
 
             assert.equal( typeof selectr, "object", "can create new instance" );
             assert.equal( selectr.el, s, "instance has reference to <select> element" );
+
+            selectr.destroy();
+            document.body.removeChild(s);
         });
 
         QUnit.test( "api methods", function( assert ) {
