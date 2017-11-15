@@ -1883,6 +1883,10 @@
         if ( ! string ) {
             string = this.input.value;
             live = true;
+
+            // Remove message and clear dropdown
+            this.removeMessage();
+            util.truncate(this.tree);
         }
         var results = [];
         var f = document.createDocumentFragment();
@@ -1913,10 +1917,6 @@
             }, this);
 
             if ( live ) {
-                // Remove message and clear dropdown
-                this.removeMessage();
-                util.truncate(this.tree);
-
                 // Append results
                 if ( !f.childElementCount ) {
                     if ( !this.config.taggable ) {
