@@ -8,7 +8,7 @@
     var plugin = "Selectr";
 
     if (typeof define === "function" && define.amd) {
-        define([], factory(plugin));
+        define([], factory);
     } else if (typeof exports === "object") {
         module.exports = factory(plugin);
     } else {
@@ -1092,13 +1092,11 @@
                 }
             });
 
-            if (this.config.nativeDropdown || this.mobileDevice) {
-                this.container.addEventListener("click", function(e) {
-                    if (e.target === that.el) {
-                        that.toggle();
-                    }
-                });
-            }
+            this.container.addEventListener("click", function(e) {
+                if (e.target === that.el) {
+                    that.toggle();
+                }
+            });
 
             var getChangedOptions = function(last, current) {
                 var added=[], removed=last.slice(0);
