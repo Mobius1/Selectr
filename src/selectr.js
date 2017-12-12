@@ -1923,7 +1923,7 @@
                 } else {
                     // Highlight top result (@binary-koan #26)
                     var prevEl = this.items[this.navIndex];
-                    var firstEl = f.firstElementChild;
+                    var firstEl = f.querySelector(".selectr-option:not(.excluded)");
 
                     util.removeClass( prevEl, "active" );
                     this.navIndex = firstEl.idx;
