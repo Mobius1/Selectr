@@ -715,6 +715,7 @@
         }
 
         var direction, prevEl = this.items[this.navIndex];
+        var lastIndex = this.navIndex;
 
         switch (e.which) {
             case 38:
@@ -736,10 +737,15 @@
         // Instead of wasting memory holding a copy of this.items
         // with disabled / excluded options omitted, skip them instead
         while (util.hasClass(this.items[this.navIndex], "disabled") || util.hasClass(this.items[this.navIndex], "excluded")) {
-            if (direction) {
-                this.navIndex++;
+            if (this.navIndex > 0 && this.navIndex < this.items.length -1) {
+                if (direction) {
+                    this.navIndex++;
+                } else {
+                    this.navIndex--;
+                }
             } else {
-                this.navIndex--;
+                this.navIndex = lastIndex;
+                break;
             }
 
             if (this.searching) {
@@ -1923,7 +1929,7 @@
                 } else {
                     // Highlight top result (@binary-koan #26)
                     var prevEl = this.items[this.navIndex];
-                    var firstEl = f.firstElementChild;
+                    var firstEl = f.querySelector(".selectr-option:not(.excluded)");
 
                     util.removeClass( prevEl, "active" );
                     this.navIndex = firstEl.idx;
