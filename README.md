@@ -8,14 +8,7 @@ Don't forget to check the [wiki](https://github.com/Mobius1/Selectr/wiki) out an
 
 ---
 
-[![Build Status](https://travis-ci.org/Mobius1/Selectr.svg?branch=master)](https://travis-ci.org/Mobius1/Selectr) [![npm version](https://badge.fury.io/js/mobius1-selectr.svg)](https://badge.fury.io/js/mobius1-selectr) [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Mobius1/Selectr/blob/master/LICENSE) ![](http://img.badgesize.io/Mobius1/selectr/master/dist/selectr.min.js) ![](http://img.badgesize.io/Mobius1/selectr/master/dist/selectr.min.js?compression=gzip&label=gzipped) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/mobius1/selectr.svg)](http://isitmaintained.com/project/mobius1/selectr "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/mobius1/selectr.svg)](http://isitmaintained.com/project/mobius1/selectr "Percentage of issues still open")
-[![](https://data.jsdelivr.com/v1/package/npm/mobius1-selectr/badge)](https://www.jsdelivr.com/package/npm/mobius1-selectr)
-
----
-
-## Roadmap
-
-Selectr started out as a small side-project to help me learn git, npm, etc. As a result the code is a mess and is in dire need of refactoring. Instead of abandoning the project I shall instead spend as much time as possible in recfactoring the code, reducing as much guff as possible and bringing it up to date with current standards.
+## **Due to time constraints this repo is no longer maintained. Feel free to fork this repo and make it your own.**
 
 ---
 
