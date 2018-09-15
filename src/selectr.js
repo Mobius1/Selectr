@@ -1173,7 +1173,6 @@
                 that.toggle();
             }
 
-            e.stopPropagation();
             e.preventDefault();
         });
 
