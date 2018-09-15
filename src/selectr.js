@@ -441,7 +441,7 @@
         this.selected = util.createElement("div", {
             class: "selectr-selected",
             disabled: this.disabled,
-            tabIndex: 1, // enable tabIndex (#9)
+            tabIndex: 0,
             "aria-expanded": false
         });
 
