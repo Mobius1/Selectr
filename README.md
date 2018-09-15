@@ -1,6 +1,5 @@
 # Selectr
-[![npm](https://img.shields.io/npm/dt/mobius1-selectr.svg?style=popout-square)](https://www.npmjs.com/package/mobius1-selectr)
-[![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/mobius1-selectr.svg)](https://www.npmjs.com/package/mobius1-selectr)
+[![npm](https://img.shields.io/npm/dt/mobius1-selectr.svg)](https://www.npmjs.com/package/mobius1-selectr)
 [![npm version](https://badge.fury.io/js/selectable%2Ejs.svg)](https://badge.fury.io/js/selectable%2Ejs)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/Mobius1/Selectable/blob/master/LICENSE)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/Mobius1/Selectable.svg)](http://isitmaintained.com/project/Mobius1/Selectable "Average time to resolve an issue")
