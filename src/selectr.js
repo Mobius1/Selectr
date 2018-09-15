@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.4.2
+ * Selectr 2.4.3
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -1598,6 +1598,8 @@
         this.emit("selectr.change", option);
 
         this.emit("selectr.select", option);
+            
+                this.el.dispatchEvent(new Event('change'));             
     };
 
     /**
@@ -1647,6 +1649,8 @@
         this.emit("selectr.change", null);
 
         this.emit("selectr.deselect", option);
+            
+                this.el.dispatchEvent(new Event('change'));
     };
 
     /**
@@ -1722,7 +1726,6 @@
      */
     Selectr.prototype.add = function(data, checkDuplicate) {
         if (data) {
-
             this.data = this.data || [];
             this.items = this.items || [];
             this.options = this.options || [];
@@ -1768,13 +1771,13 @@
                 if (data.selected) {
                     this.select(option.idx);
                 }
+                            
+                                // We may have had an empty select so update
+                                // the placeholder to reflect the changes.
+                                this.setPlaceholder();
 
                 return option;
             }
-
-            // We may have had an empty select so update
-            // the placeholder to reflect the changes.
-            this.setPlaceholder();
 
             // Recount the pages
             if (this.config.pagination) {

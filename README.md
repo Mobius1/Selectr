@@ -8,10 +8,6 @@ Don't forget to check the [wiki](https://github.com/Mobius1/Selectr/wiki) out an
 
 ---
 
-## **Due to time constraints this repo is no longer maintained. Feel free to fork this repo and make it your own.**
-
----
-
 
 Features:
 
