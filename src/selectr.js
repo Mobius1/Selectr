@@ -1598,7 +1598,14 @@
 
         this.emit("selectr.select", option);
             
-                this.el.dispatchEvent(new Event('change'));             
+        // fire native change event
+        if ("createEvent" in document) {
+            var evt = document.createEvent("HTMLEvents");
+            evt.initEvent("change", true, true);
+            this.el.dispatchEvent(evt);
+        } else {
+            this.el.fireEvent("onchange");
+        }    
     };
 
     /**
@@ -1649,7 +1656,14 @@
 
         this.emit("selectr.deselect", option);
             
-                this.el.dispatchEvent(new Event('change'));
+        // fire native change event
+        if ("createEvent" in document) {
+            var evt = document.createEvent("HTMLEvents");
+            evt.initEvent("change", true, true);
+            this.el.dispatchEvent(evt);
+        } else {
+            this.el.fireEvent("onchange");
+        }
     };
 
     /**
