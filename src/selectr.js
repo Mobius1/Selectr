@@ -1669,7 +1669,7 @@
         }
 
         util.each(this.options, function(i, option) {
-            if (isArray && util.includes(value.toString(), option.value) || option.value === value) {
+            if (isArray && util.includes(value, option.value.toString()) || option.value === value) {
                 this.change(option.idx);
             }
         }, this);
