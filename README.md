@@ -11,7 +11,7 @@ A lightweight, dependency-free, mobile-friendly select box replacement written i
 
 Supports most modern mobile and desktop browsers including IE9.
 
-Don't forget to check the [wiki](https://github.com/Mobius1/Selectr/wiki) out and view some [demos](https://s.codepen.io/Mobius1/debug/QgdpLN).
+Don't forget to check the [wiki](https://github.com/Mobius1/Selectr/wiki) out and view some [demos](https://s.codepen.io/Mobius1/pen/QgdpLN).
 
 ---
 
@@ -29,7 +29,7 @@ Features:
 * Dynamically add options
 * Much more...
 
-[Documentation](https://github.com/Mobius1/Selectr/wiki) | [Demo](https://s.codepen.io/Mobius1/debug/QgdpLN)
+[Documentation](https://github.com/Mobius1/Selectr/wiki) | [Demo](https://s.codepen.io/Mobius1/pen/QgdpLN)
 
 ---
 
