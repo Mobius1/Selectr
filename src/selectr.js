@@ -1683,7 +1683,7 @@
         }
 
         util.each(this.options, function(i, option) {
-            if (isArray && util.includes(value, option.value.toString()) || option.value === value) {
+            if (isArray && (value.indexOf(option.value) > -1) || option.value === value) {
                 this.change(option.idx);
             }
         }, this);
@@ -2309,3 +2309,4 @@
 
     return Selectr;
 }));
+
