@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.4.4
+ * Selectr 2.4.5
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -627,6 +627,8 @@
 
                         j++;
                     }, this);
+
+                    this.el.appendChild(optgroup);
                 } else {
                     option = new Option(opt.text, opt.value, false, opt.hasOwnProperty("selected") && opt.selected === true);
 
