@@ -709,7 +709,7 @@
 
         if (e.which === 13) {
 
-            if (this.config.taggable && this.input.value.length > 0) {
+            if ( this.noResults || (this.config.taggable && this.input.value.length > 0) ) {
                 return false;
             }
 
@@ -1952,12 +1952,14 @@
                 // Append results
                 if ( !f.childElementCount ) {
                     if ( !this.config.taggable ) {
+                        this.noResults = true;
                         this.setMessage( "no results." );
                     }
                 } else {
                     // Highlight top result (@binary-koan #26)
                     var prevEl = this.items[this.navIndex];
                     var firstEl = f.querySelector(".selectr-option:not(.excluded)");
+                    this.noResults = false;
 
                     util.removeClass( prevEl, "active" );
                     this.navIndex = firstEl.idx;
