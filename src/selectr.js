@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.4.5
+ * Selectr 2.4.6
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -98,7 +98,13 @@
          * Set the tag input placeholder (@labikmartin, #21, #22)
          * @type {String}
          */
-        tagPlaceholder: "Enter a tag..."
+        tagPlaceholder: "Enter a tag...",
+
+        messages: {
+            noResults: "No results.",
+            maxSelections: "A maximum of {max} items can be selected.",
+            tagDuplicate: "That tag is already in use",
+        }
     };
 
     /**
@@ -172,16 +178,18 @@
      */
     var util = {
         extend: function(src, props) {
-            props = props || {};
-            var p;
-            for (p in src) {
-                if (src.hasOwnProperty(p)) {
-                    if (!props.hasOwnProperty(p)) {
-                        props[p] = src[p];
+                    for (var prop in props) {
+                            if (props.hasOwnProperty(prop)) {
+                                    var val = props[prop];
+                                    if (val && Object.prototype.toString.call(val) === "[object Object]") {
+                                            src[prop] = src[prop] || {};
+                                            util.extend(src[prop], val);
+                                    } else {
+                                            src[prop] = val;
+                                    }
+                            }
                     }
-                }
-            }
-            return props;
+                    return src;
         },
         each: function(a, b, c) {
             if ("[object Object]" === Object.prototype.toString.call(a)) {
@@ -1364,7 +1372,7 @@
 
                         if (!option) {
                             this.value = '';
-                            that.setMessage('That tag is already in use.');
+                            that.setMessage(that.config.messages.tagDuplicate);
                         } else {
                             that.close();
                             clearSearch.call(that);
@@ -1556,7 +1564,7 @@
             }
 
             if (this.config.maxSelections && this.tags.length === this.config.maxSelections) {
-                this.setMessage("A maximum of " + this.config.maxSelections + " items can be selected.", true);
+                this.setMessage(this.config.messages.maxSelections.replace("{max}", this.config.maxSelections), true);
                 return false;
             }
 
@@ -1953,7 +1961,7 @@
                 if ( !f.childElementCount ) {
                     if ( !this.config.taggable ) {
                         this.noResults = true;
-                        this.setMessage( "no results." );
+                        this.setMessage( this.config.messages.noResults );
                     }
                 } else {
                     // Highlight top result (@binary-koan #26)
