@@ -1822,7 +1822,7 @@
             util.each(o, function(i, opt) {
                 if (util.isInt(opt)) {
                     options.push(this.getOptionByIndex(opt));
-                } else if (typeof o === "string") {
+                } else if (typeof opt === "string") {
                     options.push(this.getOptionByValue(opt));
                 }
             }, this);
