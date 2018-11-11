@@ -102,8 +102,9 @@
 
         messages: {
             noResults: "No results.",
+            noOptions: "No options available.",
             maxSelections: "A maximum of {max} items can be selected.",
-            tagDuplicate: "That tag is already in use",
+            tagDuplicate: "That tag is already in use.",
         }
     };
 
@@ -2227,7 +2228,7 @@
         placeholder = placeholder || this.config.placeholder || this.el.getAttribute("placeholder");
 
         if (!this.options.length) {
-            placeholder = "No options available";
+            placeholder = this.config.messages.noOptions;
         }
 
         this.placeEl.innerHTML = placeholder;
