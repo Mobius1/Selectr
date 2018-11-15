@@ -1051,6 +1051,8 @@
         this.customOption = this.config.hasOwnProperty("renderOption") && typeof this.config.renderOption === "function";
         this.customSelected = this.config.hasOwnProperty("renderSelection") && typeof this.config.renderSelection === "function";
 
+        this.supportsEventPassiveOption = this.detectEventPassiveOption();
+        
         // Enable event emitter
         Events.mixin(this);
 
@@ -1089,6 +1091,24 @@
     };
 
     /**
+     * Feature detection: addEventListener passive option
+     * https://dom.spec.whatwg.org/#dom-addeventlisteneroptions-passive
+     * https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md
+     */
+    Selectr.prototype.detectEventPassiveOption = function () {
+        var supportsPassiveOption = false;
+        try {
+            var opts = Object.defineProperty({}, 'passive', {
+                get: function() {
+                    supportsPassiveOption = true;
+                }
+            });
+            window.addEventListener('test', null, opts);
+        } catch (e) {}
+        return supportsPassiveOption;
+    }
+    
+    /**
      * Attach the required event listeners
      */
     Selectr.prototype.bindEvents = function() {
@@ -1107,7 +1127,7 @@
                 if (e.changedTouches[0].target === that.el) {
                     that.toggle();
                 }
-            });
+            }, this.supportsEventPassiveOption ? { passive: true } : false);
 
             this.container.addEventListener("click", function(e) {
                 if (e.target === that.el) {
