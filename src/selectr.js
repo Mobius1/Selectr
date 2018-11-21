@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.4.7
+ * Selectr 2.4.8
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -16,97 +16,6 @@
     }
 }(this, function(plugin) {
     'use strict';
-
-    /**
-     * Default configuration options
-     * @type {Object}
-     */
-    var defaultConfig = {
-        /**
-         * Emulates browser behaviour by selecting the first option by default
-         * @type {Boolean}
-         */
-        defaultSelected: true,
-
-        /**
-         * Sets the width of the container
-         * @type {String}
-         */
-        width: "auto",
-
-        /**
-         * Enables/ disables the container
-         * @type {Boolean}
-         */
-        disabled: false,
-
-        /**
-         * Enables / disables the search function
-         * @type {Boolean}
-         */
-        searchable: true,
-
-        /**
-         * Enable disable the clear button
-         * @type {Boolean}
-         */
-        clearable: false,
-
-        /**
-         * Sort the tags / multiselect options
-         * @type {Boolean}
-         */
-        sortSelected: false,
-
-        /**
-         * Allow deselecting of select-one options
-         * @type {Boolean}
-         */
-        allowDeselect: false,
-
-        /**
-         * Close the dropdown when scrolling (@AlexanderReiswich, #11)
-         * @type {Boolean}
-         */
-        closeOnScroll: false,
-
-        /**
-         * Allow the use of the native dropdown (@jonnyscholes, #14)
-         * @type {Boolean}
-         */
-        nativeDropdown: false,
-
-        /**
-         * Allow the use of native typing behavior for toggling, searching, selecting
-         * @type {boolean}
-         */
-        nativeKeyboard: false,
-
-        /**
-         * Set the main placeholder
-         * @type {String}
-         */
-        placeholder: "Select an option...",
-
-        /**
-         * Allow the tagging feature
-         * @type {Boolean}
-         */
-        taggable: false,
-
-        /**
-         * Set the tag input placeholder (@labikmartin, #21, #22)
-         * @type {String}
-         */
-        tagPlaceholder: "Enter a tag...",
-
-        messages: {
-            noResults: "No results.",
-            noOptions: "No options available.",
-            maxSelections: "A maximum of {max} items can be selected.",
-            tagDuplicate: "That tag is already in use.",
-        }
-    };
 
     /**
      * Event Emitter
@@ -980,7 +889,96 @@
     // Main Lib
     var Selectr = function(el, config) {
 
-        config = config || {};
+        /**
+         * Default configuration options
+         * @type {Object}
+         */
+        this.defaultConfig = {
+            /**
+             * Emulates browser behaviour by selecting the first option by default
+             * @type {Boolean}
+             */
+            defaultSelected: true,
+
+            /**
+             * Sets the width of the container
+             * @type {String}
+             */
+            width: "auto",
+
+            /**
+             * Enables/ disables the container
+             * @type {Boolean}
+             */
+            disabled: false,
+
+            /**
+             * Enables / disables the search function
+             * @type {Boolean}
+             */
+            searchable: true,
+
+            /**
+             * Enable disable the clear button
+             * @type {Boolean}
+             */
+            clearable: false,
+
+            /**
+             * Sort the tags / multiselect options
+             * @type {Boolean}
+             */
+            sortSelected: false,
+
+            /**
+             * Allow deselecting of select-one options
+             * @type {Boolean}
+             */
+            allowDeselect: false,
+
+            /**
+             * Close the dropdown when scrolling (@AlexanderReiswich, #11)
+             * @type {Boolean}
+             */
+            closeOnScroll: false,
+
+            /**
+             * Allow the use of the native dropdown (@jonnyscholes, #14)
+             * @type {Boolean}
+             */
+            nativeDropdown: false,
+
+            /**
+             * Allow the use of native typing behavior for toggling, searching, selecting
+             * @type {boolean}
+             */
+            nativeKeyboard: false,
+
+            /**
+             * Set the main placeholder
+             * @type {String}
+             */
+            placeholder: "Select an option...",
+
+            /**
+             * Allow the tagging feature
+             * @type {Boolean}
+             */
+            taggable: false,
+
+            /**
+             * Set the tag input placeholder (@labikmartin, #21, #22)
+             * @type {String}
+             */
+            tagPlaceholder: "Enter a tag...",
+
+            messages: {
+                noResults: "No results.",
+                noOptions: "No options available.",
+                maxSelections: "A maximum of {max} items can be selected.",
+                tagDuplicate: "That tag is already in use.",
+            }
+        };
 
         if (!el) {
             throw new Error("You must supply either a HTMLSelectElement or a CSS3 selector string.");
@@ -1017,7 +1015,7 @@
         this.el.selectr = this;
 
         // Merge defaults with user set config
-        this.config = util.extend(defaultConfig, config);
+        this.config = util.extend(this.defaultConfig, config);
 
         // Store type
         this.originalType = this.el.type;
