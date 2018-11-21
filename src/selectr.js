@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.4.6
+ * Selectr 2.4.7
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -1013,6 +1013,9 @@
 
         if (this.rendered) return;
 
+        // add instance reference (#87)
+        this.el.selectr = this;
+
         // Merge defaults with user set config
         this.config = util.extend(defaultConfig, config);
 
@@ -1542,6 +1545,9 @@
         this.container.parentNode.replaceChild(this.el, this.container);
 
         this.rendered = false;
+
+        // remove reference
+        delete this.el.selectr;
     };
 
     /**
