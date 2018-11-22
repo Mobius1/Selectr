@@ -1,18 +1,20 @@
-/*!
- * Selectr 2.4.8
- * http://mobius.ovh/docs/selectr
- *
- * Released under the MIT license
- */
 .selectr-container {
 	position: relative;
+	
+	&.selectr-multiple {
+		&.has-selected {
+			.selectr-display {
+				padding: 4px 28px 4px 14px;
+			}
+		}
+	}
 }
 
 .selectr-container li {
 	list-style: none;
 }
 
-.selectr-hidden {
+.selectr-element {
 	position: absolute;
 	overflow: hidden;
 	clip: rect(0px, 0px, 0px, 0px);
@@ -37,6 +39,13 @@
 	display: none;
 }
 
+.selectr-value {
+	display: flex;
+	align-items: center;
+	justify-content: start;
+	flex-wrap: wrap;
+}
+
 .selectr-desktop.multiple.native-open .selectr-visible {
 	top: 100%;
 	min-height: 200px !important;
@@ -45,11 +54,11 @@
 	display: block;
 }
 
-.selectr-container.multiple.selectr-mobile .selectr-selected {
+.selectr-container.multiple.selectr-mobile .selectr-display {
 	z-index: 0;
 }
 
-.selectr-selected {
+.selectr-display {
 	position: relative;
 	z-index: 1;
 	box-sizing: border-box;
@@ -61,7 +70,7 @@
 	background-color: #fff;
 }
 
-.selectr-selected::before {
+.selectr-display::before {
 	position: absolute;
 	top: 50%;
 	right: 10px;
@@ -78,8 +87,8 @@
 	border-color: #6c7a86 transparent transparent;
 }
 
-.selectr-container.open .selectr-selected::before,
-.selectr-container.native-open .selectr-selected::before {
+.selectr-container.selectr-open .selectr-display::before,
+.selectr-container.native-open .selectr-display::before {
 	border-width: 0 4px 4px 4px;
 	border-style: solid;
 	border-color: transparent transparent #6c7a86;
@@ -120,7 +129,7 @@
 	background: #acb7bf none repeat scroll 0 0;
 }
 
-.selectr-container.multiple.has-selected .selectr-selected {
+.selectr-container.multiple.has-selected .selectr-display {
 	padding: 5px 28px 5px 5px;
 }
 
@@ -139,7 +148,7 @@
 	background-color: #fff;
 }
 
-.selectr-container.open .selectr-options-container {
+.selectr-container.selectr-open .selectr-options-container {
 	display: block;
 }
 
@@ -178,7 +187,7 @@
 	display: block;
 }
 
-.selectr-selected .selectr-tag-remove {
+.selectr-display .selectr-tag-remove {
 	right: 2px;
 }
 
@@ -255,7 +264,7 @@
 	display: block;
 }
 
-.selectr-container.notice .selectr-selected {
+.selectr-container.notice .selectr-display {
 	border-radius: 3px 3px 0 0;
 }
 
@@ -270,8 +279,8 @@
 	padding: 0;
 }
 
-.selectr-container.open .selectr-options,
-.selectr-container.open .selectr-input-container,
+.selectr-container.selectr-open .selectr-options,
+.selectr-container.selectr-open .selectr-input-container,
 .selectr-container.notice .selectr-options-container {
 	display: block;
 }
@@ -279,13 +288,28 @@
 .selectr-option {
 	position: relative;
 	display: block;
-	padding: 5px 20px;
+	padding: 5px 14px;
 	list-style: outside none none;
 	cursor: pointer;
 	font-weight: normal;
+	
+	&.selectr-selected {
+		background-color: #4CAF50;
+		color: #fff;
+	}
+	
+	&.disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+	
+	&:hover {
+		background-color: #2196F3;
+		color: #fff;
+	}
 }
 
-.selectr-options.optgroups > .selectr-option {
+.selectr-options.optgroups .selectr-option {
 	padding-left: 25px;
 }
 
@@ -304,29 +328,21 @@
 	text-decoration: underline;
 }
 
-.selectr-option.selected {
-	background-color: #ddd;
-}
-
 .selectr-option.active {
 	color: #fff;
 	background-color: #5897fb;
-}
-
-.selectr-option.disabled {
-	opacity: 0.4;
 }
 
 .selectr-option.excluded {
 	display: none;
 }
 
-.selectr-container.open .selectr-selected {
+.selectr-container.selectr-open .selectr-display {
 	border-color: #999 #999 transparent #999;
 	border-radius: 3px 3px 0 0;
 }
 
-.selectr-container.open .selectr-selected::after {
+.selectr-container.selectr-open .selectr-display::after {
 	-o-transform: rotate(180deg) translate3d(0px, 50%, 0px);
 	-ms-transform: rotate(180deg) translate3d(0px, 50%, 0px);
 	-moz-transform: rotate(180deg) translate3d(0px, 50%, 0px);
@@ -348,11 +364,11 @@
 }
 
 /* TAGGABLE */
-.taggable .selectr-selected {
+.taggable .selectr-display {
 	padding: 4px 28px 4px 4px;
 }
 
-.taggable .selectr-selected::after {
+.taggable .selectr-display::after {
 	display: table;
 	content: " ";
 	clear: both;
@@ -434,7 +450,7 @@
 		transform: rotate(360deg) translate3d(0px, -50%, 0px);
 	}
 }
-.selectr-container.open.inverted .selectr-selected {
+.selectr-container.selectr-open.inverted .selectr-display {
 	border-color: transparent #999 #999;
 	border-radius: 0 0 3px 3px;
 }
