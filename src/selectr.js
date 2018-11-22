@@ -1,6 +1,6 @@
 class SelectrOption extends Option {
-    constructor(props) {
-        super(props);
+    constructor(...props) {
+        super(...props);
     }
 
     enable() {
@@ -56,7 +56,8 @@ class Selectr {
             this.loaded = false;
             fetch(this.config.ajax.url).then(r => r.json()).then((data) => {
                 for (const item of data) {
-                    this.el.add(new SelectrOption(item.text, item.value, item.selected, item.selected));
+                    const selected = item.hasOwnProperty("selected") && item.selected === true;
+                    this.el.add(new SelectrOption(item.text, item.value, selected, selected));
                 }
                 this.refresh();
                 this.loaded = true;
@@ -72,12 +73,16 @@ class Selectr {
                     optgroup.label = item.text;
 
                     for (const option of item.options) {
-                        optgroup.appendChild(new SelectrOption(option.text, option.value, option.selected, option.selected));
+                        const o = new SelectrOption(option.text, option.value, option.selected, option.selected);
+                        o.disabled = option.disabled;
+                        optgroup.appendChild(o);
                     }
 
                     this.el.add(optgroup);
                 } else {
-                    this.el.add(new SelectrOption(item.text, item.value, item.selected, item.selected));
+                    const o = new SelectrOption(item.text, item.value, item.selected, item.selected);
+                    o.disabled = item.disabled;
+                    this.el.add(o);
                 }
             }
         }
@@ -89,6 +94,14 @@ class Selectr {
     refresh() {
         this.options = [...this.el.options];
 
+        if (this.config.pagination) {
+            // for ( const option of this.options ) {
+            // 	if ( option.index > (this.pageIndex + 1) * this.config.pagination ) {
+            // 		this.el.remove(option);
+            // 	}
+            // }
+        }
+
         if (this.options.length) {
             this.createList();
             this.renderList();
@@ -96,7 +109,7 @@ class Selectr {
             if (this.multiple) {
                 this.renderTags();
             } else {
-                const option = this.el.options[this.el.selectedIndex];
+                const option = this.options[this.el.selectedIndex];
                 this.nodes.value.dataset.value = option.value;
                 this.nodes.value.textContent = option.textContent;
             }
@@ -170,7 +183,7 @@ class Selectr {
         const createItem = (option) => {
             const item = document.createElement("li");
             item.classList.add("selectr-option");
-            item.classList.toggle("selectr-selected", option.index === this.el.selectedIndex);
+            item.classList.toggle("selectr-selected", option.selected);
             item.classList.toggle("disabled", option.disabled);
 
             item.textContent = option.textContent;
@@ -216,13 +229,13 @@ class Selectr {
                 frag.appendChild(group);
             }
         } else {
-            const collection = this.config.pagination ? this.options.slice(0, (this.pageIndex + 1) * this.config.pagination) : this.options;
+            const collection = this.config.pagination ? this.options.slice(this.pageIndex * this.config.pagination, (this.pageIndex + 1) * this.config.pagination) : this.options;
             for (const option of collection) {
                 frag.appendChild(this.items[option.index]);
             }
         }
 
-        this.nodes.items.innerHTML = ``;
+        // this.nodes.items.innerHTML = ``;
         this.nodes.items.appendChild(frag);
     }
 
@@ -260,13 +273,15 @@ class Selectr {
             toggle: this.toggle.bind(this),
             blur: this.blur.bind(this),
             navigate: this.navigate.bind(this),
-            scroll: this.onScroll.bind(this),
+            scroll: this.onListScroll.bind(this),
+            over: this.onListOver.bind(this),
         };
 
         document.addEventListener("mousedown", this.events.blur);
         window.addEventListener("keydown", this.events.navigate);
         this.nodes.display.addEventListener("click", this.events.toggle);
         this.nodes.items.addEventListener("scroll", this.events.scroll);
+        this.nodes.items.addEventListener("mouseover", this.events.over);
         this.nodes.items.addEventListener("click", this.events.click);
     }
 
@@ -277,8 +292,8 @@ class Selectr {
         this.nodes.items.removeEventListener("click", this.events.click);
     }
 
-    onScroll(e) {
-        if (!this.closed) {
+    onListScroll(e) {
+        if (!this.closed && this.config.pagination && this.config.pagination < this.options.length) {
             const st = this.nodes.items.scrollTop;
             const sh = this.nodes.items.scrollHeight;
             const ch = this.nodes.items.clientHeight;
@@ -286,6 +301,18 @@ class Selectr {
             if (st >= sh - ch) {
                 this.pageIndex++;
                 this.renderList();
+            }
+        }
+    }
+
+    onListOver(e) {
+        const option = e.target.closest(".selectr-option");
+
+        if (option) {
+            this.navIndex = option.index;
+
+            for (const item of this.items) {
+                item.classList.toggle("active", item.index === option.index);
             }
         }
     }
