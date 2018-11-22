@@ -1,3 +1,24 @@
+/**
+ * 
+ * @param {Object} src 
+ * @param {Object} props 
+ * @returns {Object}
+ */
+function extend(src, props) {
+    for (const prop in props) {
+        if (props.hasOwnProperty(prop)) {
+            const val = props[prop];
+            if (val && typeof val === 'object' && val.constructor === Object) {
+                src[prop] = src[prop] || {};
+                extend(src[prop], val);
+            } else {
+                src[prop] = val;
+            }
+        }
+    }
+    return src;
+}
+
 class SelectrOption extends Option {
     constructor(...props) {
         super(...props);
@@ -5,30 +26,31 @@ class SelectrOption extends Option {
 
     enable() {
         this.disabled = false;
+        this.update();
     }
 
     disable() {
         this.disabled = true;
+        this.update();
     }
 
     select() {
         this.selected = true;
+        this.update();
     }
 
     deselect() {
         this.selected = false;
+        this.update();
+    }
+
+    update() {
+        this.closest("select").selectr.refresh();
     }
 }
 
 class Selectr {
     constructor(el, props) {
-
-        this.defaultConfig = {
-            pagination: false,
-            strings: {
-                placeholder: "Select an option...",
-            },
-        };
 
         this.el = el;
 
@@ -43,8 +65,16 @@ class Selectr {
 
         this.el.selectr = this;
 
+        const defaultConfig = {
+            pagination: false,
+            strings: {
+                test: "foo",
+                placeholder: "Select an option...",
+            },
+        };
+
         if (options) {
-            this.config = Object.assign({}, this.defaultConfig, options);
+            this.config = extend(defaultConfig, options);
         }
 
         this.closed = true;
@@ -104,7 +134,7 @@ class Selectr {
 
         if (this.options.length) {
             this.createList();
-            this.renderList();
+            this.renderList(true);
 
             if (this.multiple) {
                 this.renderTags();
@@ -220,7 +250,7 @@ class Selectr {
         }
     }
 
-    renderList() {
+    renderList(clear) {
         const frag = document.createDocumentFragment();
         const optgroups = this.el.querySelectorAll("optgroup");
 
@@ -235,7 +265,10 @@ class Selectr {
             }
         }
 
-        // this.nodes.items.innerHTML = ``;
+        if (clear) {
+            this.nodes.items.innerHTML = ``;
+        }
+
         this.nodes.items.appendChild(frag);
     }
 
