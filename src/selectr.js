@@ -63,6 +63,10 @@ class Selectr {
 
     init(options) {
 
+        if (this.initialised && this.el.selectr === this) {
+            return console.warn("Selectr is already initialised");
+        }
+
         this.el.selectr = this;
 
         const defaultConfig = {
@@ -81,6 +85,8 @@ class Selectr {
         this.navIndex = 0;
         this.pageIndex = 0;
         this.multiple = this.el.multiple || this.config.multiple || false;
+
+        this.el.multiple = this.multiple;
 
         if (this.config.ajax) {
             this.loaded = false;
@@ -117,8 +123,10 @@ class Selectr {
             }
         }
 
-        this.render();
+        this._render();
         this.bind();
+
+        this.initialised = true;
     }
 
     refresh() {
@@ -133,11 +141,11 @@ class Selectr {
         }
 
         if (this.options.length) {
-            this.createList();
-            this.renderList(true);
+            this._createList();
+            this._renderList(true);
 
             if (this.multiple) {
-                this.renderTags();
+                this._renderTags();
             } else {
                 const option = this.options[this.el.selectedIndex];
                 this.nodes.value.dataset.value = option.value;
@@ -148,7 +156,124 @@ class Selectr {
         this.update();
     }
 
-    render(type) {
+    bind() {
+        this.events = {
+            click: this._click.bind(this),
+            toggle: this._toggle.bind(this),
+            blur: this._blur.bind(this),
+            navigate: this._navigate.bind(this),
+            scroll: this._onListScroll.bind(this),
+            over: this._onListOver.bind(this),
+        };
+
+        document.addEventListener("mousedown", this.events.blur);
+        window.addEventListener("keydown", this.events.navigate);
+        this.nodes.display.addEventListener("click", this.events.toggle);
+        this.nodes.items.addEventListener("scroll", this.events.scroll);
+        this.nodes.items.addEventListener("mouseover", this.events.over);
+        this.nodes.items.addEventListener("click", this.events.click);
+    }
+
+    unbind() {
+        document.removeEventListener("mousedown", this.events.blur);
+        window.removeEventListener("keydown", this.events.navigate);
+        this.nodes.display.removeEventListener("click", this.events.toggle);
+        this.nodes.items.removeEventListener("click", this.events.click);
+    }
+
+    destroy() {
+        if (this.initialised) {
+            this.unbind();
+            this.el.classList.remove("selectr-element");
+            this.nodes.container.parentNode.replaceChild(this.el, this.nodes.container);
+
+            // remove reference
+            delete this.el.selectr;
+
+            this.initialised = false;
+        }
+    }
+
+    select(option) {
+        let index;
+
+        if (!isNaN(option)) {
+            // index
+            index = option;
+        } else if (option instanceof Element) {
+            // option or item
+            index = option.index;
+        }
+
+        const active = this.options[index];
+        const el = this.items[index];
+        this.navIndex = index;
+
+        active.selected = !this.multiple ? true : (active.selected ? false : true);
+
+        if (this.multiple) {
+            if (this.el.selectedOptions.length) {
+                this._renderTags();
+            }
+        } else {
+            this.nodes.value.textContent = el.textContent;
+            this.nodes.value.dataset.value = el.dataset.value;
+        }
+
+        if (!this.multiple) {
+            this.close();
+        }
+
+        this.update();
+    }
+
+    open() {
+        if (this.closed) {
+            this.closed = false;
+            this.nodes.container.classList.add("selectr-open");
+
+            this.rect = this.nodes.items.getBoundingClientRect();
+
+            const st = this.nodes.items.scrollTop;
+            const sh = this.nodes.items.scrollHeight;
+            const ch = this.nodes.items.clientHeight;
+
+            this.scrollData = {
+                pos: st,
+                max: sh - ch,
+            };
+        }
+    }
+
+    close() {
+        if (!this.closed) {
+            this.closed = true;
+            this.nodes.container.classList.remove("selectr-open");
+        }
+    }
+
+    message(text) {
+        this.nodes.value.innerHTML = ``;
+        this.nodes.value.textContent = text;
+    }
+
+    update() {
+        this.nodes.container.classList.toggle("has-selected", this.el.selectedOptions.length);
+        this.nodes.container.classList.remove("loading");
+
+        for (const option of this.options) {
+            const item = this.items[option.index];
+            item.classList.toggle("selectr-selected", option.selected);
+            item.classList.toggle("disabled", option.disabled);
+            item.disabled = option.disabled;
+        }
+
+        if (!this.el.selectedOptions.length) {
+            this.message(this.config.strings.placeholder);
+        }
+    }
+
+    _render(type) {
 
         if (type === undefined) {
             this.el.classList.add("selectr-element");
@@ -196,19 +321,19 @@ class Selectr {
         } else {
             switch (type) {
                 case "list":
-                    this.renderList();
+                    this._renderList();
                     break;
                 case "tags":
-                    this.renderTags();
+                    this._renderTags();
                     break;
                 case "tag":
-                    this.renderTag();
+                    this._renderTag();
                     break;
             }
         }
     }
 
-    createList() {
+    _createList() {
         const optgroups = this.el.querySelectorAll("optgroup");
         const createItem = (option) => {
             const item = document.createElement("li");
@@ -250,7 +375,7 @@ class Selectr {
         }
     }
 
-    renderList(clear) {
+    _renderList(clear) {
         const frag = document.createDocumentFragment();
         const optgroups = this.el.querySelectorAll("optgroup");
 
@@ -272,16 +397,16 @@ class Selectr {
         this.nodes.items.appendChild(frag);
     }
 
-    renderTags() {
+    _renderTags() {
         const frag = document.createDocumentFragment();
         for (const option of this.el.selectedOptions) {
-            frag.appendChild(this.renderTag(option.textContent, option.value, option.index));
+            frag.appendChild(this._renderTag(option.textContent, option.value, option.index));
         }
         this.nodes.value.innerHTML = ``;
         this.nodes.value.appendChild(frag);
     }
 
-    renderTag(text, value, index) {
+    _renderTag(text, value, index) {
         const tag = document.createElement("div");
         tag.classList.add("selectr-tag");
         tag.dataset.value = value;
@@ -300,32 +425,40 @@ class Selectr {
         return tag;
     }
 
-    bind() {
-        this.events = {
-            click: this.click.bind(this),
-            toggle: this.toggle.bind(this),
-            blur: this.blur.bind(this),
-            navigate: this.navigate.bind(this),
-            scroll: this.onListScroll.bind(this),
-            over: this.onListOver.bind(this),
-        };
+    _toggle(e) {
 
-        document.addEventListener("mousedown", this.events.blur);
-        window.addEventListener("keydown", this.events.navigate);
-        this.nodes.display.addEventListener("click", this.events.toggle);
-        this.nodes.items.addEventListener("scroll", this.events.scroll);
-        this.nodes.items.addEventListener("mouseover", this.events.over);
-        this.nodes.items.addEventListener("click", this.events.click);
+        e.preventDefault();
+
+        if (e.target.closest(".selectr-tag-remove")) {
+            const tag = e.target.closest(".selectr-tag");
+
+            this.nodes.value.removeChild(tag);
+            this.options[tag.index].selected = false;
+            return this.update();
+        }
+
+        if (this.closed) {
+            this.open();
+        } else {
+            this.close();
+        }
     }
 
-    unbind() {
-        document.removeEventListener("mousedown", this.events.blur);
-        window.removeEventListener("keydown", this.events.navigate);
-        this.nodes.display.removeEventListener("click", this.events.toggle);
-        this.nodes.items.removeEventListener("click", this.events.click);
+    _click(e) {
+        const target = e.target;
+        const el = target.closest(".selectr-option");
+
+        if (el) {
+
+            if (el.disabled) {
+                return;
+            }
+
+            this.select(el);
+        }
     }
 
-    onListScroll(e) {
+    _onListScroll(e) {
         if (!this.closed && this.config.pagination && this.config.pagination < this.options.length) {
             const st = this.nodes.items.scrollTop;
             const sh = this.nodes.items.scrollHeight;
@@ -333,12 +466,12 @@ class Selectr {
 
             if (st >= sh - ch) {
                 this.pageIndex++;
-                this.renderList();
+                this._renderList();
             }
         }
     }
 
-    onListOver(e) {
+    _onListOver(e) {
         const option = e.target.closest(".selectr-option");
 
         if (option) {
@@ -350,7 +483,13 @@ class Selectr {
         }
     }
 
-    navigate(e) {
+    _blur(e) {
+        if (!this.nodes.container.contains(e.target)) {
+            this.close();
+        }
+    }
+
+    _navigate(e) {
         if (this.closed) return;
 
         if (e.which === 13) {
@@ -433,129 +572,5 @@ class Selectr {
         }
 
         this.items[this.navIndex].classList.add("active");
-    }
-
-    destroy() {
-        this.unbind();
-        this.el.classList.remove("selectr-element");
-        this.nodes.container.parentNode.replaceChild(this.el, this.nodes.container);
-    }
-
-    select(option) {
-        let index;
-
-        if (!isNaN(option)) {
-            // index
-            index = option;
-        } else if (option instanceof Element) {
-            // option or item
-            index = option.index;
-        }
-
-        const active = this.options[index];
-        const el = this.items[index];
-        this.navIndex = index;
-
-        active.selected = !this.multiple ? true : (active.selected ? false : true);
-
-        if (this.multiple) {
-            if (this.el.selectedOptions.length) {
-                this.renderTags();
-            }
-        } else {
-            this.nodes.value.textContent = el.textContent;
-            this.nodes.value.dataset.value = el.dataset.value;
-        }
-
-        if (!this.multiple) {
-            this.close();
-        }
-
-        this.update();
-    }
-
-    click(e) {
-        const target = e.target;
-        const el = target.closest(".selectr-option");
-
-        if (el) {
-
-            if (el.disabled) {
-                return;
-            }
-
-            this.select(el);
-        }
-    }
-
-    open() {
-        if (this.closed) {
-            this.closed = false;
-            this.nodes.container.classList.add("selectr-open");
-
-            this.rect = this.nodes.items.getBoundingClientRect();
-
-            const st = this.nodes.items.scrollTop;
-            const sh = this.nodes.items.scrollHeight;
-            const ch = this.nodes.items.clientHeight;
-
-            this.scrollData = {
-                pos: st,
-                max: sh - ch,
-            };
-        }
-    }
-
-    close() {
-        if (!this.closed) {
-            this.closed = true;
-            this.nodes.container.classList.remove("selectr-open");
-        }
-    }
-
-    blur(e) {
-        if (!this.nodes.container.contains(e.target)) {
-            this.close();
-        }
-    }
-
-    toggle(e) {
-
-        e.preventDefault();
-
-        if (e.target.closest(".selectr-tag-remove")) {
-            const tag = e.target.closest(".selectr-tag");
-
-            this.nodes.value.removeChild(tag);
-            this.options[tag.index].selected = false;
-            return this.update();
-        }
-
-        if (this.closed) {
-            this.open();
-        } else {
-            this.close();
-        }
-    }
-
-    message(text) {
-        this.nodes.value.innerHTML = ``;
-        this.nodes.value.textContent = text;
-    }
-
-    update() {
-        this.nodes.container.classList.toggle("has-selected", this.el.selectedOptions.length);
-        this.nodes.container.classList.remove("loading");
-
-        for (const option of this.options) {
-            const item = this.items[option.index];
-            item.classList.toggle("selectr-selected", option.selected);
-            item.classList.toggle("disabled", option.disabled);
-            item.disabled = option.disabled;
-        }
-
-        if (!this.el.selectedOptions.length) {
-            this.message(this.config.strings.placeholder);
-        }
     }
 }
