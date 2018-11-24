@@ -1,3 +1,22 @@
+function rect(e) {
+    const w = window;
+    const o = e.getBoundingClientRect();
+    const b = document.documentElement || document.body.parentNode || document.body;
+    const d = (void 0 !== w.pageXOffset) ? w.pageXOffset : b.scrollLeft;
+    const n = (void 0 !== w.pageYOffset) ? w.pageYOffset : b.scrollTop;
+    return {
+        x1: o.left + d,
+        x2: o.left + o.width + d,
+        y1: o.top + n,
+        y2: o.top + o.height + n,
+        height: o.height,
+        width: o.width
+    };
+}
+
+function preventDefault(e) {
+    e.preventDefault(e);
+}
 /**
  * 
  * @param {Object} src 
@@ -168,10 +187,13 @@ class Selectr {
 
         document.addEventListener("mousedown", this.events.blur);
         window.addEventListener("keydown", this.events.navigate);
-        this.nodes.display.addEventListener("click", this.events.toggle);
-        this.nodes.items.addEventListener("scroll", this.events.scroll);
-        this.nodes.items.addEventListener("mouseover", this.events.over);
-        this.nodes.items.addEventListener("click", this.events.click);
+        this.nodes.display.addEventListener("click", this.events.toggle, false);
+        this.nodes.items.addEventListener("scroll", this.events.scroll, false);
+        this.nodes.items.addEventListener("mouseover", this.events.over, false);
+        this.nodes.items.addEventListener("click", this.events.click, false);
+
+        // stop direction keys scrolling the items
+        this.nodes.items.addEventListener("mousedown", preventDefault, false);
     }
 
     unbind() {
@@ -232,16 +254,7 @@ class Selectr {
             this.closed = false;
             this.nodes.container.classList.add("selectr-open");
 
-            this.rect = this.nodes.items.getBoundingClientRect();
-
-            const st = this.nodes.items.scrollTop;
-            const sh = this.nodes.items.scrollHeight;
-            const ch = this.nodes.items.clientHeight;
-
-            this.scrollData = {
-                pos: st,
-                max: sh - ch,
-            };
+            this._recalculate();
         }
     }
 
@@ -271,6 +284,8 @@ class Selectr {
         if (!this.el.selectedOptions.length) {
             this.message(this.config.strings.placeholder);
         }
+
+        this._recalculate();
     }
 
     _render(type) {
@@ -404,6 +419,9 @@ class Selectr {
         }
         this.nodes.value.innerHTML = ``;
         this.nodes.value.appendChild(frag);
+
+        // tag addition / removal may have altered the size of the container
+        this._recalculate();
     }
 
     _renderTag(text, value, index) {
@@ -448,14 +466,20 @@ class Selectr {
         const target = e.target;
         const el = target.closest(".selectr-option");
 
+        e.preventDefault();
+
         if (el) {
 
             if (el.disabled) {
                 return;
             }
 
-            this.select(el);
+            return this.select(el);
         }
+    }
+
+    _recalculate() {
+        this.rect = rect(this.nodes.items);
     }
 
     _onListScroll(e) {
@@ -493,11 +517,6 @@ class Selectr {
         if (this.closed) return;
 
         if (e.which === 13) {
-
-            // if ( this.noResults || (this.config.taggable && this.input.value.length > 0) ) {
-            // 		return false;
-            // }
-
             return this.select(this.navIndex);
         }
 
@@ -507,7 +526,7 @@ class Selectr {
 
         switch (e.which) {
             case 38:
-                direction = 0;
+                direction = -1;
                 if (this.navIndex > 0) {
                     this.navIndex--;
                 }
@@ -519,12 +538,10 @@ class Selectr {
                 }
         }
 
-        this.navigating = true;
-
         // loop items and skip disabled / excluded items
         while (this.items[this.navIndex].classList.contains("disabled") || this.items[this.navIndex].classList.contains("excluded")) {
             if (this.navIndex > 0 && this.navIndex < this.items.length - 1) {
-                if (direction) {
+                if (direction > 0) {
                     this.navIndex++;
                 } else {
                     this.navIndex--;
@@ -533,37 +550,20 @@ class Selectr {
                 this.navIndex = lastIndex;
                 break;
             }
-
-            // if (this.searching) {
-            // 		if (this.navIndex > this.nodes.items.lastElementChild.index) {
-            // 				this.navIndex = this.nodes.items.lastElementChild.index;
-            // 				break;
-            // 		} else if (this.navIndex < this.nodes.items.firstElementChild.index) {
-            // 				this.navIndex = this.nodes.items.firstElementChild.index;
-            // 				break;
-            // 		}
-            // }
         }
 
         // Autoscroll the dropdown during navigation
-        const r = this.items[this.navIndex].getBoundingClientRect();
+        const item = this.items[this.navIndex];
+        const r = rect(item);
+        const y = this.nodes.items.scrollTop;
 
-        if (!direction) {
-            if (this.navIndex === 0) {
-                this.nodes.items.scrollTop = 0;
-            } else if (r.top - this.rect.top < 0) {
-                this.nodes.items.scrollTop = this.nodes.items.scrollTop + (r.top - this.rect.top);
+        if (direction < 0) {
+            if (r.y1 - this.rect.y1 < 0) {
+                this.nodes.items.scrollTop = y + (r.y1 - this.rect.y1);
             }
         } else {
-            if (this.navIndex === 0) {
-                this.nodes.items.scrollTop = 0;
-            } else if ((r.top + r.height) > (this.rect.top + this.rect.height)) {
-                this.nodes.items.scrollTop = this.nodes.items.scrollTop + ((r.top + r.height) - (this.rect.top + this.rect.height));
-            }
-
-            // Load another page if needed
-            if (this.navIndex === this.nodes.items.childElementCount - 1 && this.requiresPagination) {
-                // load.call(this);
+            if (r.y2 > this.rect.y2) {
+                this.nodes.items.scrollTop = y + (r.y2 - this.rect.y2);
             }
         }
 
@@ -571,6 +571,6 @@ class Selectr {
             prevEl.classList.remove("active");
         }
 
-        this.items[this.navIndex].classList.add("active");
+        item.classList.add("active");
     }
 }
