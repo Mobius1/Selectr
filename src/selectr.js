@@ -451,6 +451,7 @@
                 spellcheck: "false",
                 role: "textbox",
                 type: "search"
+                placeholder: this.config.messages.searchPlaceholder
             });
             this.inputClear = util.createElement("button", {
                 class: "selectr-input-clear",
@@ -889,11 +890,42 @@
     // Main Lib
     var Selectr = function(el, config) {
 
+        if (!el) {
+            throw new Error("You must supply either a HTMLSelectElement or a CSS3 selector string.");
+        }
+
+        this.el = el;
+
+        // CSS3 selector string
+        if (typeof el === "string") {
+            this.el = document.querySelector(el);
+        }
+
+        if (this.el === null) {
+            throw new Error("The element you passed to Selectr can not be found.");
+        }
+
+        if (this.el.nodeName.toLowerCase() !== "select") {
+            throw new Error("The element you passed to Selectr is not a HTMLSelectElement.");
+        }
+
+        this.render(config);
+    };
+
+    /**
+     * Render the instance
+     * @param  {object} config
+     * @return {void}
+     */
+    Selectr.prototype.render = function(config) {
+
+        if (this.rendered) return;
+
         /**
          * Default configuration options
          * @type {Object}
          */
-        this.defaultConfig = {
+        var defaultConfig = {
             /**
              * Emulates browser behaviour by selecting the first option by default
              * @type {Boolean}
@@ -977,45 +1009,15 @@
                 noOptions: "No options available.",
                 maxSelections: "A maximum of {max} items can be selected.",
                 tagDuplicate: "That tag is already in use.",
+                searchPlaceholder: "Search options..."
             }
         };
-
-        if (!el) {
-            throw new Error("You must supply either a HTMLSelectElement or a CSS3 selector string.");
-        }
-
-        this.el = el;
-
-        // CSS3 selector string
-        if (typeof el === "string") {
-            this.el = document.querySelector(el);
-        }
-
-        if (this.el === null) {
-            throw new Error("The element you passed to Selectr can not be found.");
-        }
-
-        if (this.el.nodeName.toLowerCase() !== "select") {
-            throw new Error("The element you passed to Selectr is not a HTMLSelectElement.");
-        }
-
-        this.render(config);
-    };
-
-    /**
-     * Render the instance
-     * @param  {object} config
-     * @return {void}
-     */
-    Selectr.prototype.render = function(config) {
-
-        if (this.rendered) return;
 
         // add instance reference (#87)
         this.el.selectr = this;
 
         // Merge defaults with user set config
-        this.config = util.extend(this.defaultConfig, config);
+        this.config = util.extend(defaultConfig, config);
 
         // Store type
         this.originalType = this.el.type;
