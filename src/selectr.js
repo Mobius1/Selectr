@@ -450,7 +450,7 @@
                 autocapitalize: "off",
                 spellcheck: "false",
                 role: "textbox",
-                type: "search"
+                type: "search",
                 placeholder: this.config.messages.searchPlaceholder
             });
             this.inputClear = util.createElement("button", {
