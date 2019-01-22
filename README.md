@@ -75,9 +75,9 @@ Start with a standard select box you want to convert:
 
 ```html
 <select id="mySelect">
-	<option vlaue="value-1">Value 1</option>
-	<option vlaue="value-2">Value 2</option>
-	<option vlaue="value-3">Value 3</option>
+	<option value="value-1">Value 1</option>
+	<option value="value-2">Value 2</option>
+	<option value="value-3">Value 3</option>
 	...
 </select>
 ```
