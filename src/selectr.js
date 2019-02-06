@@ -1380,27 +1380,29 @@
                 that.search();
 
                 if (that.config.taggable && this.value.length) {
-                    var val = this.value.trim();
+                    let _sVal = this.value.trim();
+                    let _regex = new RegExp(that.tagSeperators.join('|'),'gi');
+                    
+                    if (_sVal.length && (e.which === 13 || _regex.test(_sVal) )) {
+                        let _sGrabbedTagValue = _sVal.replace(_regex, '');
+                        _sGrabbedTagValue = _sGrabbedTagValue.trim();
 
-                    if (e.which === 13 || util.includes(that.tagSeperators, e.key)) {
+                        let _oOption;
+                        if(_sGrabbedTagValue.length){
+                            _oOption = that.add({
+                                value: _sGrabbedTagValue,
+                                text: _sGrabbedTagValue,
+                                selected: true
+                            }, true);
+                        }
 
-                        util.each(that.tagSeperators, function(i, k) {
-                            val = val.replace(k, '');
-                        });
-
-                        var option = that.add({
-                            value: val,
-                            text: val,
-                            selected: true
-                        }, true);
-
-                        if (!option) {
-                            this.value = '';
-                            that.setMessage(that.config.messages.tagDuplicate);
-                        } else {
+                        if(_oOption){
                             that.close();
                             clearSearch.call(that);
-                        }
+                        } else {
+                            this.value = '';
+                            that.setMessage(that.config.messages.tagDuplicate);
+                        } 
                     }
                 }
             });
