@@ -447,6 +447,8 @@
                     _aTempEscapedSeperators.push(util.escapeRegExp(this.tagSeperators[_nTagSeperatorStepCount]));
                 }
                 this.tagSeperatorsRegex = new RegExp(_aTempEscapedSeperators.join('|'),'i');
+            } else {
+                this.tagSeperatorsRegex = new RegExp(',','i');
             }
         }
 
