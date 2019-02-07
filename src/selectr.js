@@ -87,6 +87,10 @@
      * @type {Object}
      */
     var util = {
+        escapeRegExp: function(str) {
+            return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+            // for explanation see https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+        },
         extend: function(src, props) {
                     for (var prop in props) {
                             if (props.hasOwnProperty(prop)) {
@@ -438,6 +442,11 @@
             this.tagSeperators = [","];
             if (this.config.tagSeperators) {
                 this.tagSeperators = this.tagSeperators.concat(this.config.tagSeperators);
+                var _aTempEscapedSeperators = [];
+                for(var _nTagSeperatorStepCount = 0; _nTagSeperatorStepCount < this.tagSeperators.length; _nTagSeperatorStepCount++){
+                    _aTempEscapedSeperators.push(util.escapeRegExp(this.tagSeperators[_nTagSeperatorStepCount]));
+                }
+                this.tagSeperatorsRegex = new RegExp(_aTempEscapedSeperators.join('|'),'i');
             }
         }
 
@@ -1109,7 +1118,7 @@
             window.addEventListener('test', null, opts);
         } catch (e) {}
         return supportsPassiveOption;
-    }
+    };
     
     /**
      * Attach the required event listeners
@@ -1182,7 +1191,7 @@
             }
 
             if (e.key === "Enter" && that.selected === document.activeElement) {
-                if (typeof that.el.form.submit !== 'undefined') that.el.form.submit();
+                if (that.el.form && typeof that.el.form.submit !== 'undefined') that.el.form.submit();
             }
 
             if ((e.key === " " || e.key === "ArrowUp" || e.key === "ArrowDown") &&
@@ -1380,14 +1389,13 @@
                 that.search();
 
                 if (that.config.taggable && this.value.length) {
-                    let _sVal = this.value.trim();
-                    let _regex = new RegExp(that.tagSeperators.join('|'),'gi');
+                    var _sVal = this.value.trim();
                     
-                    if (_sVal.length && (e.which === 13 || _regex.test(_sVal) )) {
-                        let _sGrabbedTagValue = _sVal.replace(_regex, '');
+                    if (_sVal.length && (e.which === 13 || that.tagSeperatorsRegex.test(_sVal) )) {
+                        var _sGrabbedTagValue = _sVal.replace(that.tagSeperatorsRegex, '');
                         _sGrabbedTagValue = _sGrabbedTagValue.trim();
 
-                        let _oOption;
+                        var _oOption;
                         if(_sGrabbedTagValue.length){
                             _oOption = that.add({
                                 value: _sGrabbedTagValue,
