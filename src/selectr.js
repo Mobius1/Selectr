@@ -87,6 +87,12 @@
      * @type {Object}
      */
     var util = {
+      escapeRegExp: function(str) {
+        // source from lodash 3.0.0
+            var _reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+            var _reHasRegExpChar = new RegExp(_reRegExpChar.source);
+            return (str && _reHasRegExpChar.test(str)) ? str.replace(_reRegExpChar, '\\$&') : str;
+        },
         extend: function(src, props) {
                     for (var prop in props) {
                             if (props.hasOwnProperty(prop)) {
@@ -122,10 +128,7 @@
                 for (i in a)
                     if (i in el) el[i] = a[i];
                     else if ("html" === i) el.innerHTML = a[i];
-                else if ("text" === i) {
-                    var t = d.createTextNode(a[i]);
-                    el.appendChild(t);
-                } else el.setAttribute(i, a[i]);
+                    else el.setAttribute(i, a[i]);
             }
             return el;
         },
@@ -285,13 +288,19 @@
      */
     var createItem = function(option, data) {
         data = data || option;
-        var content = this.customOption ? this.config.renderOption(data) : option.textContent;
-        var opt = util.createElement("li", {
+        var elementData =  {
             class: "selectr-option",
-            html: content,
             role: "treeitem",
             "aria-selected": false
-        });
+        };
+        
+        if(this.customOption){
+            elementData.html = this.config.renderOption(data); // asume xss prevention in custom render function 
+        } else{
+            elementData.textContent = option.textContent; // treat all as plain text 
+        }
+        var opt = util.createElement("li",elementData);
+
 
         opt.idx = option.idx;
 
@@ -438,6 +447,13 @@
             this.tagSeperators = [","];
             if (this.config.tagSeperators) {
                 this.tagSeperators = this.tagSeperators.concat(this.config.tagSeperators);
+                var _aTempEscapedSeperators = [];
+                for(var _nTagSeperatorStepCount = 0; _nTagSeperatorStepCount < this.tagSeperators.length; _nTagSeperatorStepCount++){
+                    _aTempEscapedSeperators.push(util.escapeRegExp(this.tagSeperators[_nTagSeperatorStepCount]));
+                }
+                this.tagSeperatorsRegex = new RegExp(_aTempEscapedSeperators.join('|'),'i');
+            } else {
+                this.tagSeperatorsRegex = new RegExp(',','i');
             }
         }
 
@@ -720,12 +736,13 @@
         var docFrag = document.createDocumentFragment();
         var option = this.options[item.idx];
         var data = this.data ? this.data[item.idx] : option;
-        var content = this.customSelected ? this.config.renderSelection(data) : option.textContent;
-
-        var tag = util.createElement("li", {
-            class: "selectr-tag",
-            html: content
-        });
+        var elementData = { class: "selectr-tag" };
+        if (this.customSelected){
+            elementData.html = this.config.renderSelection(data); // asume xss prevention in custom render function 
+        } else {
+            elementData.textContent = option.textContent;
+        }
+        var tag = util.createElement("li", elementData);
         var btn = util.createElement("button", {
             class: "selectr-tag-remove",
             type: "button"
@@ -1109,7 +1126,7 @@
             window.addEventListener('test', null, opts);
         } catch (e) {}
         return supportsPassiveOption;
-    }
+    };
     
     /**
      * Attach the required event listeners
@@ -1182,7 +1199,7 @@
             }
 
             if (e.key === "Enter" && that.selected === document.activeElement) {
-                if (typeof that.el.form.submit !== 'undefined') that.el.form.submit();
+                if (that.el.form && typeof that.el.form.submit !== 'undefined') that.el.form.submit();
             }
 
             if ((e.key === " " || e.key === "ArrowUp" || e.key === "ArrowDown") &&
@@ -1380,18 +1397,18 @@
                 that.search();
 
                 if (that.config.taggable && this.value.length) {
-                    let _sVal = this.value.trim();
-                    let _regex = new RegExp(that.tagSeperators.join('|'),'gi');
+                    var _sVal = this.value.trim();
                     
-                    if (_sVal.length && (e.which === 13 || _regex.test(_sVal) )) {
-                        let _sGrabbedTagValue = _sVal.replace(_regex, '');
+                    if (_sVal.length && (e.which === 13 || that.tagSeperatorsRegex.test(_sVal) )) {
+                        var _sGrabbedTagValue = _sVal.replace(that.tagSeperatorsRegex, '');
+                        _sGrabbedTagValue = util.escapeRegExp(_sGrabbedTagValue);
                         _sGrabbedTagValue = _sGrabbedTagValue.trim();
 
-                        let _oOption;
+                        var _oOption;
                         if(_sGrabbedTagValue.length){
                             _oOption = that.add({
                                 value: _sGrabbedTagValue,
-                                text: _sGrabbedTagValue,
+                                textContent: _sGrabbedTagValue,
                                 selected: true
                             }, true);
                         }

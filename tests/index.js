@@ -63,6 +63,7 @@
 
             assert.equal( typeof selectr, "object", "can create new instance" );
             assert.equal( selectr.el, s, "instance has reference to <select> element" );
+            assert.equal( s.selectr, selectr, "<select> element has reference to instance" );
 
             selectr.destroy();
             document.body.removeChild(s);
@@ -155,6 +156,11 @@
                 multiSelectr.getValue(),
                 ["value-2", "value-5"],
                 "select-multi: sets and gets multiple values"
+            );
+            assert.deepEqual(
+                multiSelectr.getValue( true ),
+                { values: [{ text: "two", value: "value-2" },{ text: "five", value: "value-5" }] },
+                "gets selected values in object format"
             );
 
             multiSelectr.__done__();
