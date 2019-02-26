@@ -405,10 +405,16 @@
             this.tags = [];
 
             // Collection of selected values
-            this.selectedValues = this.getSelectedProperties('value');
+            // #93 defaultSelected = false did not work as expected
+            this.selectedValues = (this.config.defaultSelected) ? this.getSelectedProperties('value') : [];
 
             // Collection of selected indexes
             this.selectedIndexes = this.getSelectedProperties('idx');
+        } else {
+            // #93 defaultSelected = false did not work as expected
+            // these values were undefined
+            this.selectedValue = null;
+            this.selectedIndex = -1;
         }
 
         this.selected.appendChild(this.label);
