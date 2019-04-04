@@ -1520,7 +1520,7 @@
         if (this.config.data) {
 
 
-            if (!this.el.multiple && this.config.defaultSelected && this.el.selectedIndex < 0) {
+            if (!this.el.multiple && this.config.defaultSelected && this.el.selectedIndex < 0 && this.config.data.length > 0) {
                 this.select(0);
             }
 
@@ -1624,7 +1624,7 @@
             this.selectedIndexes.push(index);
 
             addTag.call(this, item);
-        } else {
+        } else {            
             var data = this.data ? this.data[index] : option;
             this.label.innerHTML = this.customSelected ? this.config.renderSelection(data) : option.textContent;
 
