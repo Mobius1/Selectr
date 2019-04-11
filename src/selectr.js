@@ -1210,8 +1210,12 @@
 
             if ((e.key === " " || e.key === "ArrowUp" || e.key === "ArrowDown") &&
               that.selected === document.activeElement) {
+                if (e.key === " ") {
+                  e.preventDefault();
+                }
+
                 setTimeout(function() {
-                    that.toggle();
+                    that[e.key === " " ? 'toggle' : 'open']();
                 }, 200);
 
                 if (that.config.nativeDropdown) {
