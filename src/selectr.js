@@ -2226,7 +2226,7 @@
      * Clear all selections
      * @return {void}
      */
-    Selectr.prototype.clear = function(force) {
+    Selectr.prototype.clear = function(force, isClearLast = false) {
 
         if (this.el.multiple) {
             // Loop over the selectedIndexes so we don't have to loop over all the options
@@ -2236,9 +2236,13 @@
                 // Copy the array or we'll get an error
                 var indexes = this.selectedIndexes.slice();
 
-                util.each(indexes, function(i, idx) {
-                    this.deselect(idx);
-                }, this);
+                if (isClearLast) {
+                    this.deselect(indexes.slice(-1)[0])
+                } else {
+                    util.each(indexes, function(i, idx) {
+                        this.deselect(idx);
+                    }, this);
+                }
             }
         } else {
             if (this.selectedIndex > -1) {
