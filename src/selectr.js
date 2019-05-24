@@ -2226,7 +2226,7 @@
      * Clear all selections
      * @return {void}
      */
-    Selectr.prototype.clear = function(force, isClearLast = false) {
+    Selectr.prototype.clear = function(force, isClearLast) {
 
         if (this.el.multiple) {
             // Loop over the selectedIndexes so we don't have to loop over all the options
