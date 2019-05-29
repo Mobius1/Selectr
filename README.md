@@ -107,9 +107,24 @@ new Selectr('#mySelect', {
 
 ---
 
-# Contributers
+# Contributors
 
-@all-contributors
+* [adrian-enspired](https://github.com/adrian-enspired)
+* [reno1979](https://github.com/reno1979)
+* [snrbrnjna](https://github.com/snrbrnjna)
+* [TchernyavskyDaniil](https://github.com/TchernyavskyDaniil)
+* [istvanmakary](https://github.com/istvanmakary)
+* [pepe4](https://github.com/pepe4)
+* [ericboehs](https://github.com/ericboehs)
+* [detroxx92](https://github.com/detroxx92)
+* [jmromeroes](https://github.com/jmromeroes)
+* [mirkopulvirenti](https://github.com/mirkopulvirenti)
+* [aslafy-z](https://github.com/aslafy-z)
+* [Abduvakilov](https://github.com/Abduvakilov)
+* [jostermanAtPEW](https://github.com/jostermanAtPEW)
+* [mikeymckay](https://github.com/mikeymckay)
+* [minajevs](https://github.com/minajevs)
+
 
 ---
 
