@@ -1184,6 +1184,9 @@
             // Listen for the change on the native select
             // and update accordingly
             this.el.addEventListener("change", function(e) {
+                if (e.__selfTriggered) {
+                    return;
+                }
                 if (that.el.multiple) {
                     var indexes = that.getSelectedProperties('idx');
                     var changes = getChangedOptions(that.selectedIndexes, indexes);
@@ -1675,6 +1678,7 @@
         if ("createEvent" in document) {
             var evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", true, true);
+            evt.__selfTriggered = true;
             this.el.dispatchEvent(evt);
         } else {
             this.el.fireEvent("onchange");
@@ -1733,6 +1737,7 @@
         if ("createEvent" in document) {
             var evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", true, true);
+            evt.__selfTriggered = true;
             this.el.dispatchEvent(evt);
         } else {
             this.el.fireEvent("onchange");
