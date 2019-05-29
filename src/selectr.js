@@ -897,15 +897,27 @@
     };
 
     /**
-     * Query matching for searches
+     * Query matching for searches.
+     * Wraps matching text in a span.selectr-match.
+     *
      * @param  {string} query
-     * @param  {HTMLOptionElement} option
-     * @return {bool}
+     * @param  {HTMLOptionElement} option element
+     * @return {bool} true if matched; false otherwise
      */
     var match = function(query, option) {
-        var result = new RegExp(query, "i").exec(option.textContent);
+        var text = option.textContent;
+        var RX = new RegExp( query, "ig" );
+        var result = RX.exec( text );
         if (result) {
-            return option.textContent.replace(result[0], "<span class='selectr-match'>" + result[0] + "</span>");
+            // #102 stop xss
+            option.innerHTML = "";
+            var span = document.createElement( "span" );
+            span.classList.add( "selectr-match" );
+            span.textContent = result[0];
+            option.appendChild( document.createTextNode( text.substring( 0, result.index ) ) );
+            option.appendChild( span );
+            option.appendChild( document.createTextNode( text.substring( RX.lastIndex ) ) );
+            return true;
         }
         return false;
     };
@@ -2016,7 +2028,7 @@
 
                         // Underline the matching results
                         if ( !this.customOption ) {
-                            item.innerHTML = match( string, option );
+                            match( string, option );
                         }
                     }
                 } else if ( live ) {
@@ -2393,4 +2405,3 @@
 
     return Selectr;
 }));
-
