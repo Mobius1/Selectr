@@ -2242,7 +2242,7 @@
                 var indexes = this.selectedIndexes.slice();
 
                 if (isClearLast) {
-                    this.deselect(indexes.slice(-1)[0])
+                    this.deselect(indexes.slice(-1)[0]);
                 } else {
                     util.each(indexes, function(i, idx) {
                         this.deselect(idx);
