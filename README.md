@@ -13,6 +13,8 @@ Supports most modern mobile and desktop browsers including IE9.
 
 Don't forget to check the [wiki](https://github.com/Mobius1/Selectr/wiki) out and view some [demos](https://s.codepen.io/Mobius1/pen/QgdpLN).
 
+Pull requests accepted!
+
 ---
 
 
@@ -105,11 +107,18 @@ new Selectr('#mySelect', {
 
 ---
 
+# Contributers
+
+@all-contributors
+
+---
+
 If this project helps you then you can grab me a coffee or beer to say thanks.
 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9B9KD4X57X8V8)
 
 ---
+
 
 # License
 

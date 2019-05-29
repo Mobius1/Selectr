@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.4.8
+ * Selectr 2.4.9
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
