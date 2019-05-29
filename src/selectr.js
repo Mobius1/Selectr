@@ -293,11 +293,11 @@
             role: "treeitem",
             "aria-selected": false
         };
-        
+
         if(this.customOption){
-            elementData.html = this.config.renderOption(data); // asume xss prevention in custom render function 
+            elementData.html = this.config.renderOption(data); // asume xss prevention in custom render function
         } else{
-            elementData.textContent = option.textContent; // treat all as plain text 
+            elementData.textContent = option.textContent; // treat all as plain text
         }
         var opt = util.createElement("li",elementData);
 
@@ -744,7 +744,7 @@
         var data = this.data ? this.data[item.idx] : option;
         var elementData = { class: "selectr-tag" };
         if (this.customSelected){
-            elementData.html = this.config.renderSelection(data); // asume xss prevention in custom render function 
+            elementData.html = this.config.renderSelection(data); // asume xss prevention in custom render function
         } else {
             elementData.textContent = option.textContent;
         }
@@ -968,6 +968,12 @@
             disabled: false,
 
             /**
+             * Enables/ disables logic for mobile
+             * @type {Boolean}
+             */
+            disabledMobile: false,
+
+            /**
              * Enables / disables the search function
              * @type {Boolean}
              */
@@ -1070,7 +1076,8 @@
         this.navigating = false;
 
         this.mobileDevice = false;
-        if (/Android|webOS|iPhone|iPad|BlackBerry|Windows Phone|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent)) {
+
+        if (!this.config.disabledMobile && /Android|webOS|iPhone|iPad|BlackBerry|Windows Phone|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent)) {
             this.mobileDevice = true;
         }
 
@@ -1078,7 +1085,7 @@
         this.customSelected = this.config.hasOwnProperty("renderSelection") && typeof this.config.renderSelection === "function";
 
         this.supportsEventPassiveOption = this.detectEventPassiveOption();
-        
+
         // Enable event emitter
         Events.mixin(this);
 
@@ -1133,7 +1140,7 @@
         } catch (e) {}
         return supportsPassiveOption;
     };
-    
+
     /**
      * Attach the required event listeners
      */
@@ -1408,7 +1415,7 @@
 
                 if (that.config.taggable && this.value.length) {
                     var _sVal = this.value.trim();
-                    
+
                     if (_sVal.length && (e.which === 13 || that.tagSeperatorsRegex.test(_sVal) )) {
                         var _sGrabbedTagValue = _sVal.replace(that.tagSeperatorsRegex, '');
                         _sGrabbedTagValue = util.escapeRegExp(_sGrabbedTagValue);
@@ -1429,7 +1436,7 @@
                         } else {
                             this.value = '';
                             that.setMessage(that.config.messages.tagDuplicate);
-                        } 
+                        }
                     }
                 }
             });
@@ -1628,7 +1635,7 @@
             this.selectedIndexes.push(index);
 
             addTag.call(this, item);
-        } else {            
+        } else {
             var data = this.data ? this.data[index] : option;
             this.label.innerHTML = this.customSelected ? this.config.renderSelection(data) : option.textContent;
 
@@ -1663,7 +1670,7 @@
         this.emit("selectr.change", option);
 
         this.emit("selectr.select", option);
-            
+
         // fire native change event
         if ("createEvent" in document) {
             var evt = document.createEvent("HTMLEvents");
@@ -1671,7 +1678,7 @@
             this.el.dispatchEvent(evt);
         } else {
             this.el.fireEvent("onchange");
-        }    
+        }
     };
 
     /**
@@ -1721,7 +1728,7 @@
         this.emit("selectr.change", null);
 
         this.emit("selectr.deselect", option);
-            
+
         // fire native change event
         if ("createEvent" in document) {
             var evt = document.createEvent("HTMLEvents");
@@ -1850,7 +1857,7 @@
                 if (data.selected) {
                     this.select(option.idx);
                 }
-                            
+
                                 // We may have had an empty select so update
                                 // the placeholder to reflect the changes.
                                 this.setPlaceholder();
@@ -2219,7 +2226,7 @@
      * Clear all selections
      * @return {void}
      */
-    Selectr.prototype.clear = function(force) {
+    Selectr.prototype.clear = function(force, isClearLast) {
 
         if (this.el.multiple) {
             // Loop over the selectedIndexes so we don't have to loop over all the options
@@ -2229,9 +2236,13 @@
                 // Copy the array or we'll get an error
                 var indexes = this.selectedIndexes.slice();
 
-                util.each(indexes, function(i, idx) {
-                    this.deselect(idx);
-                }, this);
+                if (isClearLast) {
+                    this.deselect(indexes.slice(-1)[0])
+                } else {
+                    util.each(indexes, function(i, idx) {
+                        this.deselect(idx);
+                    }, this);
+                }
             }
         } else {
             if (this.selectedIndex > -1) {
