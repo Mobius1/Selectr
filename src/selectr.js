@@ -227,7 +227,8 @@
 
         util.removeClass(item, "excluded");
         if (!custom) {
-            item.innerHTML = item.textContent;
+            // remove any <span> highlighting, without xss
+            item.textContent = item.textContent;
         }
     }
 
@@ -890,7 +891,8 @@
                 util.removeClass(item, "excluded");
                 // Remove the span element for underlining matched items
                 if (!this.customOption) {
-                    item.innerHTML = item.textContent;
+                    // without xss
+                    item.textContent = item.textContent;
                 }
             }, this);
         }
@@ -1652,7 +1654,12 @@
             addTag.call(this, item);
         } else {
             var data = this.data ? this.data[index] : option;
-            this.label.innerHTML = this.customSelected ? this.config.renderSelection(data) : option.textContent;
+            if (this.customSelected) {
+                this.label.innerHTML = this.config.renderSelection(data);
+            } else {
+                // no xss
+                this.label.textContent = option.textContent;
+            }
 
             this.selectedValue = option.value;
             this.selectedIndex = index;
