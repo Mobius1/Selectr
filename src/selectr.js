@@ -1853,6 +1853,11 @@
 
                 this.data.push(data);
 
+                // fix for native iOS dropdown otherwise the native dropdown will be empty
+                if (this.mobileDevice) {
+                    this.el.add(option);
+                }
+
                 // Add the new option to the list
                 this.options.push(option);
 
