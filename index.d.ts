@@ -9,7 +9,7 @@ export interface IOptions {
 	defaultSelected?: boolean;
 	multiple?: boolean;
 	searchable?: boolean;
-	allowDeselect?: string;
+	allowDeselect?: boolean;
 	clearable?: boolean;
 	width?: number | string;
 	placeholder?: string;
