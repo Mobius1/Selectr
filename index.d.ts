@@ -26,21 +26,23 @@ export interface IOptions {
 	sortSelected?: 'text' | 'value';
 	customClass?: string;
 	messages?: {
-		noResults: string;
-		maxSelections: string;
-		tagDuplicate: string;
+		noResults?: string;
+		noOptions?: string;
+		maxSelections?: string;
+		tagDuplicate?: string;
+		searchPlaceholder?: string;
 	};
 }
 
 export default class Selectr {
 	constructor(select: HTMLSelectElement, options: IOptions);
 	setValue: (value: string | string[]) => void;
-	getValue: (toObject: boolean, toJson: boolean) => string | { text: string, value: string };
-	search: (query: string, anchor: boolean) => IData[];
+	getValue: (toObject?: boolean, toJson?: boolean) => string | { text: string, value: string };
+	search: (query: string, anchor?: boolean) => IData[];
 	add: (data: IData | IData[]) => void;
 	remove: (data: number | string | number[] | string[]) => void;
 	removeAll: () => void;
-	serialize: (toJson: boolean) => string | IData[];
+	serialize: (toJson?: boolean) => string | IData[];
 	open: () => void;
 	close: () => void;
 	toggle: () => void;
