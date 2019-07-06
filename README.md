@@ -89,7 +89,7 @@ Start with a standard select box you want to convert:
 You can then instantiate Selectr by passing a reference to your select box as the first parameter as either a DOM node or a CSS3 selector string:
 
 ```javascript
-new Selectr(document.getElementById('#mySelect'));
+new Selectr(document.getElementById('mySelect'));
 
 // or
 
