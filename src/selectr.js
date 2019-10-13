@@ -2095,7 +2095,7 @@
         if (this.mobileDevice || this.config.nativeDropdown) {
             util.addClass(this.container, "native-open");
 
-            if (this.config.data) {
+            if (this.config.data && this.el.options.length === 0) {
                 // Dump the options into the select
                 // otherwise the native dropdown will be empty
                 util.each(this.options, function(i, option) {
