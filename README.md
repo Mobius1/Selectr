@@ -7,6 +7,10 @@
 ![](http://img.badgesize.io/Mobius1/Selectr/master/dist/selectr.min.js) ![](http://img.badgesize.io/Mobius1/Selectr/master/dist/selectr.min.js?compression=gzip&label=gzipped)
 
 
+# NO LONGER UNDER ACTIVE DEVELOPMENT. If you would like to take over development please contact me and I'll transfer ownership.
+
+
+
 A lightweight, dependency-free, mobile-friendly select box replacement written in vanilla javascript. Just 6.5KB minified and gzipped. Similar to Select2 and Chosen, but without the dependencies.
 
 Supports most modern mobile and desktop browsers including IE9.
