@@ -2015,7 +2015,7 @@
 
             util.each( this.options, function ( i, option ) {
                 var item = this.items[option.idx];
-                var matches = compare( option.textContent.trim().toLowerCase(), string );
+                var matches = compare( option.textContent.trim().toLowerCase().replace(/-|\s/g,""), string.replace(/-|\s/g,"") );
 
                 if ( matches && !option.disabled ) {
                     results.push( { text: option.textContent, value: option.value } );
