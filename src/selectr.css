@@ -54,6 +54,7 @@
 	z-index: 1;
 	box-sizing: border-box;
 	width: 100%;
+	min-height: 38px;
 	padding: 7px 28px 7px 14px;
 	cursor: pointer;
 	border: 1px solid #999;
