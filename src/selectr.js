@@ -1407,6 +1407,7 @@
                 if (!that.tree.childElementCount) {
                     render.call(that);
                 }
+                that.search();
             });
         }
 
